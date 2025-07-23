@@ -1,0 +1,72 @@
+[
+    {
+        "name": "English",
+        "native_name": "English",
+        "code": "en",
+        "locale": "en_US",
+        "flag_url": "https://flagcdn.com/w320/gb.png"
+    },
+    {
+        "name": "Spanish",
+        "native_name": "Español",
+        "code": "es",
+        "locale": "es_ES",
+        "flag_url": "https://flagcdn.com/w320/es.png"
+    },
+    {
+        "name": "French",
+        "native_name": "Français",
+        "code": "fr",
+        "locale": "fr_FR",
+        "flag_url": "https://flagcdn.com/w320/fr.png"
+    },
+    {
+        "name": "German",
+        "native_name": "Deutsch",
+        "code": "de",
+        "locale": "de_DE",
+        "flag_url": "https://flagcdn.com/w320/de.png"
+    },
+    {
+        "name": "Russian",
+        "native_name": "Русский",
+        "code": "ru",
+        "locale": "ru_RU",
+        "flag_url": "https://flagcdn.com/w320/ru.png"
+    },
+    {
+        "name": "Chinese",
+        "native_name": "中文",
+        "code": "zh",
+        "locale": "zh_CN",
+        "flag_url": "https://flagcdn.com/w320/cn.png"
+    },
+    {
+        "name": "Arabic",
+        "native_name": "العربية",
+        "code": "ar",
+        "locale": "ar_SA",
+        "flag_url": "https://flagcdn.com/w320/sa.png"
+    },
+    {
+        "name": "Portuguese",
+        "native_name": "Português",
+        "code": "pt",
+        "locale": "pt_PT",
+        "flag_url": "https://flagcdn.com/w320/pt.png"
+    },
+    {
+        "name": "Japanese",
+        "native_name": "日本語",
+        "code": "ja",
+        "locale": "ja_JP",
+        "flag_url": "https://flagcdn.com/w320/jp.png"
+    },
+    {
+        "name": "Ukrainian",
+        "native_name": "Українська",
+        "code": "uk",
+        "locale": "uk_UA",
+        "flag_url": "https://flagcdn.com/w320/ua.png"
+    }
+]
