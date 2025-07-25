@@ -9,7 +9,7 @@ interface CardRepositoryInterface
     public function isExistCardById(int $idCard): bool;
     public function isExistCardByDeckIdAndWord($deckId, $word);
 
-    public function getCardById(int $idCard): ?Card;
+    public function getCardById(int $idCard, array $withArray = []): ?Card;
     public function saveNewCard(string $word, string $translate, ?string $image_url, $deckId): Card;
 
     public function addImageToCard(int $idCard, string $imageUrl);

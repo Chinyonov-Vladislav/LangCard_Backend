@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Api\V1\CardRequests;
 
+use App\Rules\ImagePathExistsRule;
+use App\Rules\IsFileBelongsToImagesRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -27,41 +29,50 @@ class CreatingCardForDeckRequest extends FormRequest
             'deck_id' => ['required', 'integer', 'exists:decks,id'],
             'word' => ['required', 'string', 'max:255'],
             'translate' => ['required', 'string', 'max:255'],
-            'image' => [
-                'exclude_if:image,null',
-                'image',
-                'mimes:jpeg,png,jpg,gif,webp',
-                'max:5120', // 5MB
+            'imagePath' => [
+                'nullable',
+                'string',
+                new ImagePathExistsRule(),
+                new IsFileBelongsToImagesRule()
             ],
-            'originalVoices' => ['nullable','string'],
-            'targetVoices' => ['nullable', 'string'],
+            'originalVoices' => ['nullable','array'],
+            'originalVoices.*' => ['required', 'string', 'exists:voices,voice_id'],
+            'targetVoices' => ['nullable','array'],
+            'targetVoices.*' => ['required','string', 'exists:voices,voice_id'],
+            'examples' => ['nullable','array'],
+            'examples.*' => ['required', 'string'],
         ];
     }
     public function messages(): array
     {
         return [
-            // deck_id
-            'deck_id.required' => 'Необходимо выбрать колоду для карточки.',
-            'deck_id.integer' => 'Идентификатор колоды должен быть числом.',
+            'deck_id.required' => 'Поле "Колода" обязательно для заполнения.',
+            'deck_id.integer' => 'Поле "Колода" должно быть числом.',
             'deck_id.exists' => 'Выбранная колода не существует.',
 
-            // word
             'word.required' => 'Поле "Слово" обязательно для заполнения.',
-            'word.string' => 'Поле "Слово" должно содержать текст.',
-            'word.max' => 'Поле "Слово" не должно содержать более 255 символов.',
+            'word.string' => 'Поле "Слово" должно быть строкой.',
+            'word.max' => 'Поле "Слово" не может содержать более 255 символов.',
 
-            // translate
             'translate.required' => 'Поле "Перевод" обязательно для заполнения.',
-            'translate.string' => 'Поле "Перевод" должно содержать текст.',
-            'translate.max' => 'Поле "Перевод" не должно содержать более 255 символов.',
+            'translate.string' => 'Поле "Перевод" должно быть строкой.',
+            'translate.max' => 'Поле "Перевод" не может содержать более 255 символов.',
 
-            // image
-            'image.image' => 'Загружаемый файл должен быть изображением',
-            'image.mimes' => 'Изображение должно быть в формате: jpeg, png, jpg, gif или webp.',
-            'image.max' => 'Размер изображения не должен превышать 5 МБ.',
+            'imagePath.string' => 'Путь к изображению должен быть строкой.',
 
-            'originalVoices'=>"Поле originalVoices должно быть строкой",
-            'targetVoices'=>"Поле originalVoices должно быть строкой"
+            'originalVoices.array' => 'Поле "Оригинальные голоса" должно быть массивом.',
+            'originalVoices.*.required' => 'Каждый элемент в "Оригинальные голоса" обязателен.',
+            'originalVoices.*.string' => 'Каждый элемент в "Оригинальные голоса" должен быть строкой.',
+            'originalVoices.*.exists' => 'Выбранный оригинальный голос не существует.',
+
+            'targetVoices.array' => 'Поле "Целевые голоса" должно быть массивом.',
+            'targetVoices.*.required' => 'Каждый элемент в "Целевые голоса" обязателен.',
+            'targetVoices.*.string' => 'Каждый элемент в "Целевые голоса" должен быть строкой.',
+            'targetVoices.*.exists' => 'Выбранный целевой голос не существует.',
+
+            'examples.array' => 'Поле "Примеры" должно быть массивом.',
+            'examples.*.required' => 'Каждый пример обязателен для заполнения.',
+            'examples.*.string' => 'Каждый пример должен быть строкой.',
         ];
     }
 }

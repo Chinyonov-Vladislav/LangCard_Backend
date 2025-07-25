@@ -10,6 +10,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property string|null $text
+ * @property string $type
+ * @property int $card_id
+ * @property int $test_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuestionAnswer> $answers
+ * @property-read int|null $answers_count
+ * @property-read \App\Models\Card $card
+ * @property-read \App\Models\QuestionAnswer|null $correctAnswer
+ * @property-read \App\Models\Test $test
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserTestAnswer> $userTestAnswers
+ * @property-read int|null $user_test_answers_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereCardId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereTestId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Question whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Question extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

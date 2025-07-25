@@ -8,6 +8,25 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property string $code
+ * @property bool $active
+ * @property int $tariff_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Tariff $tariff
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereTariffId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Promocode whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Promocode extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

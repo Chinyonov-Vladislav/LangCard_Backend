@@ -9,6 +9,34 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int|null $score
+ * @property string $start_time
+ * @property string|null $finish_time
+ * @property int $number_attempt
+ * @property int $user_id
+ * @property int $test_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Test $test
+ * @property-read \App\Models\User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserTestAnswer> $userTestAnswers
+ * @property-read int|null $user_test_answers_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereFinishTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereNumberAttempt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereScore($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereStartTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereTestId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestResult whereUserId($value)
+ * @mixin \Eloquent
+ */
 class UserTestResult extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

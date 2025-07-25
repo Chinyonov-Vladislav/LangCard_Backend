@@ -35,9 +35,9 @@ class CardRepository implements CardRepositoryInterface
         return $this->model->where('id', '=', $idCard)->exists();
     }
 
-    public function getCardById(int $idCard): ?Card
+    public function getCardById(int $idCard, array $withArray = []): ?Card
     {
-        return $this->model->where('id', '=', $idCard)->first();
+        return $this->model->with($withArray)->where('id', '=', $idCard)->first();
     }
 
     public function addImageToCard(int $idCard, string $imageUrl): void

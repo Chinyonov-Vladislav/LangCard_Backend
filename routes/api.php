@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\PromocodeController;
 use App\Http\Controllers\Api\V1\SpellingController;
 use App\Http\Controllers\Api\V1\StatsController;
 use App\Http\Controllers\Api\V1\TariffController;
+use App\Http\Controllers\Api\V1\UploadController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
 use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\VoiceController;
@@ -24,7 +25,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(callback: function () {
     Route::middleware('setApiLocale')->group(callback: function () {
-        Route::get('test', [TestController::class, 'testTextToSpeech']);
         Route::prefix('decks')->group(function () {
             Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
             Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
@@ -40,7 +40,6 @@ Route::prefix('v1')->group(callback: function () {
                 Route::post('sendResetLink', [ForgotPasswordController::class, 'sendResetLink'])->name('sendResetLink');
                 Route::post('update', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
             });
-
         });
         Route::middleware('auth:sanctum')->group(callback: function () {
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -54,6 +53,7 @@ Route::prefix('v1')->group(callback: function () {
                 Route::post('/end', [UserTestResultController::class, 'end'])->name('endTest');
             });
             Route::prefix('decks')->group(function () {
+                Route::post('/',[DeckController::class, 'createDeck'])->name('createDeck');
                 Route::delete('/{id}', [DeckController::class, 'deleteDeck'])->where('id', '[0-9]+')->name('deleteDeck');
             });
             Route::prefix('historyAttempts')->group(function () {
@@ -74,6 +74,7 @@ Route::prefix('v1')->group(callback: function () {
             });
             Route::prefix('languages')->group(function () {
                 Route::get('/', [LanguageController::class, 'getLanguages'])->name('getLanguages');
+                Route::post('/', [LanguageController::class, 'addLanguage'])->name('addLanguage')->middleware('isAdmin');
             });
             Route::prefix('stats')->group(function () {
                 Route::get('/countUsersByMonths', [StatsController::class, 'getCountUsersByMonths'])->name('getCountUsersByMonths')->middleware('isAdmin');
@@ -85,10 +86,6 @@ Route::prefix('v1')->group(callback: function () {
                 Route::get('/download/{type}/{tariff_id?}', [PromocodeController::class, 'downloadPromocodes'])
                     ->whereIn('type', ['table', 'card'])->whereNumber('tariff_id')->name('downloadPromocodes');
             });
-            Route::prefix('decks')->group(function () {
-               Route::post('/',[DeckController::class, 'createDeck'])->name('createDeck');
-
-            });
             Route::prefix('cards')->group(function () {
                 Route::post('/', [CardController::class, 'createCardForDeck'])->name('createCardForDeck');
             });
@@ -97,6 +94,7 @@ Route::prefix('v1')->group(callback: function () {
                Route::post('/', [VoiceController::class, 'createVoice'])->name('createVoice');
                Route::patch('/', [VoiceController::class, 'updateStatusOfVoices'])->name('updateStatusOfVoices');
             });
+            Route::post('/upload', [UploadController::class, 'uploadFile'])->name('uploadFile');
             Route::post('checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
         });
     });

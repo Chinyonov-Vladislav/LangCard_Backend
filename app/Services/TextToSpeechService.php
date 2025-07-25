@@ -5,36 +5,53 @@ namespace App\Services;
 use App\Enums\TypeStatus;
 use App\Exceptions\ChromeDriverNotStartedException;
 use Exception;
-use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Exception\NoSuchElementException;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Storage;
 
 class TextToSpeechService
 {
-
-
     private RemoteWebDriver $driver;
     private string $serverUrl;
-    private Const BASE_URl = 'https://freetts.ru/';
+    private const BASE_URl = 'https://freetts.ru/';
 
-    private Const DEFAULT_PORT = '9515';
+    private const DEFAULT_PORT = '9515';
 
-    public function __construct(string $port = '9515')
+    /**
+     * @throws ChromeDriverNotStartedException
+     * @throws Exception
+     */
+    public function __construct()
     {
         $chromedriverPath = storage_path('app/bin/chromedriver.exe');
-        $result = Process::start($chromedriverPath. " --port=".self::DEFAULT_PORT);
-        if(!$result->running()) {
-            throw new ChromeDriverNotStartedException();
+        if (!file_exists($chromedriverPath)) {
+            throw new ChromeDriverNotStartedException("ChromeDriver not found at: " . $chromedriverPath);
         }
-        $this->serverUrl = "http://localhost:$port";
+        $result = Process::start([
+            $chromedriverPath,
+            '--port=' . self::DEFAULT_PORT,
+        ]);
+        if (!$result->running()) {
+            $error = $result->errorOutput();
+            throw new ChromeDriverNotStartedException("Failed to start ChromeDriver: " . $error);
+        }
+        $this->serverUrl = "http://127.0.0.1:" . self::DEFAULT_PORT;
+
     }
 
+    private function killExistingChromeDriver(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            exec('taskkill /F /IM chromedriver.exe 2>NUL');
+        } else {
+            exec('pkill -f chromedriver');
+        }
+    }
 
     /**
      * Получает ссылку на сгенерированный аудиофайл
@@ -55,19 +72,19 @@ class TextToSpeechService
             }
             $this->waitForAudioGeneration();
             $currentCountGeneratedAudio = $this->getCountGeneratedAudio();
-            if($currentCountGeneratedAudio - $previousCountGeneratedAudio === 1) {
+            if ($currentCountGeneratedAudio - $previousCountGeneratedAudio === 1) {
                 $download_url = $this->getDownloadUrl();
-                logger("DOWNLOAD URL: {$download_url}");
                 return (object)['status' => TypeStatus::success->value, 'url_download' => $download_url];
             }
-            return (object)['status'=>TypeStatus::error->value, 'message'=>"Количество новых сгенерированных аудиозаписей больше, чем 1"];
-        }
-        catch (Exception $e) {
-            return (object)['status'=>TypeStatus::error->value, 'message'=>$e->getMessage()];
+            return (object)['status' => TypeStatus::error->value, 'message' => "Количество новых сгенерированных аудиозаписей больше, чем 1"];
+        } catch (Exception $e) {
+            return (object)['status' => TypeStatus::error->value, 'message' => $e->getMessage()];
         } finally {
             $this->closeDriver();
         }
     }
+
+
 
     /**
      * Инициализация WebDriver
@@ -88,6 +105,7 @@ class TextToSpeechService
 
     /**
      * Ожидание загрузки основных элементов страницы
+     * @throws NoSuchElementException|TimeoutException
      */
     private function waitForPageElements(): void
     {
@@ -114,6 +132,7 @@ class TextToSpeechService
             WebDriverBy::id('btn_syn')
         ));
     }
+
     /**
      * Ввод текста в поле
      */
@@ -131,13 +150,15 @@ class TextToSpeechService
     private function selectLanguage(string $lang): void
     {
         $this->openLanguageDropdown();
-        $this->validateLanguageExists($lang);
-        $this->selectLanguageOption($lang);
-        $this->waitForDropdownClose();
+        if ($this->validateLanguageExists($lang)) {
+            $this->selectLanguageOption($lang);
+            $this->waitForDropdownClose();
+        }
     }
 
     /**
      * Открытие выпадающего списка языков
+     * @throws NoSuchElementException|TimeoutException
      */
     private function openLanguageDropdown(): void
     {
@@ -153,13 +174,9 @@ class TextToSpeechService
     /**
      * Проверка существования языка
      */
-    private function validateLanguageExists(string $lang): void
+    private function validateLanguageExists(string $lang): bool
     {
-        try {
-            $this->driver->findElement(WebDriverBy::cssSelector(".option[data-code=\"$lang\"]"));
-        } catch (NoSuchElementException $e) {
-            throw new Exception("Язык '$lang' не найден в списке доступных языков");
-        }
+        return $this->driver->findElement(WebDriverBy::cssSelector(".option[data-code=\"$lang\"]")) !== null;
     }
 
     /**
@@ -187,6 +204,7 @@ class TextToSpeechService
 
     /**
      * Открытие выпадающего списка голосов
+     * @throws NoSuchElementException|TimeoutException
      */
     private function openVoiceDropdown(): void
     {
@@ -205,7 +223,7 @@ class TextToSpeechService
     private function validateVoiceExists(string $voiceId): void
     {
         $this->driver->findElement(
-            WebDriverBy::cssSelector(".option[data-type=\"voice\"][data-id=\"{$voiceId}\"]")
+            WebDriverBy::cssSelector(".option[data-type=\"voice\"][data-id=\"$voiceId\"]")
         );
     }
 
@@ -215,13 +233,14 @@ class TextToSpeechService
     private function selectVoiceOption(string $voiceId): void
     {
         $voiceOption = $this->driver->findElement(
-            WebDriverBy::cssSelector(".option[data-type=\"voice\"][data-id=\"{$voiceId}\"]")
+            WebDriverBy::cssSelector(".option[data-type=\"voice\"][data-id=\"$voiceId\"]")
         );
         $voiceOption->click();
     }
 
     /**
      * Ожидание закрытия выпадающего списка
+     * @throws NoSuchElementException|TimeoutException
      */
     private function waitForDropdownClose(): void
     {
@@ -251,8 +270,7 @@ class TextToSpeechService
             if ($statusMessage === 'Обработка: 100%') {
                 return true;
             }
-            if(str_starts_with($statusMessage, "Обработка:"))
-            {
+            if (str_starts_with($statusMessage, "Обработка:")) {
                 continue;
             }
             if ($statusMessage === 'Текст не соответствует выбранному языку' || $statusMessage === '') {
@@ -282,7 +300,7 @@ class TextToSpeechService
         return $downloadButton->getAttribute('href');
     }
 
-    private function getCountGeneratedAudio()
+    private function getCountGeneratedAudio(): int
     {
         try {
             $wait = new WebDriverWait($this->driver, 3);
@@ -293,11 +311,8 @@ class TextToSpeechService
             $waveContainer = $this->driver->findElement(WebDriverBy::id('wave_container'));
             $children = $waveContainer->findElements(WebDriverBy::xpath('./*'));
             $childrenCount = count($children);
-        } catch (\Facebook\WebDriver\Exception\TimeoutException $e) {
+        } catch (TimeoutException|NoSuchElementException|Exception) {
             // Элемент не найден в течение времени ожидания
-            $childrenCount = 0;
-        } catch (\Facebook\WebDriver\Exception\NoSuchElementException $e) {
-            // Элемент не найден
             $childrenCount = 0;
         }
         return $childrenCount;
@@ -305,6 +320,7 @@ class TextToSpeechService
 
     /**
      * Ожидание генерации аудио
+     * @throws NoSuchElementException|TimeoutException
      */
     private function waitForAudioGeneration(): void
     {
@@ -325,8 +341,6 @@ class TextToSpeechService
             WebDriverBy::cssSelector('#wave_container .wave_block:first-child .btn_download')
         ));
     }
-
-
 
     /**
      * Закрытие драйвера

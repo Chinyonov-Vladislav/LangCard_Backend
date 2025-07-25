@@ -9,6 +9,37 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $word
+ * @property string $translate
+ * @property string|null $image_url
+ * @property string|null $pronunciation_url
+ * @property int $deck_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Audiofile> $audiofilesForOriginalWord
+ * @property-read int|null $audiofiles_for_original_word_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Audiofile> $audiofilesForTargetWord
+ * @property-read int|null $audiofiles_for_target_word_count
+ * @property-read \App\Models\Deck $deck
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Example> $examples
+ * @property-read int|null $examples_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question> $questions
+ * @property-read int|null $questions_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereDeckId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card wherePronunciationUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereTranslate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereWord($value)
+ * @mixin \Eloquent
+ */
 class Card extends Model implements  ColumnLabelsableInterface
 {
     use HasTableColumns;

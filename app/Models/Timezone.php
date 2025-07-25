@@ -8,6 +8,24 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $offset_utc
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read int|null $users_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone whereOffsetUtc($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Timezone whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Timezone extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

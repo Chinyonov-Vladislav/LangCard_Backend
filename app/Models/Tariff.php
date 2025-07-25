@@ -8,6 +8,28 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property int $days
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Cost> $costs
+ * @property-read int|null $costs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Tariff> $promocodes
+ * @property-read int|null $promocodes_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tariff whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Tariff extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

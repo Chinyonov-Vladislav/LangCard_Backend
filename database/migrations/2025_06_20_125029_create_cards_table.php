@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('word');
             $table->string('translate');
             $table->string('image_url')->nullable()->default(null);
-            $table->string('pronunciation_url')->nullable()->default(null);
             $table->foreignId('deck_id')->references('id')->on('decks')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();

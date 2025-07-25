@@ -14,6 +14,7 @@ use App\Repositories\DeckTopicRepositories\DeckTopicRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
 use App\Services\PaginatorService;
+use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,12 @@ class DeckController extends Controller
         $this->deckTopicRepository = $deckTopicRepository;
     }
 
+
+    /**
+     * Получение колод
+     *
+     * Получение информации о колодах в системе
+     */
     #[QueryParameter('page', 'Номер страницы', type: 'int',default:10, example: 1)]
     #[QueryParameter('countOnPage', 'Количество элементов на странице', type: 'int',default:10, example: 10)]
     #[QueryParameter('originalLanguages', description: 'Оригинальные языки (через запятую)', type: 'string', infer: true, example: 'en_US,ru_RU,de_DE')]

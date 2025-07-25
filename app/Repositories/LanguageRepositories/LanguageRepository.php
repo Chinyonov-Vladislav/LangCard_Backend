@@ -23,7 +23,7 @@ class LanguageRepository implements LanguageRepositoryInterface
         return $this->model->where('locale','=', $languageLocale)->exists();
     }
 
-    public function saveLanguage(string $languageName,string $native_name, string $languageCode,string $locale, string $urlToImage): void
+    public function saveLanguage(string $languageName,string $native_name, string $languageCode,string $locale, string $urlToImage): Language
     {
         $newLanguage = new Language();
         $newLanguage->name = $languageName;
@@ -32,6 +32,7 @@ class LanguageRepository implements LanguageRepositoryInterface
         $newLanguage->locale = $locale;
         $newLanguage->flag_url = $urlToImage;
         $newLanguage->save();
+        return $newLanguage;
     }
 
     public function getAllIdLanguages()

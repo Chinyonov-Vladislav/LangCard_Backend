@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class ChromeDriverNotStartedException extends Exception
+class ErrorDefiningFile extends Exception
 {
     public function __construct(string $message)
     {

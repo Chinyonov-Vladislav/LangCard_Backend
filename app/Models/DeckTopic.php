@@ -7,6 +7,22 @@ use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $topic_id
+ * @property int $deck_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic whereDeckId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic whereTopicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeckTopic whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class DeckTopic extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

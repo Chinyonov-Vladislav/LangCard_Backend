@@ -30,6 +30,7 @@ class ApiService
 
     public function makeRequest(string $ipAddress,int $userId, TypeRequestApi $type): ?int
     {
+        $ipAddress = $this->ipAddressService->getIpAddress($ipAddress);
         $today = Carbon::today()->toDateString();
         $limit = $this->apiLimitRepository->findOrCreateByDate($today);
         if ($limit->request_count >= $this->maxRequestsPerDay) {
@@ -59,7 +60,7 @@ class ApiService
         $apiKey = config('services.ipgeolocation.key');
         $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
             'apiKey' => $apiKey,
-            'ip' => $this->ipAddressService->getIpAddress($ipAddress),
+            'ip' => $ipAddress,
             'fields'=>'currency'
         ]);
         $data = $response->json();
@@ -78,7 +79,7 @@ class ApiService
         $apiKey = config('services.ipgeolocation.key');
         $response = Http::get("https://api.ipgeolocation.io/v2/timezone", [
             'apiKey' => $apiKey,
-            'ip' => $this->ipAddressService->getIpAddress($ipAddress),
+            'ip' => $ipAddress,
         ]);
         $data = $response->json();
         $timezoneId = null;

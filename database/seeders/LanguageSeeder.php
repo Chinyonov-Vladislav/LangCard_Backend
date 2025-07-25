@@ -2,21 +2,26 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\Downloader;
+use App\Enums\TypeFolderForFiles;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
+use App\Services\FileServices\DownloadFileService;
+use App\Services\FileServices\SaveFileService;
+use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
 class LanguageSeeder extends Seeder
 {
-    protected Downloader $downloader;
     protected LanguageRepositoryInterface $languageRepository;
+    protected DownloadFileService $downloadFileService;
+    protected SaveFileService $saveFileService;
 
     public function __construct(LanguageRepositoryInterface $languageRepository)
     {
         $this->languageRepository = $languageRepository;
-        $this->downloader = new Downloader();
+        $this->downloadFileService = new DownloadFileService();
+        $this->saveFileService = new SaveFileService();
     }
 
     /**
@@ -25,21 +30,29 @@ class LanguageSeeder extends Seeder
     public function run(): void
     {
         $path = resource_path('json/languages.json');
-        if(File::exists($path)) {
-            // Получаем содержимое файла
-            try {
-                $json = File::get($path);
-                // Преобразуем JSON в массив объектов
-                $data = json_decode($json); // вернёт массив stdClass объектов
-                foreach ($data as $language) {
-                    if (!$this->languageRepository->isExistLanguageByLocale($language->name)) {
-                        $pathToImageOnServer = $this->downloader->downloadImage($language->flag_url, $language->code);
-                        $this->languageRepository->saveLanguage($language->name,$language->native_name, $language->code,$language->locale, $pathToImageOnServer === null ? $language->flag_url : $pathToImageOnServer);
+        // Получаем содержимое файла
+        try {
+            $json = File::get($path);
+            // Преобразуем JSON в массив объектов
+            $data = json_decode($json); // вернёт массив stdClass объектов
+            foreach ($data as $language) {
+                if (!$this->languageRepository->isExistLanguageByLocale($language->name)) {
+                    try {
+                        $imageFile = $this->downloadFileService->downloadFile($language->flag_url);
+                        if ($imageFile === null) {
+                            $pathToImageOnServer = null;
+                        } else {
+                            $pathToImageOnServer = $this->saveFileService->saveFile($imageFile);
+                        }
+                        $this->languageRepository->saveLanguage($language->name, $language->native_name, $language->code, $language->locale, $pathToImageOnServer === null ? $language->flag_url : $pathToImageOnServer);
+                    } catch (Exception $e) {
+                        logger("Произошла ошибка при скачивании флага для языка $language->name по ссылке $language->flag_url. Текст ошибки: {$e->getMessage()}");
                     }
+
                 }
-            } catch (FileNotFoundException $e) {
-                logger("Файл по пути $path отсутствует");
             }
+        } catch (FileNotFoundException) {
+            logger("Файл по пути $path отсутствует");
         }
     }
 }

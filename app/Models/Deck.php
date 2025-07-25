@@ -12,6 +12,45 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property int $original_language_id
+ * @property int $target_language_id
+ * @property int $user_id
+ * @property bool $is_premium
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Card> $cards
+ * @property-read int|null $cards_count
+ * @property-read \App\Models\Language $originalLanguage
+ * @property-read \App\Models\Language $targetLanguage
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Test> $tests
+ * @property-read int|null $tests_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Topic> $topics
+ * @property-read int|null $topics_count
+ * @property-read \App\Models\User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Deck> $visitors
+ * @property-read int|null $visitors_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck filter(\App\Http\Filters\QueryFilter $filter)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereIsPremium($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereOriginalLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereTargetLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deck withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Deck extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns, Filterable,SoftDeletes;

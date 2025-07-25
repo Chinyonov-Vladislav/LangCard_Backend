@@ -8,6 +8,34 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $native_name
+ * @property string $code
+ * @property string $flag_url
+ * @property string $locale
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Deck> $originalLanguageDecks
+ * @property-read int|null $original_language_decks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Deck> $targetLanguageDecks
+ * @property-read int|null $target_language_decks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Voice> $voices
+ * @property-read int|null $voices_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereFlagUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereLocale($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereNativeName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Language extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

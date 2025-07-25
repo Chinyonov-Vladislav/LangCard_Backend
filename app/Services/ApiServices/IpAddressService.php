@@ -6,7 +6,7 @@ class IpAddressService
 {
     public function getIpAddress(string $realIp): ?string
     {
-        if (app()->environment('local')) {
+        if (config('app.is_use_real_ip_address')) {
             $fakeIps = [
                 '193.238.153.17',
                 '102.22.45.67',

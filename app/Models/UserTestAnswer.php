@@ -8,6 +8,29 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $user_test_result_id
+ * @property int $question_id
+ * @property int|null $answer_id
+ * @property int $is_correct
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Question $question
+ * @property-read \App\Models\QuestionAnswer|null $questionAnswer
+ * @property-read \App\Models\UserTestResult $userTestResult
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereAnswerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereIsCorrect($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereQuestionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserTestAnswer whereUserTestResultId($value)
+ * @mixin \Eloquent
+ */
 class UserTestAnswer extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;

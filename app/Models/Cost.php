@@ -8,6 +8,30 @@ use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property string $cost
+ * @property int $currency_id
+ * @property int $tariff_id
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Currency $currency
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\HistoryPurchase> $historyPurchases
+ * @property-read int|null $history_purchases_count
+ * @property-read \App\Models\Tariff $tariff
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereCurrencyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereTariffId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Cost whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Cost extends Model implements  ColumnLabelsableInterface
 {
     use HasTableColumns;

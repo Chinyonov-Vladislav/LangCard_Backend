@@ -9,6 +9,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $text_answer
+ * @property int $question_id
+ * @property int $is_correct
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Question $question
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserTestAnswer> $userTestAnswers
+ * @property-read int|null $user_test_answers_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereIsCorrect($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereQuestionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereTextAnswer($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuestionAnswer whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class QuestionAnswer extends Model implements ColumnLabelsableInterface
 {
     use HasTableColumns;
