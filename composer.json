@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.10.1",
         "php-ffmpeg/php-ffmpeg": "^1.3",
         "php-webdriver/webdriver": "^1.15",
+        "socialiteproviders/yandex": "^4.1",
         "tigitz/php-spellchecker": "^0.8.0"
     },
     "require-dev": {

@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\QuestionAnswer;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepository;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepositoryInterface;
 use App\Repositories\AudiofileRepositories\AudiofileRepository;
@@ -63,9 +62,11 @@ use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\Generator\Types\StringType;
 use Dedoc\Scramble\Support\RouteInfo;
 use Dedoc\Scramble\Support\Generator\Schema;
-use Dedoc\Scramble\Support\Type\EnumCaseType;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Yandex\Provider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -112,6 +113,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(function (SocialiteWasCalled $event) {
+            $event->extendSocialite('yandex', Provider::class);
+        });
+
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(

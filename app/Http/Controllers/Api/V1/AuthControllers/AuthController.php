@@ -26,7 +26,10 @@ class AuthController extends Controller
     protected RegistrationRepositoryInterface $registrationRepository;
     protected UserRepositoryInterface $userRepository;
     protected ApiService $apiService;
-    private array $acceptedProviders = ['google'];
+    private array $acceptedProviders = ['google', 'yandex'];
+
+    private array $acceptedCallbackProviders = ['google', 'yandex'];
+
 
     public function __construct(LoginRepositoryInterface        $loginRepository,
                                 RegistrationRepositoryInterface $registrationRepository,
@@ -67,8 +70,38 @@ class AuthController extends Controller
     public function handleCallback($provider, Request $request)
     {
         try {
-            if (!in_array($provider, $this->acceptedProviders)) {
+            logger("СУКА");
+            if (!in_array($provider, $this->acceptedCallbackProviders)) {
                 return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 401);
+            }
+            // TODO: добавить авторизацию через yandex
+            if ($provider == 'yandex') {
+                logger('1');
+                $yandexUser = Socialite::driver($provider)->stateless()->user();
+                $providerId = $yandexUser->id;
+                $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
+                if ($userDB === null) {
+                    $nickname = explode('@', $yandexUser->email)[0];
+                    $avatarURL = $yandexUser->avatar;
+                    $pathToAvatar = null;
+                    if ($avatarURL !== null) {
+                        $avatar = $this->downloadFileService->downloadFile($avatarURL);
+                        $pathToAvatar = $this->saveFileService->saveFile($avatar);
+                    }
+                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    $timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
+                    $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
+                    $this->userRepository->updateTimezoneId($user, $timezoneId);
+                    $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);
+                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
+                        'user' => new AuthUserResource($user),
+                        'token' => $user->createToken('auth-token')->plainTextToken
+                    ]);
+                }
+                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
+                    'user' => new AuthUserResource($userDB),
+                    'token' => $userDB->createToken('auth-token')->plainTextToken
+                ]);
             }
             if ($provider == 'google') {
                 $googleUser = Socialite::driver($provider)->stateless()->user();
@@ -82,26 +115,25 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($avatarURL);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null,$providerId, $provider );
-                    $timezoneId = $this->apiService->makeRequest($request->ip(),$user->id, TypeRequestApi::timezoneRequest);
-                    $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(),$user->id, TypeRequestApi::currencyRequest);
+                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    $timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
+                    $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);
-                    return ApiResponse::success(__('api.success_authorization_with_oauth'),(object)[
+                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
                         'user' => new AuthUserResource($user),
                         'token' => $user->createToken('auth-token')->plainTextToken
                     ]);
                 }
-                return ApiResponse::success(__('api.success_authorization_with_oauth'),(object)[
+                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
                     'user' => new AuthUserResource($userDB),
                     'token' => $userDB->createToken('auth-token')->plainTextToken
                 ]);
             }
-            return ApiResponse::error(__('api.provider_oauth_not_supported', ['provider'=>$provider]), null, 401);
-        }
-        catch (Exception $exception) {
+            return ApiResponse::error(__('api.provider_oauth_not_supported', ['provider' => $provider]), null, 401);
+        } catch (Exception $exception) {
             logger($exception->getMessage());
-            return ApiResponse::error(__('api.common_mistake_authorization_with_oauth', ['provider'=>$provider]), null, 500);
+            return ApiResponse::error(__('api.common_mistake_authorization_with_oauth', ['provider' => $provider]), null, 500);
         }
 
     }
