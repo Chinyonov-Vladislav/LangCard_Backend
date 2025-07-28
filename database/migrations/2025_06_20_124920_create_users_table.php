@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable();
             $table->string('avatar_url')->nullable()->default(null);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
+            $table->string('provider_id')->nullable();
+            $table->enum('provider', ['google'])->nullable();
+            $table->unique(['provider_id', 'provider']);
             $table->enum('type_user', ['admin', 'user'])->default('user');
             $table->foreignId('currency_id')->nullable()->default(null)->references('id')->on('currencies')
                 ->onUpdate('cascade')->onDelete('cascade');
@@ -26,6 +29,8 @@ return new class extends Migration
             $table->dateTime('vip_status_time_end')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
+
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

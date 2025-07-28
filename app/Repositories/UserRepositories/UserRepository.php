@@ -91,4 +91,9 @@ class UserRepository implements UserRepositoryInterface
         return $this->model->where('id','=', $userId)
             ->select(['id', 'name', 'email', 'type_user', 'currency_id', 'timezone_id','vip_status_time_end'])->first();
     }
+
+    public function getInfoUserAccountByProviderAndProviderId(string $providerId, string $provider)
+    {
+        return $this->model->where('provider_id','=', $providerId)->where('provider','=', $provider)->first();
+    }
 }

@@ -30,6 +30,8 @@ class UserSeeder extends Seeder
                 'avatar_url' => null,
                 'password' => '78Aeq4883$',
                 'type_user' => 'user',
+                'provider_id'=>null,
+                'provider'=>null,
                 'currency_id' => 3,
                 'timezone_id' => null,
                 'vip_status_time_end' => null

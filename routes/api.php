@@ -25,10 +25,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(callback: function () {
     Route::middleware('setApiLocale')->group(callback: function () {
-        Route::prefix('decks')->group(function () {
-            Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
-            Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
-        });
         Route::middleware('guest:sanctum')->group(callback: function () {
             Route::post('registration', [RegistrationController::class, 'registration'])->name('registration');
             Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -53,6 +49,8 @@ Route::prefix('v1')->group(callback: function () {
                 Route::post('/end', [UserTestResultController::class, 'end'])->name('endTest');
             });
             Route::prefix('decks')->group(function () {
+                Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
+                Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
                 Route::post('/',[DeckController::class, 'createDeck'])->name('createDeck');
                 Route::delete('/{id}', [DeckController::class, 'deleteDeck'])->where('id', '[0-9]+')->name('deleteDeck');
             });

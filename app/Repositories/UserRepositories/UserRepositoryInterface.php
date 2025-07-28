@@ -13,6 +13,8 @@ interface UserRepositoryInterface
 
     public function getInfoUserAccountByEmail(string $email);
 
+    public function getInfoUserAccountByProviderAndProviderId(string $providerId, string $provider);
+
     public function getInfoUserById(int $userId);
 
     public function updateCurrencyId(User $user, ?int $currencyId);

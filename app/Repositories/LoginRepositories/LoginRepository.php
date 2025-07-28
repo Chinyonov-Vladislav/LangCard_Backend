@@ -16,4 +16,9 @@ class LoginRepository implements LoginRepositoryInterface
     {
         return $this->model->where('email', $email)->first();
     }
+
+    public function getUserByProviderAndProviderId($providerId, $provider): ?User
+    {
+        return $this->model->where('provider_id', $providerId)->where('provider', $provider)->first();
+    }
 }

@@ -14,13 +14,15 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     }
 
     public function registerUser(string $name,
-                                 string $email,
+                                 ?string $email,
                                  ?string $password,
                                  ?int $timezone_id,
                                  ?int $currency_id,
                                  ?string $avatar_url = null,
                                  string $type_user = 'user',
-                                 ?string $vip_status_time_end = null): void
+                                 ?string $vip_status_time_end = null,
+                                 ?string $providerId = null,
+                                 ?string $providerName = null): User
     {
         $user = new User();
         $user->name = $name;
@@ -31,7 +33,10 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         $user->avatar_url = $avatar_url;
         $user->type_user = $type_user;
         $user->vip_status_time_end = $vip_status_time_end;
+        $user->provider_id = $providerId;
+        $user->provider = $providerName;
         $user->save();
+        return $user;
     }
 
     public function isExistUserByEmail($email)

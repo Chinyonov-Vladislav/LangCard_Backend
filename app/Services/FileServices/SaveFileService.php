@@ -19,7 +19,7 @@ class SaveFileService
         if($dataForFile === null) {
             throw new ErrorDefiningFile("Не удалось распознать тип файла");
         }
-        $filename  = Str::uuid().$dataForFile['extension'];
+        $filename  = Str::uuid().'.'.$dataForFile['extension'];
         $pathWithFolder = $dataForFile['folder']."/$filename";
         Storage::disk('public')->put($pathWithFolder, $file);
         return "storage/$pathWithFolder";
