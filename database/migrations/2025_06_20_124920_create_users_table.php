@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('provider_id')->nullable();
-            $table->enum('provider', ['google', 'yandex'])->nullable();
+            $table->enum('provider', ['google', 'yandex', 'microsoft'])->nullable();
             $table->unique(['provider_id', 'provider']);
             $table->enum('type_user', ['admin', 'user'])->default('user');
             $table->foreignId('currency_id')->nullable()->default(null)->references('id')->on('currencies')

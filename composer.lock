@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "84634a6cca7dba09bec2b0f304ca54ba",
+    "content-hash": "e1fa77349a69e5d0caf6152b44900bd9",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -4727,6 +4727,57 @@
                 "source": "https://github.com/socialiteproviders/manager"
             },
             "time": "2025-02-24T19:33:30+00:00"
+        },
+        {
+            "name": "socialiteproviders/microsoft",
+            "version": "4.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SocialiteProviders/Microsoft.git",
+                "reference": "824ef97a4f6e3f363c21702b76676d54e8265573"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SocialiteProviders/Microsoft/zipball/824ef97a4f6e3f363c21702b76676d54e8265573",
+                "reference": "824ef97a4f6e3f363c21702b76676d54e8265573",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "firebase/php-jwt": "^6.8",
+                "php": "^8.0",
+                "socialiteproviders/manager": "^4.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SocialiteProviders\\Microsoft\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Brian Faust",
+                    "email": "hello@brianfaust.de"
+                }
+            ],
+            "description": "Microsoft OAuth2 Provider for Laravel Socialite",
+            "keywords": [
+                "laravel",
+                "microsoft",
+                "oauth",
+                "provider",
+                "socialite"
+            ],
+            "support": {
+                "docs": "https://socialiteproviders.com/microsoft",
+                "issues": "https://github.com/socialiteproviders/providers/issues",
+                "source": "https://github.com/socialiteproviders/providers"
+            },
+            "time": "2025-07-06T00:25:25+00:00"
         },
         {
             "name": "socialiteproviders/yandex",

@@ -13,6 +13,7 @@ use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\ApiServices\ApiService;
 use App\Services\FileServices\DownloadFileService;
 use App\Services\FileServices\SaveFileService;
+use App\Services\NicknameExtractorFromEmailService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,15 +21,16 @@ use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
+    protected NicknameExtractorFromEmailService $nicknameExtractorFromEmailService;
     protected DownloadFileService $downloadFileService;
     protected SaveFileService $saveFileService;
     protected LoginRepositoryInterface $loginRepository;
     protected RegistrationRepositoryInterface $registrationRepository;
     protected UserRepositoryInterface $userRepository;
     protected ApiService $apiService;
-    private array $acceptedProviders = ['google', 'yandex'];
+    private array $acceptedProviders = ['google', 'yandex', 'microsoft'];
 
-    private array $acceptedCallbackProviders = ['google', 'yandex'];
+    private array $acceptedCallbackProviders = ['google', 'yandex', 'microsoft'];
 
 
     public function __construct(LoginRepositoryInterface        $loginRepository,
@@ -41,6 +43,7 @@ class AuthController extends Controller
         $this->apiService = app(ApiService::class);
         $this->downloadFileService = new DownloadFileService();
         $this->saveFileService = new SaveFileService();
+        $this->nicknameExtractorFromEmailService = new NicknameExtractorFromEmailService();
     }
 
     public function login(AuthRequest $request)
@@ -70,29 +73,50 @@ class AuthController extends Controller
     public function handleCallback($provider, Request $request)
     {
         try {
-            logger("СУКА");
             if (!in_array($provider, $this->acceptedCallbackProviders)) {
                 return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 401);
             }
-            // TODO: добавить авторизацию через yandex
+            // TODO: добавить авторизацию через telegram
+            if($provider === 'microsoft') {
+                $microsoftUser = Socialite::driver($provider)->stateless()->user();
+                $providerId = $microsoftUser->id;
+                $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
+                if ($userDB === null) {
+                    if($microsoftUser->nickname !== null) {
+                        $nickname = $microsoftUser->nickname;
+                    }
+                    else
+                    {
+                        $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($microsoftUser->email);
+                    }
+                    $pathToAvatar = null;
+                    if ($microsoftUser->avatar !== null) {
+                        $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
+                        $pathToAvatar = $this->saveFileService->saveFile($avatar);
+                    }
+                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
+                        'user' => new AuthUserResource($user),
+                        'token' => $user->createToken('auth-token')->plainTextToken
+                    ]);
+                }
+            }
             if ($provider == 'yandex') {
-                logger('1');
                 $yandexUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $yandexUser->id;
                 $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
                 if ($userDB === null) {
-                    $nickname = explode('@', $yandexUser->email)[0];
-                    $avatarURL = $yandexUser->avatar;
+                    $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($yandexUser->email);
                     $pathToAvatar = null;
-                    if ($avatarURL !== null) {
-                        $avatar = $this->downloadFileService->downloadFile($avatarURL);
+                    if ($yandexUser->avatar !== null) {
+                        $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
                     $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
-                    $timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
+                    /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
-                    $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);
+                    $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
                     return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
                         'user' => new AuthUserResource($user),
                         'token' => $user->createToken('auth-token')->plainTextToken
@@ -108,7 +132,7 @@ class AuthController extends Controller
                 $providerId = $googleUser->getId();
                 $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
                 if ($userDB === null) {
-                    $nickname = explode('@', $googleUser->getEmail())[0];
+                    $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($googleUser->getEmail());
                     $avatarURL = $googleUser->getAvatar();
                     $pathToAvatar = null;
                     if ($avatarURL !== null) {
@@ -116,10 +140,10 @@ class AuthController extends Controller
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
                     $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
-                    $timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
+                    /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
-                    $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);
+                    $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
                     return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
                         'user' => new AuthUserResource($user),
                         'token' => $user->createToken('auth-token')->plainTextToken
