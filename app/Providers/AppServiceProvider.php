@@ -6,6 +6,8 @@ use App\Repositories\ApiLimitRepositories\ApiLimitRepository;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepositoryInterface;
 use App\Repositories\AudiofileRepositories\AudiofileRepository;
 use App\Repositories\AudiofileRepositories\AudiofileRepositoryInterface;
+use App\Repositories\AuthTokenRepositories\AuthTokenRepository;
+use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\CardRepositories\CardRepository;
 use App\Repositories\CardRepositories\CardRepositoryInterface;
 use App\Repositories\CostRepositories\CostRepository;
@@ -101,6 +103,7 @@ class AppServiceProvider extends ServiceProvider
             PromocodeRepositoryInterface::class => PromocodeRepository::class,
             VoiceRepositoryInterface::class => VoiceRepository::class,
             AudiofileRepositoryInterface::class => AudiofileRepository::class,
+            AuthTokenRepositoryInterface::class => AuthTokenRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);
@@ -120,7 +123,7 @@ class AppServiceProvider extends ServiceProvider
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(
-                    SecurityScheme::http('bearer')
+                    SecurityScheme::http('bearer', 'JWT')
                 );
             });
         Scramble::configure()

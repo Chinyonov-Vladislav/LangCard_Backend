@@ -12,7 +12,7 @@ class LoginRepository implements LoginRepositoryInterface
     {
         $this->model = $model;
     }
-    public function getUserByEmail($email)
+    public function getUserByEmail($email): ?User
     {
         return $this->model->where('email', $email)->first();
     }

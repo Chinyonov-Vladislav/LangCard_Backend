@@ -47,7 +47,11 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => (int)env("EXPIRATION_ACCESS_TOKEN_TIME", 60),
+
+    'expiration_refresh_token'=>(int)env('EXPIRATION_REFRESH_TOKEN_TIME', 60),
+
+    'jwt_secret'=>env('JWT_SECRET'),
 
     /*
     |--------------------------------------------------------------------------

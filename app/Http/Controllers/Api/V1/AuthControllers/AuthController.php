@@ -2,22 +2,25 @@
 
 namespace App\Http\Controllers\Api\V1\AuthControllers;
 
-use App\Enums\TypeRequestApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\AuthRequest;
-use App\Http\Resources\v1\AuthResources\AuthUserResource;
+use App\Http\Requests\Api\V1\AuthTokenRequests\RefreshTokenRequest;
 use App\Http\Responses\ApiResponse;
+use App\Models\User;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
+use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\ApiServices\ApiService;
 use App\Services\FileServices\DownloadFileService;
 use App\Services\FileServices\SaveFileService;
+use App\Services\GenerationAuthTokenService;
 use App\Services\NicknameExtractorFromEmailService;
+use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
+use function PHPUnit\Framework\objectEquals;
 
 class AuthController extends Controller
 {
@@ -27,7 +30,12 @@ class AuthController extends Controller
     protected LoginRepositoryInterface $loginRepository;
     protected RegistrationRepositoryInterface $registrationRepository;
     protected UserRepositoryInterface $userRepository;
+
+    protected AuthTokenRepositoryInterface $authTokenRepository;
     protected ApiService $apiService;
+
+    protected GenerationAuthTokenService $generationAuthTokenService;
+
     private array $acceptedProviders = ['google', 'yandex', 'microsoft'];
 
     private array $acceptedCallbackProviders = ['google', 'yandex', 'microsoft'];
@@ -35,14 +43,17 @@ class AuthController extends Controller
 
     public function __construct(LoginRepositoryInterface        $loginRepository,
                                 RegistrationRepositoryInterface $registrationRepository,
-                                UserRepositoryInterface         $userRepository)
+                                UserRepositoryInterface         $userRepository,
+                                AuthTokenRepositoryInterface    $authTokenRepository)
     {
         $this->loginRepository = $loginRepository;
         $this->registrationRepository = $registrationRepository;
         $this->userRepository = $userRepository;
+        $this->authTokenRepository = $authTokenRepository;
         $this->apiService = app(ApiService::class);
         $this->downloadFileService = new DownloadFileService();
         $this->saveFileService = new SaveFileService();
+        $this->generationAuthTokenService = new GenerationAuthTokenService();
         $this->nicknameExtractorFromEmailService = new NicknameExtractorFromEmailService();
     }
 
@@ -52,10 +63,8 @@ class AuthController extends Controller
         if ($user->password === null || !Hash::check($request->password, $user->password)) {
             return ApiResponse::error(__('api.user_not_found_by_email'), null, 401);
         }
-        return ApiResponse::success(__('api.success_authorization_email'), (object)[
-            'user' => new AuthUserResource($user),
-            'token' => $user->createToken('auth-token')->plainTextToken
-        ]);
+        $arrayTokens = $this->generateTokens($user);
+        return ApiResponse::success(__('api.success_authorization_email'), (object)$arrayTokens);
     }
 
     public function redirect($provider)
@@ -70,7 +79,7 @@ class AuthController extends Controller
         return ApiResponse::success(__('api.getting_oauth_url', ['provider' => $provider]), (object)['url' => $url]);
     }
 
-    public function handleCallback($provider, Request $request)
+    public function handleCallback($provider)
     {
         try {
             if (!in_array($provider, $this->acceptedCallbackProviders)) {
@@ -80,8 +89,8 @@ class AuthController extends Controller
             if($provider === 'microsoft') {
                 $microsoftUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $microsoftUser->id;
-                $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($userDB === null) {
+                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
+                if ($user === null) {
                     if($microsoftUser->nickname !== null) {
                         $nickname = $microsoftUser->nickname;
                     }
@@ -95,17 +104,16 @@ class AuthController extends Controller
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
                     $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
-                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
-                        'user' => new AuthUserResource($user),
-                        'token' => $user->createToken('auth-token')->plainTextToken
-                    ]);
                 }
+                $arrayTokens = $this->generateTokens($user);
+                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
-            if ($provider == 'yandex') {
+            if ($provider == 'yandex')
+            {
                 $yandexUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $yandexUser->id;
-                $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($userDB === null) {
+                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
+                if ($user === null) {
                     $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($yandexUser->email);
                     $pathToAvatar = null;
                     if ($yandexUser->avatar !== null) {
@@ -117,21 +125,16 @@ class AuthController extends Controller
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
-                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
-                        'user' => new AuthUserResource($user),
-                        'token' => $user->createToken('auth-token')->plainTextToken
-                    ]);
                 }
-                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
-                    'user' => new AuthUserResource($userDB),
-                    'token' => $userDB->createToken('auth-token')->plainTextToken
-                ]);
+                $arrayTokens = $this->generateTokens($user);
+                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
-            if ($provider == 'google') {
+            if ($provider == 'google')
+            {
                 $googleUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $googleUser->getId();
-                $userDB = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($userDB === null) {
+                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
+                if ($user === null) {
                     $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($googleUser->getEmail());
                     $avatarURL = $googleUser->getAvatar();
                     $pathToAvatar = null;
@@ -144,15 +147,10 @@ class AuthController extends Controller
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
-                    return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
-                        'user' => new AuthUserResource($user),
-                        'token' => $user->createToken('auth-token')->plainTextToken
-                    ]);
+
                 }
-                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)[
-                    'user' => new AuthUserResource($userDB),
-                    'token' => $userDB->createToken('auth-token')->plainTextToken
-                ]);
+                $arrayTokens = $this->generateTokens($user);
+                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
             return ApiResponse::error(__('api.provider_oauth_not_supported', ['provider' => $provider]), null, 401);
         } catch (Exception $exception) {
@@ -162,9 +160,34 @@ class AuthController extends Controller
 
     }
 
-    public function logout(Request $request)
+    public function refresh(RefreshTokenRequest $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return ApiResponse::success(__('success_logout'));
+        $hashedToken = $this->generationAuthTokenService->hashToken($request->refresh_token);
+        $tokenInfo = $this->authTokenRepository->getRefreshToken($hashedToken);
+        if($tokenInfo === null || Carbon::parse($tokenInfo->expires_at)->isPast()) {
+            return ApiResponse::error('Невалидный refresh токен', null, 401);
+        }
+        if (!($tokenInfo->personalAccessToken->tokenable instanceof User)) {
+            return ApiResponse::error('Недопустимый тип владельца токена', null, 403);
+        }
+        $user = $tokenInfo->personalAccessToken->tokenable;
+        $this->authTokenRepository->deleteAccessTokenById($tokenInfo->personalAccessToken->id);
+        $arrayTokens = $this->generateTokens($user);
+        return ApiResponse::success(__('Access и Refresh токены успешно обновлены'), (object)$arrayTokens);
+    }
+
+    public function logout()
+    {
+        auth()->user()->currentAccessToken()->delete();
+        return ApiResponse::error(__('api.success_logout'));
+    }
+
+    private function generateTokens(User $user): array
+    {
+        $token = $user->createToken('api-token');
+        $dataRefreshToken = $this->generationAuthTokenService->generateRefreshToken();
+        $expirationDate = Carbon::now()->addMinutes(config('sanctum.expiration_refresh_token'));
+        $this->authTokenRepository->saveRefreshToken($dataRefreshToken['hashedToken'], $expirationDate, $token->accessToken->id);
+        return ['access_token' => $token->plainTextToken, 'refresh_token' => $dataRefreshToken['token']];
     }
 }
