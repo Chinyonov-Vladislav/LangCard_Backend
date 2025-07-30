@@ -18,6 +18,8 @@ use App\Repositories\DeckRepositories\DeckRepository;
 use App\Repositories\DeckRepositories\DeckRepositoryInterface;
 use App\Repositories\DeckTopicRepositories\DeckTopicRepository;
 use App\Repositories\DeckTopicRepositories\DeckTopicRepositoryInterface;
+use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepository;
+use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepositoryInterface;
 use App\Repositories\ExampleRepositories\ExampleRepository;
 use App\Repositories\ExampleRepositories\ExampleRepositoryInterface;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepository;
@@ -104,6 +106,7 @@ class AppServiceProvider extends ServiceProvider
             VoiceRepositoryInterface::class => VoiceRepository::class,
             AudiofileRepositoryInterface::class => AudiofileRepository::class,
             AuthTokenRepositoryInterface::class => AuthTokenRepository::class,
+            EmailVerificationCodeRepositoryInterface::class => EmailVerificationCodeRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

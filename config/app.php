@@ -93,6 +93,7 @@ return [
     'zero_page' => env('ZERO_PAGE', 0),
 
     'is_use_real_ip_address'=>env('IS_USE_REAL_IP_ADDRESS',false),
+    'expiration_verification_email_code'=>env('EXPIRATION_VERIFICATION_EMAIL_CODE',10),
 
     /*
     |--------------------------------------------------------------------------

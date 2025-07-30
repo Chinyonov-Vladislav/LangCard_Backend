@@ -64,7 +64,8 @@ class AuthController extends Controller
             return ApiResponse::error(__('api.user_not_found_by_email'), null, 401);
         }
         $arrayTokens = $this->generateTokens($user);
-        return ApiResponse::success(__('api.success_authorization_email'), (object)$arrayTokens);
+        return ApiResponse::success(__('api.success_authorization_email'), (object)['access_token' => $arrayTokens['access_token'],
+            'refresh_token'=>$arrayTokens['refresh_token'], 'email_is_verified'=>$user->email_verified_at !== null]);
     }
 
     public function redirect($provider)

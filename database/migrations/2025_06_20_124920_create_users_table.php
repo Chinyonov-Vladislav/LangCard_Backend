@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('avatar_url')->nullable()->default(null);
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('email_verification_code', 6)->nullable()->default(null);
+            $table->dateTime('email_verification_code_expiration_date')->nullable()->default(null);
+            $table->timestamp('email_verified_at')->nullable()->default(null);
             $table->string('password')->nullable();
             $table->string('provider_id')->nullable();
             $table->enum('provider', ['google', 'yandex', 'microsoft'])->nullable();
