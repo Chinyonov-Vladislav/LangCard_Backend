@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepositoryInterface;
+use Random\RandomException;
 
 class GenerationCodeVerificationEmail
 {
@@ -11,7 +12,11 @@ class GenerationCodeVerificationEmail
     {
         $this->emailVerificationCodeRepository = $emailVerificationCodeRepository;
     }
-    public function generateCode()
+
+    /**
+     * @throws RandomException
+     */
+    public function generateCode(): string
     {
         do{
             $code = (string)random_int(100000, 999999);

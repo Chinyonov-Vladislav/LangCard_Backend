@@ -38,12 +38,11 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('update', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
         });
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
-
-
         Route::middleware('auth:sanctum')->group(callback: function () {
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
-            Route::post('verificateEmailAddress', [EmailVerificationController::class, 'verificateEmailAddress'])->name('verificateEmailAddress');
+            Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
             Route::middleware('verifiedEmail')->group(callback: function () {
                 Route::get('timezones', [TimezoneController::class, 'getTimezones'])->name('getTimezones');
                 Route::get('columns/{nameTable}', [ColumnsController::class, 'getColumns'])->name('getColumns');
@@ -102,7 +101,6 @@ Route::prefix('v1')->group(callback: function () {
                 Route::post('/upload', [UploadController::class, 'uploadFile'])->name('uploadFile');
                 Route::post('checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
             });
-
         });
     });
 });

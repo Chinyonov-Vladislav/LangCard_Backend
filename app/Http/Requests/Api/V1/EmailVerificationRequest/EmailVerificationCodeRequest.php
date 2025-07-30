@@ -18,12 +18,12 @@ class EmailVerificationCodeRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'code'=>['required', 'string', 'size:6']
+            'code' => ['required', 'string', 'digits:6']
         ];
     }
 
@@ -31,8 +31,8 @@ class EmailVerificationCodeRequest extends FormRequest
     {
         return [
             'code.required' => 'Поле "Код" обязательно для заполнения.',
-            'code.string'   => 'Поле "Код" должно быть строкой.',
-            'code.size'     => 'Поле "Код" должно содержать ровно 6 символов.'
+            'code.string' => 'Поле "Код" должно быть строкой.',
+            'code.digits' => 'Поле "Код" должно содержать ровно 6 цифр.'
         ];
     }
 }
