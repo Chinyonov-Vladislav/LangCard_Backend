@@ -40,6 +40,10 @@ class InviteController extends Controller
         {
             return ApiResponse::error('Вы не можете указать свой собственный код в качестве пригласительного',null, 409);
         }
+        if($currentAuthUserId < $userWithInviteCode->id)
+        {
+            return ApiResponse::error('Невозможно указать пользователя, который был зарегистрирован позже вас, в качестве пригласившего',null, 409);
+        }
         $this->userRepository->setInviter($currentAuthUserId, $userWithInviteCode->id);
         $inviter = $this->userRepository->getInfoUserById($userWithInviteCode->id);
         $ancestorsOfUser = $this->userRepository->getAncestorsInviterOfUser($currentAuthUserId);
