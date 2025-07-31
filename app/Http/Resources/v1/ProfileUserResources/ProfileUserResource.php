@@ -36,6 +36,13 @@ class ProfileUserResource extends JsonResource
                     'name' => $this->timezone->name,
                     'offset_utc' => $this->timezone->offset_utc,
                 ];
+            }, null),
+            'inviter'=>$this->when($this->relationLoaded('inviter') && $this->inviter !== null,function (){
+                return [
+                    'id'=>$this->inviter->id,
+                    'name'=>$this->inviter->name,
+                    'avatar'=>$this->inviter->avatar_url
+                ];
             }, null)
         ];
     }

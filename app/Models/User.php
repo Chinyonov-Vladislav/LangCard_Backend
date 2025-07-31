@@ -20,6 +20,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\PersonalAccessToken;
+use Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
 
 /**
  * @property int $id
@@ -73,7 +74,7 @@ class User extends Authenticatable implements ColumnLabelsableInterface
     protected $table = 'users';
 
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasTableColumns;
+    use HasApiTokens, HasFactory, Notifiable, HasTableColumns, HasRecursiveRelationships;
 
     /**
      * The attributes that are mass assignable.
@@ -126,6 +127,29 @@ class User extends Authenticatable implements ColumnLabelsableInterface
     {
         return $this->belongsTo(Timezone::class, 'timezone_id');
     }
+
+
+    /**
+     * Пользователь, который пригласил этого пользователя.
+     */
+    public function inviter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'inviter_id');
+    }
+
+    /**
+     * Пользователи, которых пригласил этот пользователь.
+     */
+    public function invitedUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'inviter_id');
+    }
+
+    public function getParentKeyName(): string
+    {
+        return 'inviter_id';
+    }
+
 
     /**
      * Get the attributes that should be cast.

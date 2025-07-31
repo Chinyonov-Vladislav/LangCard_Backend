@@ -29,5 +29,11 @@ interface UserRepositoryInterface
 
     public function updateEndDateOfVipStatusByIdUser(int $idUser, string $endDate): bool;
 
+    public function setInviter(int $userId, int $inviter_id);
+
     public function hasUserActivePremiumStatusByIdUser(int $idUser): bool;
+
+    public function hasUserInviteCode(int $userId): bool;
+
+    public function getAncestorsInviterOfUser($userId);
 }

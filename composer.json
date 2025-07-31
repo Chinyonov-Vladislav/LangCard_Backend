@@ -20,6 +20,7 @@
         "socialiteproviders/microsoft": "^4.7",
         "socialiteproviders/vkontakte": "^5.0",
         "socialiteproviders/yandex": "^4.1",
+        "staudenmeir/laravel-adjacency-list": "1.24",
         "tigitz/php-spellchecker": "^0.8.0"
     },
     "require-dev": {

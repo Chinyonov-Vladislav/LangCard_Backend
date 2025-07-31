@@ -24,6 +24,8 @@ use App\Repositories\ExampleRepositories\ExampleRepository;
 use App\Repositories\ExampleRepositories\ExampleRepositoryInterface;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepository;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepositoryInterface;
+use App\Repositories\InviteCodeRepositories\InviteCodeRepository;
+use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepository;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\LoginRepositories\LoginRepository;
@@ -107,6 +109,7 @@ class AppServiceProvider extends ServiceProvider
             AudiofileRepositoryInterface::class => AudiofileRepository::class,
             AuthTokenRepositoryInterface::class => AuthTokenRepository::class,
             EmailVerificationCodeRepositoryInterface::class => EmailVerificationCodeRepository::class,
+            InviteCodeRepositoryInterface::class => InviteCodeRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\AuthRequest;
 use App\Http\Requests\Api\V1\AuthTokenRequests\RefreshTokenRequest;
 use App\Http\Responses\ApiResponse;
+use App\Mail\InviteCodeMail;
 use App\Models\User;
+use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepository;
+use App\Repositories\InviteCodeRepositories\InviteCodeRepository;
+use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
 use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
@@ -15,26 +19,34 @@ use App\Services\ApiServices\ApiService;
 use App\Services\FileServices\DownloadFileService;
 use App\Services\FileServices\SaveFileService;
 use App\Services\GenerationAuthTokenService;
+use App\Services\GenerationInviteCodeService;
 use App\Services\NicknameExtractorFromEmailService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use function PHPUnit\Framework\objectEquals;
 
 class AuthController extends Controller
 {
+
     protected NicknameExtractorFromEmailService $nicknameExtractorFromEmailService;
     protected DownloadFileService $downloadFileService;
     protected SaveFileService $saveFileService;
     protected LoginRepositoryInterface $loginRepository;
     protected RegistrationRepositoryInterface $registrationRepository;
     protected UserRepositoryInterface $userRepository;
+    protected EmailVerificationCodeRepository $emailVerificationCodeRepository;
 
     protected AuthTokenRepositoryInterface $authTokenRepository;
+
+    protected InviteCodeRepositoryInterface $inviteCodeRepository;
     protected ApiService $apiService;
 
     protected GenerationAuthTokenService $generationAuthTokenService;
+
+    protected GenerationInviteCodeService $generationInviteCodeService;
 
     private array $acceptedProviders = ['google', 'yandex', 'microsoft'];
 
@@ -44,17 +56,22 @@ class AuthController extends Controller
     public function __construct(LoginRepositoryInterface        $loginRepository,
                                 RegistrationRepositoryInterface $registrationRepository,
                                 UserRepositoryInterface         $userRepository,
-                                AuthTokenRepositoryInterface    $authTokenRepository)
+                                AuthTokenRepositoryInterface    $authTokenRepository,
+                                EmailVerificationCodeRepository $emailVerificationCodeRepository,
+                                InviteCodeRepositoryInterface   $inviteCodeRepository)
     {
         $this->loginRepository = $loginRepository;
         $this->registrationRepository = $registrationRepository;
         $this->userRepository = $userRepository;
         $this->authTokenRepository = $authTokenRepository;
+        $this->emailVerificationCodeRepository = $emailVerificationCodeRepository;
+        $this->inviteCodeRepository = $inviteCodeRepository;
         $this->apiService = app(ApiService::class);
         $this->downloadFileService = new DownloadFileService();
         $this->saveFileService = new SaveFileService();
         $this->generationAuthTokenService = new GenerationAuthTokenService();
         $this->nicknameExtractorFromEmailService = new NicknameExtractorFromEmailService();
+        $this->generationInviteCodeService = new GenerationInviteCodeService();
     }
 
     public function login(AuthRequest $request)
@@ -65,7 +82,7 @@ class AuthController extends Controller
         }
         $arrayTokens = $this->generateTokens($user);
         return ApiResponse::success(__('api.success_authorization_email'), (object)['access_token' => $arrayTokens['access_token'],
-            'refresh_token'=>$arrayTokens['refresh_token'], 'email_is_verified'=>$user->email_verified_at !== null]);
+            'refresh_token' => $arrayTokens['refresh_token'], 'email_is_verified' => $user->email_verified_at !== null]);
     }
 
     public function redirect($provider)
@@ -87,16 +104,14 @@ class AuthController extends Controller
                 return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 401);
             }
             // TODO: добавить авторизацию через telegram
-            if($provider === 'microsoft') {
+            if ($provider === 'microsoft') {
                 $microsoftUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $microsoftUser->id;
                 $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
                 if ($user === null) {
-                    if($microsoftUser->nickname !== null) {
+                    if ($microsoftUser->nickname !== null) {
                         $nickname = $microsoftUser->nickname;
-                    }
-                    else
-                    {
+                    } else {
                         $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($microsoftUser->email);
                     }
                     $pathToAvatar = null;
@@ -106,11 +121,8 @@ class AuthController extends Controller
                     }
                     $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
                 }
-                $arrayTokens = $this->generateTokens($user);
-                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
-            if ($provider == 'yandex')
-            {
+            else if ($provider == 'yandex') {
                 $yandexUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $yandexUser->id;
                 $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
@@ -127,10 +139,8 @@ class AuthController extends Controller
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
                 }
-                $arrayTokens = $this->generateTokens($user);
-                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
-            if ($provider == 'google')
+            else // авторизация через гугл
             {
                 $googleUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $googleUser->getId();
@@ -150,10 +160,17 @@ class AuthController extends Controller
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
 
                 }
-                $arrayTokens = $this->generateTokens($user);
-                return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
             }
-            return ApiResponse::error(__('api.provider_oauth_not_supported', ['provider' => $provider]), null, 401);
+            if ($user->email_verified_at === null) {
+                $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
+            }
+            if (!$this->userRepository->hasUserInviteCode(auth()->user()->id)) {
+                $code = $this->generationInviteCodeService->generateInviteCode();
+                $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
+                Mail::to(auth()->user()->email)->send(new InviteCodeMail(auth()->user()->email, $code));
+            }
+            $arrayTokens = $this->generateTokens($user);
+            return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
         } catch (Exception $exception) {
             logger($exception->getMessage());
             return ApiResponse::error(__('api.common_mistake_authorization_with_oauth', ['provider' => $provider]), null, 500);
@@ -165,7 +182,7 @@ class AuthController extends Controller
     {
         $hashedToken = $this->generationAuthTokenService->hashToken($request->refresh_token);
         $tokenInfo = $this->authTokenRepository->getRefreshToken($hashedToken);
-        if($tokenInfo === null || Carbon::parse($tokenInfo->expires_at)->isPast()) {
+        if ($tokenInfo === null || Carbon::parse($tokenInfo->expires_at)->isPast()) {
             return ApiResponse::error('Невалидный refresh токен', null, 401);
         }
         if (!($tokenInfo->personalAccessToken->tokenable instanceof User)) {

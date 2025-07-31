@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\EmailVerificationRequest\EmailVerificationCodeRequest;
 use App\Http\Responses\ApiResponse;
 use App\Mail\EmailVerificationCode;
+use App\Mail\InviteCodeMail;
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepositoryInterface;
+use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
+use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\GenerationCodeVerificationEmail;
+use App\Services\GenerationInviteCodeService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Random\RandomException;
@@ -15,12 +19,25 @@ use Random\RandomException;
 class EmailVerificationController extends Controller
 {
     protected EmailVerificationCodeRepositoryInterface $emailVerificationCodeRepository;
+    protected InviteCodeRepositoryInterface $inviteCodeRepository;
+
+    protected UserRepositoryInterface $userRepository;
+
     protected GenerationCodeVerificationEmail $generationCodeEmail;
 
-    public function __construct(EmailVerificationCodeRepositoryInterface $emailVerificationCodeRepository)
+    protected GenerationInviteCodeService $generationInviteCodeService;
+
+
+
+    public function __construct(EmailVerificationCodeRepositoryInterface $emailVerificationCodeRepository,
+                                InviteCodeRepositoryInterface $inviteCodeRepository,
+                                UserRepositoryInterface $userRepository)
     {
         $this->emailVerificationCodeRepository = $emailVerificationCodeRepository;
+        $this->inviteCodeRepository = $inviteCodeRepository;
+        $this->userRepository = $userRepository;
         $this->generationCodeEmail = new GenerationCodeVerificationEmail($this->emailVerificationCodeRepository);
+        $this->generationInviteCodeService = new GenerationInviteCodeService();
     }
 
     public function sendVerificationCodeEmail()
@@ -68,6 +85,12 @@ class EmailVerificationController extends Controller
             return ApiResponse::error('Предоставленный код не соответствует коду из электронного сообщения', null, 422);
         }
         $this->emailVerificationCodeRepository->verificateEmailAddress($authUserId);
+        if(!$this->userRepository->hasUserInviteCode(auth()->user()->id))
+        {
+            $code = $this->generationInviteCodeService->generateInviteCode();
+            $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
+            Mail::to(auth()->user()->email)->send(new InviteCodeMail(auth()->user()->email, $code));
+        }
         return ApiResponse::success('Электронный адрес авторизованного пользователя был успешно подтвержден');
     }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\Api\V1\FilterDataController;
 use App\Http\Controllers\Api\V1\HistoryAttemptsTestController;
 use App\Http\Controllers\Api\V1\HistoryPurchaseController;
+use App\Http\Controllers\Api\V1\InviteController;
 use App\Http\Controllers\Api\V1\LanguageController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PromocodeController;
@@ -42,7 +43,7 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
             Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-
+            Route::post('setInviter',[InviteController::class, 'setInviter'])->name('setInviter');
             Route::middleware('verifiedEmail')->group(callback: function () {
                 Route::get('timezones', [TimezoneController::class, 'getTimezones'])->name('getTimezones');
                 Route::get('columns/{nameTable}', [ColumnsController::class, 'getColumns'])->name('getColumns');

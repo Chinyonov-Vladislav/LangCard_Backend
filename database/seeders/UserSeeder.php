@@ -35,7 +35,19 @@ class UserSeeder extends Seeder
                 'currency_id' => 3,
                 'timezone_id' => null,
                 'vip_status_time_end' => null
-            ]
+            ],
+            [
+                'name' => 'vlad_zolotarev_59',
+                'email' => 'zolotarev.vladik59@gmail.com',
+                'avatar_url' => null,
+                'password' => 'Qwerty12asdf!',
+                'type_user' => 'user',
+                'provider_id'=>null,
+                'provider'=>null,
+                'currency_id' => 3,
+                'timezone_id' => null,
+                'vip_status_time_end' => null
+            ],
         ];
         foreach ($data as $user) {
             if($this->registrationRepository->isExistUserByEmail($user['email'])) {

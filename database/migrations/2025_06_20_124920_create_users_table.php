@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique()->nullable();
+            $table->string('password')->nullable();
             $table->string('avatar_url')->nullable()->default(null);
             $table->string('email_verification_code', 6)->nullable()->default(null);
             $table->dateTime('email_verification_code_expiration_date')->nullable()->default(null);
             $table->timestamp('email_verified_at')->nullable()->default(null);
-            $table->string('password')->nullable();
+            $table->string('invite_code', 16)->nullable()->default(null);
             $table->string('provider_id')->nullable();
             $table->enum('provider', ['google', 'yandex', 'microsoft'])->nullable();
             $table->unique(['provider_id', 'provider']);
@@ -28,11 +29,11 @@ return new class extends Migration
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('timezone_id')->nullable()->default(null)->references('id')->on('timezones')
                 ->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('inviter_id')->nullable()->default(null)->references('id')->on('users')
+                ->onUpdate('cascade')->onDelete('cascade');
             $table->dateTime('vip_status_time_end')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
-
-
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
