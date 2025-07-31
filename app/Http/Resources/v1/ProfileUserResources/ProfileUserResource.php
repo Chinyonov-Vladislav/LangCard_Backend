@@ -21,6 +21,7 @@ class ProfileUserResource extends JsonResource
             'vip_status_time_end' => $this->vip_status_time_end
                 ? $this->vip_status_time_end->format('Y-m-d H:i:s')
                 : null,
+            'invite_code'=> $this->isAuthUser ? $this->invite_code : null,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'currency' => $this->when($this->relationLoaded('currency') && $this->currency !== null, function () {
                 return [

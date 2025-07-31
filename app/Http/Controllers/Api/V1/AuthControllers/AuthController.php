@@ -167,7 +167,6 @@ class AuthController extends Controller
             if (!$this->userRepository->hasUserInviteCode(auth()->user()->id)) {
                 $code = $this->generationInviteCodeService->generateInviteCode();
                 $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
-                Mail::to(auth()->user()->email)->send(new InviteCodeMail(auth()->user()->email, $code));
             }
             $arrayTokens = $this->generateTokens($user);
             return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);

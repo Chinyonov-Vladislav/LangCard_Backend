@@ -19,10 +19,13 @@ class ProfileController extends Controller
 
     public function getProfile(?int $id = null)
     {
+        $isAuthUser = false;
         if($id === null){
             $id = Auth::id();
+            $isAuthUser = true;
         }
         $dataUser = $this->userRepository->getInfoUserById($id);
+        $dataUser->isAuthUser = $isAuthUser;
         if($dataUser === null){
             return ApiResponse::error("Пользователь с id = $id не найден", null, 404);
         }
