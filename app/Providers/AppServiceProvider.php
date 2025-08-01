@@ -14,6 +14,8 @@ use App\Repositories\CostRepositories\CostRepository;
 use App\Repositories\CostRepositories\CostRepositoryInterface;
 use App\Repositories\CurrencyRepositories\CurrencyRepository;
 use App\Repositories\CurrencyRepositories\CurrencyRepositoryInterface;
+use App\Repositories\DailyRewardRepositories\DailyRewardRepository;
+use App\Repositories\DailyRewardRepositories\DailyRewardRepositoryInterface;
 use App\Repositories\DeckRepositories\DeckRepository;
 use App\Repositories\DeckRepositories\DeckRepositoryInterface;
 use App\Repositories\DeckTopicRepositories\DeckTopicRepository;
@@ -110,6 +112,7 @@ class AppServiceProvider extends ServiceProvider
             AuthTokenRepositoryInterface::class => AuthTokenRepository::class,
             EmailVerificationCodeRepositoryInterface::class => EmailVerificationCodeRepository::class,
             InviteCodeRepositoryInterface::class => InviteCodeRepository::class,
+            DailyRewardRepositoryInterface::class => DailyRewardRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

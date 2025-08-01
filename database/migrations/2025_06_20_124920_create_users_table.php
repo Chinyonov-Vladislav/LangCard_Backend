@@ -32,6 +32,9 @@ return new class extends Migration
             $table->foreignId('inviter_id')->nullable()->default(null)->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->dateTime('vip_status_time_end')->nullable()->default(null);
+            $table->integer('point_count')->default(0);
+            $table->date('last_date_daily_reward')->nullable()->default(null);
+            $table->integer('daily_reward_streak')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
         });

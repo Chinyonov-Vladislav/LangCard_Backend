@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuthControllers\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\AuthControllers\RegistrationController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\ColumnsController;
+use App\Http\Controllers\Api\V1\DailyRewardController;
 use App\Http\Controllers\Api\V1\DeckController;
 use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\Api\V1\FilterDataController;
@@ -50,6 +51,10 @@ Route::prefix('v1')->group(callback: function () {
                 Route::get('filtersData/{nameTable}', [FilterDataController::class, 'getFilterData'])->name('getFilterData');
                 Route::prefix('profile')->group(function () {
                     Route::get('/{id?}', [ProfileController::class, 'getProfile'])->name('getProfile');
+                });
+                Route::prefix('dailyRewards')->group(function () {
+                    Route::get('', [DailyRewardController::class, 'getDailyRewardsForAuthUser'])->name('getDailyRewardsForAuthUser');
+                    Route::post('', [DailyRewardController::class, 'takeDailyReward'])->name('takeDailyReward');
                 });
                 Route::prefix('tests')->group(function () {
                     Route::post('/start', [UserTestResultController::class, 'start'])->name('startTest');

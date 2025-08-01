@@ -161,7 +161,8 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'vip_status_time_end' => 'datetime'
+            'vip_status_time_end' => 'datetime',
+            'last_date_daily_reward'=>'date'
         ];
     }
 

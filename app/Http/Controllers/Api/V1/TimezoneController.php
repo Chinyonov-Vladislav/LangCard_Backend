@@ -17,6 +17,6 @@ class TimezoneController extends Controller
     {
         $fields = explode(',', $request->get('fields'));
         $data = $this->timezoneRepository->getAllTimezones($fields);
-        return ApiResponse::success(__('api.timezone_data'),(object)['timezones'=>$data]);
+        return ApiResponse::success(__('api.timezone_data'),(object)['items'=>$data]);
     }
 }

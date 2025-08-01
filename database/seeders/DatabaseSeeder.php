@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             ApiLimitSeeder::class,
             PromocodeSeeder::class,
             VoiceSeeder::class,
+            DailyRewardSeeder::class,
             ];
         foreach ($seeders as $seeder) {
             $this->call($seeder);
