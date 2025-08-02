@@ -44,11 +44,11 @@ class PasswordResetMail extends Mailable
         return new Content(
             view: 'emails.emailResetPasswordLink',
             with: [
-                'title'=>__('emails.emailResetPasswordLink.title'),
-                'password_reset_request'=>__('emails.emailResetPasswordLink.password_reset_request'),
-                'click_link_to_reset_password'=>__('emails.emailResetPasswordLink.click_link_to_reset_password'),
-                'reset_password'=>__('emails.emailResetPasswordLink.reset_password'),
-                'link_expiration_notice'=>__('emails.emailResetPasswordLink.link_expiration_notice'),
+                'title'=>__('emails/emailResetPasswordLink.title'),
+                'password_reset_request'=>__('emails/emailResetPasswordLink.password_reset_request'),
+                'click_link_to_reset_password'=>__('emails/emailResetPasswordLink.click_link_to_reset_password'),
+                'reset_password'=>__('emails/emailResetPasswordLink.reset_password'),
+                'link_expiration_notice'=>__('emails/emailResetPasswordLink.link_expiration_notice'),
                 'url'=> $url,
             ],
         );
