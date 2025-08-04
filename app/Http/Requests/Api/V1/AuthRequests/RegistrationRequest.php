@@ -33,7 +33,7 @@ class RegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('validation.required'),
+            'name.required' => __('validation.name_required'),
             'name.string' => __('validation.name_string'),
             'name.max' => __('validation.name_max'),
             'email.required' => __('validation.email_required'),

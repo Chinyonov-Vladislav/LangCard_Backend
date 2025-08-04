@@ -38,12 +38,12 @@ class AuthTokenRepository implements AuthTokenRepositoryInterface
         return $this->refreshTokenModel->where('token', '=', $hashedToken)->exists();
     }
 
-    public function deleteRefreshTokenForUser(int $userId): void
+    public function deleteRefreshTokenForUserByIdAccessToken(int $accessTokenId): void
     {
-        $this->refreshTokenModel->where('user_id', '=', $userId)->delete();
+        $this->refreshTokenModel->where('personal_access_token_id', '=', $accessTokenId)->delete();
     }
 
-    public function deleteAccessTokenById(int $tokenId)
+    public function deleteAccessTokenById(int $tokenId): void
     {
         $this->personalAccessTokenModel->where('id','=',$tokenId)->delete();
     }

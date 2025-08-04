@@ -13,22 +13,8 @@ class TestController extends Controller
     {
 
     }
-    /**
-     * Тестовый роут.
-     *
-     * Endpoint для тестирования различного функционала.
-     */
-    public function testTextToSpeech()
+    public function test()
     {
-        $textToSpeechService = new TextToSpeechService();
-        $text = 'Hello';
-        $lang = 'en';
-        $voiceId = 'ytvJwPBbkqFc';
-        $info = $textToSpeechService->getUrlForGeneratedAudio($text, $lang, $voiceId);
-        if($info->status === TypeStatus::success->value)
-        {
-            return ApiResponse::success('Успех', (object)['url' => $info->url_download]);
-        }
-        return ApiResponse::error($info->message);
+        return ApiResponse::success('Успешный успех');
     }
 }

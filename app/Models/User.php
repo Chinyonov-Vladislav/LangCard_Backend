@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
@@ -128,6 +129,10 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->belongsTo(Timezone::class, 'timezone_id');
     }
 
+    public function twoFactorAuthorizationToken(): HasOne|Builder
+    {
+        return $this->hasOne(TwoFactorAuthorizationToken::class, 'user_id');
+    }
 
     /**
      * Пользователь, который пригласил этого пользователя.

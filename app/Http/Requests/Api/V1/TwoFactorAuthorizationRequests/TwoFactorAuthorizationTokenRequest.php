@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\AuthTokenRequests;
+namespace App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RefreshTokenRequest extends FormRequest
+class TwoFactorAuthorizationTokenRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,15 +22,14 @@ class RefreshTokenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'refresh_token'=>['required', 'string'],
+            'token' => ['required', 'string'],
         ];
     }
-
     public function messages(): array
     {
         return [
-            'refresh_token.required' => 'Refresh token is required.',
-            'refresh_token.string' => 'Refresh token must be a string.',
+            'token.required' => 'Token is required',
+            'token.string' => 'Token must be string',
         ];
     }
 }

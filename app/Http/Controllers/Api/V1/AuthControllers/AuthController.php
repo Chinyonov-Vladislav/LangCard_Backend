@@ -4,29 +4,28 @@ namespace App\Http\Controllers\Api\V1\AuthControllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\AuthRequest;
-use App\Http\Requests\Api\V1\AuthTokenRequests\RefreshTokenRequest;
 use App\Http\Responses\ApiResponse;
-use App\Mail\InviteCodeMail;
 use App\Models\User;
+use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepository;
-use App\Repositories\InviteCodeRepositories\InviteCodeRepository;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
-use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
+use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\ApiServices\ApiService;
+use App\Services\CookieService;
 use App\Services\FileServices\DownloadFileService;
 use App\Services\FileServices\SaveFileService;
-use App\Services\GenerationAuthTokenService;
-use App\Services\GenerationInviteCodeService;
+use App\Services\GenerationCodeServices\GenerationAuthTokenService;
+use App\Services\GenerationCodeServices\GenerationInviteCodeService;
+use App\Services\GenerationCodeServices\GenerationTwoFactorAuthorizationToken;
 use App\Services\NicknameExtractorFromEmailService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
-use function PHPUnit\Framework\objectEquals;
 
 class AuthController extends Controller
 {
@@ -40,6 +39,7 @@ class AuthController extends Controller
     protected EmailVerificationCodeRepository $emailVerificationCodeRepository;
 
     protected AuthTokenRepositoryInterface $authTokenRepository;
+    protected TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository;
 
     protected InviteCodeRepositoryInterface $inviteCodeRepository;
     protected ApiService $apiService;
@@ -47,6 +47,10 @@ class AuthController extends Controller
     protected GenerationAuthTokenService $generationAuthTokenService;
 
     protected GenerationInviteCodeService $generationInviteCodeService;
+
+    protected GenerationTwoFactorAuthorizationToken $generationTwoFactorAuthorizationToken;
+
+    protected CookieService $cookieService;
 
     private array $acceptedProviders = ['google', 'yandex', 'microsoft'];
 
@@ -58,7 +62,8 @@ class AuthController extends Controller
                                 UserRepositoryInterface         $userRepository,
                                 AuthTokenRepositoryInterface    $authTokenRepository,
                                 EmailVerificationCodeRepository $emailVerificationCodeRepository,
-                                InviteCodeRepositoryInterface   $inviteCodeRepository)
+                                InviteCodeRepositoryInterface   $inviteCodeRepository,
+                                TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository)
     {
         $this->loginRepository = $loginRepository;
         $this->registrationRepository = $registrationRepository;
@@ -66,23 +71,37 @@ class AuthController extends Controller
         $this->authTokenRepository = $authTokenRepository;
         $this->emailVerificationCodeRepository = $emailVerificationCodeRepository;
         $this->inviteCodeRepository = $inviteCodeRepository;
+        $this->twoFactorAuthorizationRepository = $twoFactorAuthorizationRepository;
         $this->apiService = app(ApiService::class);
         $this->downloadFileService = new DownloadFileService();
         $this->saveFileService = new SaveFileService();
         $this->generationAuthTokenService = new GenerationAuthTokenService();
         $this->nicknameExtractorFromEmailService = new NicknameExtractorFromEmailService();
         $this->generationInviteCodeService = new GenerationInviteCodeService();
+        $this->cookieService = new CookieService();
+        $this->generationTwoFactorAuthorizationToken = new GenerationTwoFactorAuthorizationToken();
     }
 
     public function login(AuthRequest $request)
     {
         $user = $this->loginRepository->getUserByEmail($request->email);
-        if ($user->password === null || !Hash::check($request->password, $user->password)) {
-            return ApiResponse::error(__('api.user_not_found_by_email'), null, 401);
+        if ($user->email === null || $user->password === null || !Hash::check($request->password, $user->password)) {
+            return ApiResponse::error(__('api.user_not_found_by_email'), null, 404);
         }
-        $arrayTokens = $this->generateTokens($user);
+        if($user->two_factor_email_enabled)
+        {
+            $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
+            $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
+            return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled, 'two_factor_token'=>$tokenData['token']]);
+        }
+        $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
+        $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
+        $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
+
+        //$cookieForRefreshToken = $this->cookieService->getCookieForRefreshTokenWithPartitioned($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
         return ApiResponse::success(__('api.success_authorization_email'), (object)['access_token' => $arrayTokens['access_token'],
-            'refresh_token' => $arrayTokens['refresh_token'], 'email_is_verified' => $user->email_verified_at !== null]);
+            'email_is_verified' => $user->email_verified_at !== null])->withCookie($cookieForRefreshToken);
+        //$response->headers->set('Set-Cookie', $cookieForRefreshToken, false);
     }
 
     public function redirect($provider)
@@ -168,8 +187,10 @@ class AuthController extends Controller
                 $code = $this->generationInviteCodeService->generateInviteCode();
                 $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
             }
-            $arrayTokens = $this->generateTokens($user);
-            return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)$arrayTokens);
+            $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
+            $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
+            $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
+            return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
         } catch (Exception $exception) {
             logger($exception->getMessage());
             return ApiResponse::error(__('api.common_mistake_authorization_with_oauth', ['provider' => $provider]), null, 500);
@@ -177,9 +198,14 @@ class AuthController extends Controller
 
     }
 
-    public function refresh(RefreshTokenRequest $request)
+    public function refresh(Request $request)
     {
-        $hashedToken = $this->generationAuthTokenService->hashToken($request->refresh_token);
+        $refreshToken = $request->cookie('refresh_token');
+        if($refreshToken === null)
+        {
+            return ApiResponse::error('Невалидный refresh токен', null, 401);
+        }
+        $hashedToken = $this->generationAuthTokenService->hashToken($refreshToken);
         $tokenInfo = $this->authTokenRepository->getRefreshToken($hashedToken);
         if ($tokenInfo === null || Carbon::parse($tokenInfo->expires_at)->isPast()) {
             return ApiResponse::error('Невалидный refresh токен', null, 401);
@@ -189,22 +215,17 @@ class AuthController extends Controller
         }
         $user = $tokenInfo->personalAccessToken->tokenable;
         $this->authTokenRepository->deleteAccessTokenById($tokenInfo->personalAccessToken->id);
-        $arrayTokens = $this->generateTokens($user);
-        return ApiResponse::success(__('Access и Refresh токены успешно обновлены'), (object)$arrayTokens);
+        $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
+        $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
+        $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
+        return ApiResponse::success('Access и Refresh токены успешно обновлены', (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
     }
 
     public function logout()
     {
+        $accessTokenId = auth()->user()->currentAccessToken()->id;
         auth()->user()->currentAccessToken()->delete();
-        return ApiResponse::error(__('api.success_logout'));
-    }
-
-    private function generateTokens(User $user): array
-    {
-        $token = $user->createToken('api-token');
-        $dataRefreshToken = $this->generationAuthTokenService->generateRefreshToken();
-        $expirationDate = Carbon::now()->addMinutes(config('sanctum.expiration_refresh_token'));
-        $this->authTokenRepository->saveRefreshToken($dataRefreshToken['hashedToken'], $expirationDate, $token->accessToken->id);
-        return ['access_token' => $token->plainTextToken, 'refresh_token' => $dataRefreshToken['token']];
+        $this->authTokenRepository->deleteRefreshTokenForUserByIdAccessToken($accessTokenId);
+        return ApiResponse::success(__('api.success_logout'))->withoutCookie('refresh_token');
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\GenerationCodeServices;
 
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepositoryInterface;
 use Random\RandomException;

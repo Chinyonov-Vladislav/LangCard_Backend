@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\PromocodeController;
 use App\Http\Controllers\Api\V1\SpellingController;
 use App\Http\Controllers\Api\V1\StatsController;
 use App\Http\Controllers\Api\V1\TariffController;
+use App\Http\Controllers\Api\V1\TwoFactorAuthorizationController;
 use App\Http\Controllers\Api\V1\UploadController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
 use App\Http\Controllers\Api\V1\TimezoneController;
@@ -28,7 +29,7 @@ use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(callback: function () {
-    Route::middleware('setApiLocale')->group(callback: function () {
+    Route::middleware(['setApiLocale'])->group(callback: function () {
         Route::post('registration', [RegistrationController::class, 'registration'])->name('registration');
         Route::post('login', [AuthController::class, 'login'])->name('login');
         Route::prefix('auth')->group(function () {
@@ -40,7 +41,13 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('update', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
         });
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
+        Route::prefix('twoFactorVerification')->group(function () {
+            Route::post('', [TwoFactorAuthorizationController::class, 'enableDisableTwoFactorAuthorization'])->name('enableDisableTwoFactorAuthorization')->middleware('auth:sanctum');
+            Route::post('sendEmailWithCode', [TwoFactorAuthorizationController::class, 'sendEmailWithCode'])->name('sendEmailWithCode');
+            Route::post('confirmCode', [TwoFactorAuthorizationController::class, 'confirmCode'])->name('confirmCode');
+        });
         Route::middleware('auth:sanctum')->group(callback: function () {
+            Route::get('test', [TestController::class, 'test'])->name('test');
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
             Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');

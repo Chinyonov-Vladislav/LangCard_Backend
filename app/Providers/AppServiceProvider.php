@@ -52,6 +52,8 @@ use App\Repositories\TimezoneRepositories\TimezoneRepository;
 use App\Repositories\TimezoneRepositories\TimezoneRepositoryInterface;
 use App\Repositories\TopicRepositories\TopicRepository;
 use App\Repositories\TopicRepositories\TopicRepositoryInterface;
+use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepository;
+use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepository;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestAnswerRepositories\UserTestAnswerRepository;
@@ -113,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
             EmailVerificationCodeRepositoryInterface::class => EmailVerificationCodeRepository::class,
             InviteCodeRepositoryInterface::class => InviteCodeRepository::class,
             DailyRewardRepositoryInterface::class => DailyRewardRepository::class,
+            TwoFactorAuthorizationRepositoryInterface::class=>TwoFactorAuthorizationRepository::class
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

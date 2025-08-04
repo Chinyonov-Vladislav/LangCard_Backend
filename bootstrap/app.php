@@ -5,10 +5,10 @@ use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\SetApiLocale;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'verifiedEmail' => EnsureEmailIsVerified::class,
         ]);
         $middleware->trustProxies(at: '*');
+        $middleware->appendToGroup('api', HandleCors::class);
+        //$middleware->append(HandleCors::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

@@ -1,28 +1,27 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\GenerationCodeServices;
 
-use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
-use Carbon\Carbon;
+use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use Str;
 
-class GenerationAuthTokenService
+class GenerationTwoFactorAuthorizationToken
 {
-    protected AuthTokenRepositoryInterface $refreshTokenRepository;
+    protected TwoFactorAuthorizationRepositoryInterface $repository;
 
     public function __construct()
     {
-        $this->refreshTokenRepository = app(AuthTokenRepositoryInterface::class);
+        $this->repository = app(TwoFactorAuthorizationRepositoryInterface::class);
     }
 
-    public function generateRefreshToken(): array
+    public function generateTwoFactorAuthorizationToken(): array
     {
         do
         {
             $plainTextToken = Str::random(64); // исходный токен
             $hashedToken = $this->hashToken($plainTextToken);
         }
-        while($this->refreshTokenRepository->isExistRefreshToken($hashedToken));
+        while($this->repository->isExistTwoFactorToken($hashedToken));
         return ['token'=>$plainTextToken, 'hashedToken'=>$hashedToken];
     }
 

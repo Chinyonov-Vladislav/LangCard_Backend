@@ -10,7 +10,7 @@ use App\Http\Responses\ApiResponse;
 use App\Repositories\PromocodeRepositories\PromocodeRepositoryInterface;
 use App\Repositories\TariffRepositories\TariffRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
-use App\Services\PromocodeGeneratorService;
+use App\Services\GenerationCodeServices\PromocodeGeneratorService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;

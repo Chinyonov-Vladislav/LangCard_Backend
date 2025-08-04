@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Repositories\PromocodeRepositories\PromocodeRepositoryInterface;
 use App\Repositories\TariffRepositories\TariffRepositoryInterface;
-use App\Services\PromocodeGeneratorService;
+use App\Services\GenerationCodeServices\PromocodeGeneratorService;
 use Exception;
 use Illuminate\Database\Seeder;
 
