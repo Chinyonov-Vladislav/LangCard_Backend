@@ -38,7 +38,7 @@ Route::prefix('v1')->group(callback: function () {
         });
         Route::prefix('password')->group(function () {
             Route::post('sendResetLink', [ForgotPasswordController::class, 'sendResetLink'])->name('sendResetLink');
-            Route::post('update', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
+            Route::post('reset', [ForgotPasswordController::class, 'resetPassword'])->name('resetPassword');
         });
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::prefix('twoFactorVerification')->group(function () {
@@ -51,6 +51,7 @@ Route::prefix('v1')->group(callback: function () {
         });
         Route::middleware('auth:sanctum')->group(callback: function () {
             Route::get('test', [TestController::class, 'test'])->name('test');
+            Route::post('updatePassword', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
             Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\AuthControllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\AuthRequests\SendResetLinkRequest;
+use App\Http\Requests\Api\V1\UpdatePasswordRequests\UpdatePasswordRequest;
 use App\Http\Responses\ApiResponse;
 use App\Mail\PasswordResetMail;
 use App\Repositories\ForgotPasswordRepositories\ForgotPasswordRepositoryInterface;
@@ -36,10 +37,9 @@ class ForgotPasswordController extends Controller
         Mail::to($request->email)->queue(new PasswordResetMail($request->email, $token));
         return ApiResponse::success(__('api.password_reset_link_sent'));
     }
-    public function updatePassword(ResetPasswordRequest $request): JsonResponse
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
         $dataResetPasswordToken = $this->forgotPasswordRepository->getInfoAboutTokenResetPassword($request->email);
-
         if (!$dataResetPasswordToken || !Hash::check($request->token, $dataResetPasswordToken->token)) {
             return ApiResponse::error(__('api.invalid_password_reset_token'));
         }
@@ -48,6 +48,17 @@ class ForgotPasswordController extends Controller
         }
         $this->forgotPasswordRepository->updatePassword($request->email, $request->password);
         $this->forgotPasswordRepository->deleteTokenByEmail($request->email);
+        return ApiResponse::success(__('api.user_password_changed_successfully'));
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $authUser = auth()->user();
+        if($authUser->email === null)
+        {
+            return ApiResponse::error('Текущий авторизованный пользователь не зарегистрирован с использованием email - адреса и пароля, поэтому не обладает возможностью сменить пароль!',null, 403);
+        }
+        $this->forgotPasswordRepository->updatePassword($authUser->email, $request->password);
         return ApiResponse::success(__('api.user_password_changed_successfully'));
     }
 }
