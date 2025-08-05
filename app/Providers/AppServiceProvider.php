@@ -40,6 +40,8 @@ use App\Repositories\QuestionAnswerRepository\QuestionAnswerRepository;
 use App\Repositories\QuestionAnswerRepository\QuestionAnswerRepositoryInterface;
 use App\Repositories\QuestionRepositories\QuestionRepository;
 use App\Repositories\QuestionRepositories\QuestionRepositoryInterface;
+use App\Repositories\RecoveryCodeRepositories\RecoveryCodeRepository;
+use App\Repositories\RecoveryCodeRepositories\RecoveryCodeRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepository;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
 use App\Repositories\StatsRepositories\StatsRepository;
@@ -115,7 +117,8 @@ class AppServiceProvider extends ServiceProvider
             EmailVerificationCodeRepositoryInterface::class => EmailVerificationCodeRepository::class,
             InviteCodeRepositoryInterface::class => InviteCodeRepository::class,
             DailyRewardRepositoryInterface::class => DailyRewardRepository::class,
-            TwoFactorAuthorizationRepositoryInterface::class=>TwoFactorAuthorizationRepository::class
+            TwoFactorAuthorizationRepositoryInterface::class=>TwoFactorAuthorizationRepository::class,
+            RecoveryCodeRepositoryInterface::class => RecoveryCodeRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

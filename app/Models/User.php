@@ -134,6 +134,11 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->hasOne(TwoFactorAuthorizationToken::class, 'user_id');
     }
 
+    public function recoveryCodes(): HasMany
+    {
+        return $this->hasMany(RecoveryCode::class, 'user_id');
+    }
+
     /**
      * Пользователь, который пригласил этого пользователя.
      */
@@ -167,7 +172,9 @@ class User extends Authenticatable implements ColumnLabelsableInterface
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'vip_status_time_end' => 'datetime',
-            'last_date_daily_reward'=>'date'
+            'last_date_daily_reward'=>'date',
+            'two_factor_email_enabled'=>'boolean',
+            'google2fa_enable'=>'boolean'
         ];
     }
 

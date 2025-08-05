@@ -88,11 +88,12 @@ class AuthController extends Controller
         if ($user->email === null || $user->password === null || !Hash::check($request->password, $user->password)) {
             return ApiResponse::error(__('api.user_not_found_by_email'), null, 404);
         }
-        if($user->two_factor_email_enabled)
+        if($user->two_factor_email_enabled || $user->google2fa_enable)
         {
             $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
             $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
-            return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled, 'two_factor_token'=>$tokenData['token']]);
+            return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled,
+                'two_factor_google_authenticator_enabled'=>$user->google2fa_enable, 'two_factor_token'=>$tokenData['token']]);
         }
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
         $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);

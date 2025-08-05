@@ -33,7 +33,7 @@ class ForgotPasswordController extends Controller
         }
         $token = Str::uuid();
         $this->forgotPasswordRepository->updateOrCreateTokenByEmail($request->email, $token);
-        Mail::to($request->email)->send(new PasswordResetMail($request->email, $token));
+        Mail::to($request->email)->queue(new PasswordResetMail($request->email, $token));
         return ApiResponse::success(__('api.password_reset_link_sent'));
     }
     public function updatePassword(ResetPasswordRequest $request): JsonResponse

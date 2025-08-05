@@ -53,7 +53,7 @@ class EmailVerificationController extends Controller
             $countMinutes = (int)config('app.expiration_verification_email_code');
             $datetimeExpiration = Carbon::now()->addMinutes($countMinutes);
             $this->emailVerificationCodeRepository->saveVerificationCode($code, $datetimeExpiration, auth()->user()->id);
-            Mail::to(auth()->user()->email)->send(new EmailVerificationCode(auth()->user()->email, $code, $countMinutes));
+            Mail::to(auth()->user()->email)->queue(new EmailVerificationCode(auth()->user()->email, $code, $countMinutes));
             return ApiResponse::success('Сообщение с кодом для подтверждения email - адреса было отправлено на электронный адрес, указанный при регистрации');
         }
         catch (RandomException $exception)
@@ -89,7 +89,7 @@ class EmailVerificationController extends Controller
         {
             $code = $this->generationInviteCodeService->generateInviteCode();
             $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
-            Mail::to(auth()->user()->email)->send(new InviteCodeMail(auth()->user()->email, $code));
+            Mail::to(auth()->user()->email)->queue(new InviteCodeMail(auth()->user()->email, $code));
         }
         return ApiResponse::success('Электронный адрес авторизованного пользователя был успешно подтвержден');
     }

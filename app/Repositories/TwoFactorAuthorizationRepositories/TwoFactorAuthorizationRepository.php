@@ -59,4 +59,24 @@ class TwoFactorAuthorizationRepository implements TwoFactorAuthorizationReposito
     {
         $this->twoFactorAuthorizationTokenModel->where('token', '=', $hashedToken)->delete();
     }
+
+    public function switchTwoFactorGoogleAuthenticator(int $userId)
+    {
+        $user = User::find($userId);
+        $user->google2fa_enable = !$user->google2fa_enable;
+        $user->google2fa_secret = null;
+        $user->save();
+        return $user;
+    }
+
+    public function setSecretKeyForTwoFactorAuthenticationGoogle(int $userId, string $secretKey)
+    {
+        $user = User::find($userId);
+        if($user->google2fa_enable)
+        {
+            $user->google2fa_secret = $secretKey;
+        }
+        $user->save();
+        return $user;
+    }
 }

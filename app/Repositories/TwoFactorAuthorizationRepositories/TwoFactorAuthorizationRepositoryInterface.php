@@ -17,5 +17,9 @@ interface TwoFactorAuthorizationRepositoryInterface
 
     public function switchTwoFactorAuthenticationEmail(int $userId);
 
+    public function switchTwoFactorGoogleAuthenticator(int $userId);
+
+    public function setSecretKeyForTwoFactorAuthenticationGoogle(int $userId, string $secretKey);
+
     public function updateDataTwoFactorAuthenticationEmail(int $userId,string $code, Carbon $expirationDate );
 }

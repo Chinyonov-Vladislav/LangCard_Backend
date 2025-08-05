@@ -44,7 +44,8 @@ Route::prefix('v1')->group(callback: function () {
         Route::prefix('twoFactorVerification')->group(function () {
             Route::post('', [TwoFactorAuthorizationController::class, 'enableDisableTwoFactorAuthorization'])->name('enableDisableTwoFactorAuthorization')->middleware('auth:sanctum');
             Route::post('sendEmailWithCode', [TwoFactorAuthorizationController::class, 'sendEmailWithCode'])->name('sendEmailWithCode');
-            Route::post('confirmCode', [TwoFactorAuthorizationController::class, 'confirmCode'])->name('confirmCode');
+            Route::post('confirmEmailCode', [TwoFactorAuthorizationController::class, 'confirmCode'])->name('confirmCode');
+            Route::post('verifyCodeGoogle2fa', [TwoFactorAuthorizationController::class, 'verifyCodeGoogle2fa'])->name('verifyCodeGoogle2fa');
         });
         Route::middleware('auth:sanctum')->group(callback: function () {
             Route::get('test', [TestController::class, 'test'])->name('test');

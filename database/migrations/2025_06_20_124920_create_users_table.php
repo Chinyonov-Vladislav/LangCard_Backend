@@ -38,6 +38,9 @@ return new class extends Migration
             $table->boolean('two_factor_email_enabled')->default(false);
             $table->string('two_factor_code_email', 6)->nullable()->default(null);
             $table->dateTime('two_factor_code_email_expiration_date')->nullable()->default(null);
+            $table->boolean('google2fa_enable')->default(false);
+            $table->string('google2fa_secret')->nullable()->default(null);
+
             $table->rememberToken();
             $table->timestamps();
         });
