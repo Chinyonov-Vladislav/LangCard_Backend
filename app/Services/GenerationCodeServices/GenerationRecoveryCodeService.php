@@ -30,14 +30,14 @@ class GenerationRecoveryCodeService
         do
         {
             $recoveryCode = Str::random(self::LENGTH_RECOVERY_CODE);
-            $hashedRecoveryCode = $this->hashToken($recoveryCode);
+            $hashedRecoveryCode = $this->hashRecoveryCode($recoveryCode);
         }
         while($this->recoveryCodeRepository->getRecoveryCodeForUser($this->userId, $hashedRecoveryCode) !== null);
         return ['recoveryCode'=>$recoveryCode, 'hashedRecoveryCode'=>$hashedRecoveryCode];
     }
 
-    public function hashToken(string $hashedRecoveryCode): string
+    public function hashRecoveryCode(string $recoveryCode): string
     {
-        return hash_hmac('sha256', $hashedRecoveryCode, config('sanctum.jwt_secret')); // хешируем токен
+        return hash_hmac('sha256', $recoveryCode, config('sanctum.jwt_secret')); // хешируем токен
     }
 }

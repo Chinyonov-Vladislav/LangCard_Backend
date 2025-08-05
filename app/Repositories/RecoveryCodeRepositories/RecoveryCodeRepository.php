@@ -34,4 +34,9 @@ class RecoveryCodeRepository implements RecoveryCodeRepositoryInterface
     {
         return $this->model->where('user_id', '=', $userId)->where('code', '=', $hashedRecoveryCode)->first();
     }
+
+    public function getCountActiveRecoveryCodeForUser(int $userId): int
+    {
+        return $this->model->where('user_id', '=', $userId)->count();
+    }
 }

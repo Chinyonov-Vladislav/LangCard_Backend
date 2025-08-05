@@ -46,6 +46,8 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('sendEmailWithCode', [TwoFactorAuthorizationController::class, 'sendEmailWithCode'])->name('sendEmailWithCode');
             Route::post('confirmEmailCode', [TwoFactorAuthorizationController::class, 'confirmCode'])->name('confirmCode');
             Route::post('verifyCodeGoogle2fa', [TwoFactorAuthorizationController::class, 'verifyCodeGoogle2fa'])->name('verifyCodeGoogle2fa');
+            Route::post('useRecoveryCode', [TwoFactorAuthorizationController::class, 'useRecoveryCode'])->name('useRecoveryCode');
+            Route::post('refreshRecoveryCodes', [TwoFactorAuthorizationController::class, 'refreshRecoveryCodes'])->name('refreshRecoveryCodes')->middleware('auth:sanctum');
         });
         Route::middleware('auth:sanctum')->group(callback: function () {
             Route::get('test', [TestController::class, 'test'])->name('test');

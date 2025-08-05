@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\CodeGoogleAuthentica
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\ConfirmationCodeEmailTwoFactorAuthorizationRequest;
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\EnableDisableATwoFactorAuthorizationRequest;
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\TwoFactorAuthorizationTokenRequest;
+use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\UseRecoveryCodeRequest;
 use App\Http\Responses\ApiResponse;
 use App\Mail\EmailTwoFactorAuthorizationMail;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
@@ -189,6 +190,55 @@ class TwoFactorAuthorizationController extends Controller
         $this->twoFactorAuthorizationRepository->deleteToken($hashedToken);
         return ApiResponse::success('Пользователь успешно прошёл двухфакторную авторизацию',
             (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
+    }
+
+    public function useRecoveryCode(UseRecoveryCodeRequest $request)
+    {
+        $hashedToken = $this->generationTwoFactorAuthorizationToken->hashToken($request->token);
+        $tokenInfo = $this->twoFactorAuthorizationRepository->getTokenWithUser($hashedToken);
+        if($tokenInfo === null)
+        {
+            return ApiResponse::error('Отсутствует запись о токене двухфакторной авторизации', null, 404);
+        }
+        $user = $tokenInfo->user;
+        if($user->google2fa_enable === false && $user->two_factor_email_enabled === false)
+        {
+            return ApiResponse::error('Для данного пользователя отключена двухфакторная авторизация', null, 409);
+        }
+        $countRecoveryCode = $this->recoveryCodeRepository->getCountActiveRecoveryCodeForUser($user->id);
+        if($countRecoveryCode === 0)
+        {
+            return ApiResponse::error('Для текущего пользователя не осталось активных кодов восстановления',null, 403);
+        }
+        $hashedRecoveryCode = $this->generationRecoveryCodeService->hashRecoveryCode($request->recovery_code);
+        $recoveryCode = $this->recoveryCodeRepository->getRecoveryCodeForUser($user->id, $hashedRecoveryCode);
+        if($recoveryCode === null)
+        {
+            return ApiResponse::error('Не найден данный резервный код для пользователя',null, 404);
+        }
+        $this->recoveryCodeRepository->deleteRecoveryCode($user->id, $hashedRecoveryCode);
+        $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
+        $arrayTokens = $this->generationAuthTokenService->generateTokens($tokenInfo->user, $countMinutesExpirationRefreshToken);
+        $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
+        $this->twoFactorAuthorizationRepository->deleteToken($hashedToken);
+        return ApiResponse::success('Пользователь успешно прошёл двухфакторную авторизацию',
+            (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
+    }
+
+    public function refreshRecoveryCodes()
+    {
+        $authUser = auth()->user();
+        if($authUser->google2fa_enable === false && $authUser->two_factor_email_enabled === false)
+        {
+            return ApiResponse::error('Для данного пользователя отключена двухфакторная авторизация, поэтому обновление резервных кодов невозможно', null, 404);
+        }
+        $countRecoveryCode = $this->recoveryCodeRepository->getCountActiveRecoveryCodeForUser(auth()->id());
+        if($countRecoveryCode !== 0)
+        {
+            return ApiResponse::error('Текущий авторизованный пользователь не использовал все ранее предоставленные резервные коды',null, 409);
+        }
+        $recoveryCodes = $this->createRecoveryCodesForUser($authUser->id);
+        return ApiResponse::success('Новые резервные коды', (object)['recovery_codes'=>$recoveryCodes]);
     }
 
     // TODO перенести в какой-то другой файл
