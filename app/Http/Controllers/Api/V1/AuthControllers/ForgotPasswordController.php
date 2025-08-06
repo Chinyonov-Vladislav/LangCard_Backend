@@ -166,7 +166,7 @@ class ForgotPasswordController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/updatePassword",
+     *     path="/updatePassword",
      *     summary="Обновление пароля авторизованного пользователя",
      *     description="Позволяет авторизованному пользователю обновить свой пароль, если он зарегистрирован с email и паролем.",
      *     operationId="updatePassword",

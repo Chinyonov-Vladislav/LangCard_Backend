@@ -3,6 +3,8 @@
 namespace App\Repositories\TimezoneRepositories;
 
 use App\Models\Timezone;
+use App\Services\PaginatorService;
+use Illuminate\Database\Eloquent\Collection;
 
 class TimezoneRepository implements TimezoneRepositoryInterface
 {
@@ -36,15 +38,26 @@ class TimezoneRepository implements TimezoneRepositoryInterface
         $newTimezone->save();
     }
 
-    public function getAllTimezones($namesAttributes)
+    public function getAllTimezones($namesAttributes): Collection
     {
         $allowedColumns = $this->model->getTableColumns();
         $fields = array_intersect($namesAttributes, $allowedColumns);
         if (empty($fields)) {
             $fields = ['*'];
         }
-        logger("Итоговые колонки");
-        logger($fields);
         return $this->model->select($fields)->get();
+    }
+
+    public function getTimezoneWithPagination(PaginatorService $paginator, array $namesAttributes, int $currentPage, int $countOnPage): array
+    {
+        $allowedColumns = $this->model->getTableColumns();
+        $fields = array_intersect($namesAttributes, $allowedColumns);
+        if (empty($fields)) {
+            $fields = ['*'];
+        }
+        $query = $this->model->select($fields);
+        $data = $paginator->paginate($query, $countOnPage, $currentPage);
+        $metadataPagination = $paginator->getMetadataForPagination($data);
+        return ['items' => collect($data->items()), "pagination" => $metadataPagination];
     }
 }

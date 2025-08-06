@@ -49,6 +49,7 @@ class EmailVerificationController extends Controller
      *     operationId="sendVerificationCodeEmail",
      *     tags={"Верификация электронного адреса"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
      *     @OA\Response(
      *         response=200,
      *         description="Код подтверждения успешно отправлен",
@@ -135,6 +136,8 @@ class EmailVerificationController extends Controller
      *     operationId="verificationEmailAddress",
      *     tags={"Верификация электронного адреса"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/EmailVerificationCodeRequest")

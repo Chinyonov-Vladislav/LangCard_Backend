@@ -19,6 +19,7 @@ use Illuminate\Validation\Rule;
  *          type="integer",
  *          minimum=1,
  *          example=1,
+ *          nullable = true,
  *          description="Номер страницы"
  *      ),
  *      @OA\Property(
@@ -26,6 +27,7 @@ use Illuminate\Validation\Rule;
  *          type="integer",
  *          minimum=1,
  *          example=10,
+ *          nullable = true,
  *          description="Количество элементов на странице"
  *      ),
  *      @OA\Property(

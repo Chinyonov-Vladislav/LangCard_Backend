@@ -34,6 +34,8 @@ class InviteController extends Controller
      *     tags={"Привязка к пользователю, который пригласил в систему"},
      *     security={{"bearerAuth":{}}},
      *
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/SetInviterRequest")

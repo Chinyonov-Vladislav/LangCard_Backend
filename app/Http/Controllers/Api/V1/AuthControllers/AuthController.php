@@ -387,6 +387,8 @@ class AuthController extends Controller
      *     operationId="refreshTokens",
      *     tags={"Обновление токенов авторизации"},
      *
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *
      *     @OA\Parameter(
      *         name="refresh_token",
      *         in="cookie",
@@ -464,7 +466,7 @@ class AuthController extends Controller
      *     operationId="logoutUser",
      *     tags={"Выход из аккаунта"},
      *     security={{"bearerAuth":{}}},
-     *
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
      *     @OA\Response(
      *         response=200,
      *         description="Успешный выход из системы",

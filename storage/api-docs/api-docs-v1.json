@@ -1538,6 +1538,154 @@
                 ]
             }
         },
+        "/timezones": {
+            "get": {
+                "tags": [
+                    "Временные зоны"
+                ],
+                "summary": "Получить список часовых поясов с пагинацией и фильтрацией",
+                "operationId": "getTimezones",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы (целое число >= 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице (целое число >= 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Список полей через запятую, которые нужно вернуть",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с данными и пагинацией",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные часовых поясов"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Timezone"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "description": "Информация о пагинации",
+                                                    "properties": {
+                                                        "current_page": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "total": {
+                                                            "type": "integer",
+                                                            "example": 100
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Электронный адрес пользователя не подтвержден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Электронная почта авторизованного пользователя не подтверждена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/twoFactorVerification": {
             "post": {
                 "tags": [
@@ -2671,13 +2819,15 @@
                         "description": "Номер страницы",
                         "type": "integer",
                         "minimum": 1,
-                        "example": 1
+                        "example": 1,
+                        "nullable": true
                     },
                     "countOnPage": {
                         "description": "Количество элементов на странице",
                         "type": "integer",
                         "minimum": 1,
-                        "example": 10
+                        "example": 10,
+                        "nullable": true
                     },
                     "originalLanguages": {
                         "description": "Коды оригинальных языков через запятую. Пример: en,fr,de",
@@ -2951,6 +3101,30 @@
                         "description": "Идентификатор теста для запуска.",
                         "type": "integer",
                         "example": 101
+                    }
+                },
+                "type": "object"
+            },
+            "TimezoneFilterRequest": {
+                "title": "Timezone Filter Request (Параметры фильтрации часовых поясов), которые передаются через query string",
+                "description": "Параметры фильтрации часовых поясов",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "nullable": true
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "nullable": true
+                    },
+                    "fields": {
+                        "description": "Поля, которые нужно вернуть",
+                        "type": "string",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3783,6 +3957,40 @@
                 },
                 "type": "object"
             },
+            "Timezone": {
+                "description": "Ресурс часового пояса",
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор",
+                        "type": "integer",
+                        "format": "int64",
+                        "nullable": true
+                    },
+                    "name": {
+                        "description": "Название часового пояса",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "offset_utc": {
+                        "description": "Смещение от UTC в минутах",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Дата и время создания",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "description": "Дата и время последнего обновления",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "UserTestAnswerResource": {
                 "title": "User Test Answer Resource (ресурс пользовательских ответов на вопросы к тесту)",
                 "properties": {
@@ -4056,6 +4264,10 @@
         {
             "name": "Привязка к пользователю, который пригласил в систему",
             "description": "Привязка к пользователю, который пригласил в систему"
+        },
+        {
+            "name": "Временные зоны",
+            "description": "Временные зоны"
         },
         {
             "name": "Двухфакторная аутентификация",

@@ -3,6 +3,7 @@
 namespace App\Repositories\TimezoneRepositories;
 
 use App\Models\Timezone;
+use App\Services\PaginatorService;
 
 interface TimezoneRepositoryInterface
 {
@@ -13,4 +14,6 @@ interface TimezoneRepositoryInterface
     public function saveNewTimezone(string $nameRegion, string $offset_UTC);
 
     public function getAllTimezones($namesAttributes);
+
+    public function getTimezoneWithPagination(PaginatorService $paginator, array $namesAttributes, int $currentPage, int $countOnPage);
 }
