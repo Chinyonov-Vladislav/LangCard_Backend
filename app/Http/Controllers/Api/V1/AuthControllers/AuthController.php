@@ -124,7 +124,7 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="User not found"),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -198,7 +198,7 @@ class AuthController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response=404,
      *         description="Неподдерживаемый провайдер",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
@@ -211,7 +211,7 @@ class AuthController extends Controller
     public function redirect($provider)
     {
         if (!in_array($provider, $this->acceptedProviders)) {
-            return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 401);
+            return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 404);
         }
         $url = Socialite::driver($provider)
             ->stateless()
@@ -272,7 +272,7 @@ class AuthController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response=404,
      *         description="Провайдер не поддерживается",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
@@ -295,7 +295,7 @@ class AuthController extends Controller
     {
         try {
             if (!in_array($provider, $this->acceptedCallbackProviders)) {
-                return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 401);
+                return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 404);
             }
             // TODO: добавить авторизацию через telegram
             if ($provider === 'microsoft') {
@@ -477,15 +477,7 @@ class AuthController extends Controller
      *         )
      *     ),
      *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Пользователь не авторизован",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
-     *         )
-     *     )
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized")
      * )
      */
     public function logout()

@@ -8,40 +8,36 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @OA\Schema(
- *     schema="Timezone",
+ *     schema="TimezoneResource",
+ *     title="Timezone Resource (Ресурс для получения информации о временных зонах, поддерживаемых в системе)",
  *     type="object",
  *     description="Ресурс часового пояса",
  *     @OA\Property(
  *         property="id",
  *         type="integer",
  *         format="int64",
- *         nullable=true,
  *         description="Уникальный идентификатор"
  *     ),
  *     @OA\Property(
  *         property="name",
  *         type="string",
- *         nullable=true,
  *         description="Название часового пояса"
  *     ),
  *     @OA\Property(
  *         property="offset_utc",
  *         type="integer",
- *         nullable=true,
  *         description="Смещение от UTC в минутах"
  *     ),
  *     @OA\Property(
  *         property="created_at",
  *         type="string",
  *         format="date-time",
- *         nullable=true,
  *         description="Дата и время создания"
  *     ),
  *     @OA\Property(
  *         property="updated_at",
  *         type="string",
  *         format="date-time",
- *         nullable=true,
  *         description="Дата и время последнего обновления"
  *     )
  * )

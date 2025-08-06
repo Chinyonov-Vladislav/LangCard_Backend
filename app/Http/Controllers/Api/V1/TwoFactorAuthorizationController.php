@@ -97,7 +97,7 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Неподдерживаемый тип двухфакторной авторизации"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -108,7 +108,7 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Вы не можете включить двухфакторную авторизацию через электронную почту, так как аккаунт не имеет электронной почты"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -119,7 +119,7 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Произошла ошибка при подключении двухфакторной авторизации через Google Authenticator"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized")
@@ -226,7 +226,7 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Отсутствует запись о токене двухфакторной авторизации"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -298,7 +298,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Введенный код некорректен! Повторите попытку ввода!"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -307,7 +307,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Отсутствует запись о токене двухфакторной авторизации"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -319,7 +319,7 @@ class TwoFactorAuthorizationController extends Controller
      *                          type="string",
      *                          example="Для текущего пользователя отключена двухфакторная авторизация | Текущий пользователь не запрашивал код для двухфакторной авторизации по электронной почте"
      *                        ),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -328,7 +328,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Срок действия кода истёк. Запросите новый код"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     )
      * )
@@ -417,18 +417,18 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Отсутствует запись о токене двухфакторной авторизации"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
      *     @OA\Response(
-     *         response=401,
+     *         response=403,
      *         description="Неверный код от Google Authenticator",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Неверный код двухфакторной авторизации через Google Authenticator"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -439,7 +439,7 @@ class TwoFactorAuthorizationController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="The given data was invalid."),
-     *             @OA\Property(property="errors", type="object", example={"code": {"The code is required."}})
+     *             @OA\Property(property="errors", type="object", example={"code": "The code is required."})
      *         )
      *     )
      * )
@@ -463,7 +463,7 @@ class TwoFactorAuthorizationController extends Controller
             $request->code
         );
         if (!$valid) {
-            return ApiResponse::error('Неверный код двухфакторной авторизации через Google Authenticator', null, 401);
+            return ApiResponse::error('Неверный код двухфакторной авторизации через Google Authenticator', null, 403);
         }
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
         $arrayTokens = $this->generationAuthTokenService->generateTokens($tokenInfo->user, $countMinutesExpirationRefreshToken);
@@ -511,7 +511,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Отсутствует запись о токене двухфакторной авторизации"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -521,7 +521,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Для текущего пользователя не осталось активных кодов восстановления"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -531,7 +531,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Для данного пользователя отключена двухфакторная авторизация"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -624,7 +624,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Для данного пользователя отключена двухфакторная авторизация, поэтому обновление резервных кодов невозможно"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -633,7 +633,7 @@ class TwoFactorAuthorizationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Текущий авторизованный пользователь не использовал все ранее предоставленные резервные коды"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized")

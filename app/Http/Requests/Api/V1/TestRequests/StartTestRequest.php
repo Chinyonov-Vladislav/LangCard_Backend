@@ -38,14 +38,14 @@ class StartTestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'testId' => ['required', 'int'],
+            'testId' => ['required', 'integer'],
         ];
     }
     public function messages(): array
     {
         return [
             'testId.required' => __('validation.testId_required'),
-            'testId.int' => __('validation.testId_int'),
+            'testId.integer' => __('validation.testId_int'),
         ];
     }
 }

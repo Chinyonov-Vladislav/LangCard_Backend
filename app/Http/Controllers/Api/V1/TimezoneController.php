@@ -61,7 +61,7 @@ class TimezoneController extends Controller
      *                 @OA\Property(
      *                     property="items",
      *                     type="array",
-     *                     @OA\Items(ref="#/components/schemas/Timezone")
+     *                     @OA\Items(ref="#/components/schemas/TimezoneResource")
      *                 ),
      *                 @OA\Property(
      *                     property="pagination",
@@ -75,24 +75,8 @@ class TimezoneController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(
-     *          response=401,
-     *          description="Пользователь не авторизован",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="status", type="string", example="error"),
-     *              @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
-     *              @OA\Property(property="errors", type="object", nullable=true)
-     *          )
-     *      ),
-     *     @OA\Response(
-     *           response=403,
-     *           description="Электронный адрес пользователя не подтвержден",
-     *           @OA\JsonContent(
-     *               @OA\Property(property="status", type="string", example="error"),
-     *               @OA\Property(property="message", type="string", example="Электронная почта авторизованного пользователя не подтверждена"),
-     *               @OA\Property(property="errors", type="object", nullable=true)
-     *           )
-     *       ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
      * )
      */
     public function getTimezones(TimezoneFilterRequest $request, PaginatorService $paginator)

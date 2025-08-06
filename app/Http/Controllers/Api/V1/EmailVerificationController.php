@@ -73,22 +73,10 @@ class EmailVerificationController extends Controller
      *                 type="string",
      *                 example="Email - адрес текущего авторизованного пользователя уже был ранее подтвержден!"
      *             ),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Пользователь не авторизован",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="Пользовать не авторизован и не имеет доступа к данным"
-     *             ),
-     *             @OA\Property(property="errors", type="object", nullable=true)
-     *         )
-     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(
      *         response=500,
      *         description="Ошибка при генерации кода",
@@ -99,7 +87,7 @@ class EmailVerificationController extends Controller
      *                 type="string",
      *                 example="Произошла ошибка при генерации кода"
      *             ),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     )
      * )
@@ -157,7 +145,7 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Пользователь с id = 5 не найден"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
      *     @OA\Response(
@@ -166,7 +154,7 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Email - адрес текущего авторизованного пользователя уже был ранее подтвержден!"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
      *     @OA\Response(
@@ -175,7 +163,7 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Текущий авторизованный пользователь не запрашивал код для подтверждения почты"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
      *     @OA\Response(
@@ -184,18 +172,10 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Предоставленный код не соответствует коду из электронного сообщения"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Неавторизован",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
-     *         )
-     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(
      *          response=422,
      *          description="Ошибка валидации",

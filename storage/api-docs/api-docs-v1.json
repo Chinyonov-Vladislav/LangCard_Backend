@@ -122,7 +122,9 @@
                                             "example": "User not found"
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -227,7 +229,7 @@
                             }
                         }
                     },
-                    "401": {
+                    "404": {
                         "description": "Неподдерживаемый провайдер",
                         "content": {
                             "application/json": {
@@ -363,7 +365,7 @@
                             }
                         }
                     },
-                    "401": {
+                    "404": {
                         "description": "Провайдер не поддерживается",
                         "content": {
                             "application/json": {
@@ -429,6 +431,9 @@
                 "description": "Обновляет access токен и refresh токен пользователя, используя refresh token из cookie",
                 "operationId": "refreshTokens",
                 "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
                     {
                         "name": "refresh_token",
                         "in": "cookie",
@@ -542,6 +547,11 @@
                 "summary": "Выход из системы (отзыв токенов)",
                 "description": "Удаляет access и refresh токены текущего авторизованного пользователя. Требуется Bearer токен.",
                 "operationId": "logoutUser",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Успешный выход из системы",
@@ -568,28 +578,7 @@
                         }
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     }
                 },
                 "security": [
@@ -643,6 +632,7 @@
                                         },
                                         "data": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -671,6 +661,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -753,8 +744,8 @@
                                             "example": "User password changed successfully"
                                         },
                                         "data": {
-                                            "description": "Пустой объект или null",
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -782,8 +773,8 @@
                                             "example": "Invalid password reset token"
                                         },
                                         "errors": {
-                                            "description": "Дополнительные ошибки",
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -811,8 +802,8 @@
                                             "example": "Expired password reset token"
                                         },
                                         "errors": {
-                                            "description": "Дополнительные ошибки",
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -855,7 +846,7 @@
                 }
             }
         },
-        "/api/updatePassword": {
+        "/updatePassword": {
             "post": {
                 "tags": [
                     "Обновление пароля авторизованного пользователя"
@@ -895,6 +886,7 @@
                                         },
                                         "data": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -919,6 +911,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -928,28 +921,7 @@
                         }
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     }
                 },
                 "security": [
@@ -989,10 +961,7 @@
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "enum": [
-                                                "success",
-                                                "error"
-                                            ],
+                                            "type": "string",
                                             "example": "success"
                                         },
                                         "message": {
@@ -1001,6 +970,7 @@
                                         },
                                         "data": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1057,6 +1027,7 @@
                                         },
                                         "data": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1076,6 +1047,11 @@
                 "summary": "Отправка кода подтверждения на email",
                 "description": "Отправляет код подтверждения на email текущего авторизованного пользователя, если его email ещё не был подтверждён.",
                 "operationId": "sendVerificationCodeEmail",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Код подтверждения успешно отправлен",
@@ -1117,6 +1093,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1126,28 +1103,7 @@
                         }
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "500": {
                         "description": "Ошибка при генерации кода",
@@ -1165,6 +1121,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1189,6 +1146,11 @@
                 "summary": "Подтверждение email авторизованного пользователя кодом",
                 "description": "Позволяет подтвердить email пользователя по коду, отправленному на электронную почту.",
                 "operationId": "verificationEmailAddress",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1240,6 +1202,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1264,6 +1227,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1288,6 +1252,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1312,6 +1277,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1321,28 +1287,7 @@
                         }
                     },
                     "401": {
-                        "description": "Неавторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "422": {
                         "description": "Ошибка валидации",
@@ -1388,6 +1333,11 @@
                 "summary": "Установить пригласившего пользователя",
                 "description": "Позволяет авторизованному пользователю указать другого пользователя, который его пригласил, по коду приглашения.",
                 "operationId": "setInviter",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1431,28 +1381,7 @@
                         }
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "404": {
                         "description": "Не найден пользователь с таким кодом",
@@ -1470,6 +1399,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1494,6 +1424,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1547,6 +1478,9 @@
                 "operationId": "getTimezones",
                 "parameters": [
                     {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Номер страницы (целое число >= 1)",
@@ -1596,7 +1530,7 @@
                                                 "items": {
                                                     "type": "array",
                                                     "items": {
-                                                        "$ref": "#/components/schemas/Timezone"
+                                                        "$ref": "#/components/schemas/TimezoneResource"
                                                     }
                                                 },
                                                 "pagination": {
@@ -1631,52 +1565,10 @@
                         }
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользовать не авторизован и не имеет доступа к данным"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "403": {
-                        "description": "Электронный адрес пользователя не подтвержден",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Электронная почта авторизованного пользователя не подтверждена"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
                 "security": [
@@ -1778,6 +1670,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1802,6 +1695,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1826,6 +1720,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1933,6 +1828,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2049,6 +1945,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2073,6 +1970,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2097,6 +1995,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2121,6 +2020,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2234,6 +2134,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2242,7 +2143,7 @@
                             }
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Неверный код от Google Authenticator",
                         "content": {
                             "application/json": {
@@ -2258,6 +2159,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2283,9 +2185,7 @@
                                         "errors": {
                                             "type": "object",
                                             "example": {
-                                                "code": [
-                                                    "The code is required."
-                                                ]
+                                                "code": "The code is required."
                                             }
                                         }
                                     },
@@ -2375,6 +2275,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2399,6 +2300,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2423,6 +2325,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2531,6 +2434,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2555,6 +2459,7 @@
                                         },
                                         "errors": {
                                             "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -2819,15 +2724,13 @@
                         "description": "Номер страницы",
                         "type": "integer",
                         "minimum": 1,
-                        "example": 1,
-                        "nullable": true
+                        "example": 1
                     },
                     "countOnPage": {
                         "description": "Количество элементов на странице",
                         "type": "integer",
                         "minimum": 1,
-                        "example": 10,
-                        "nullable": true
+                        "example": 10
                     },
                     "originalLanguages": {
                         "description": "Коды оригинальных языков через запятую. Пример: en,fr,de",
@@ -3110,21 +3013,18 @@
                 "description": "Параметры фильтрации часовых поясов",
                 "properties": {
                     "page": {
-                        "description": "Номер страницы",
+                        "description": "Номер страницы (необязательный параметр)",
                         "type": "integer",
-                        "minimum": 1,
-                        "nullable": true
+                        "minimum": 1
                     },
                     "countOnPage": {
-                        "description": "Количество элементов на странице",
+                        "description": "Количество элементов на странице (необязательный параметр)",
                         "type": "integer",
-                        "minimum": 1,
-                        "nullable": true
+                        "minimum": 1
                     },
                     "fields": {
-                        "description": "Поля, которые нужно вернуть",
-                        "type": "string",
-                        "nullable": true
+                        "description": "Поля, которые нужно вернуть (необязательный параметр)",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3957,36 +3857,32 @@
                 },
                 "type": "object"
             },
-            "Timezone": {
+            "TimezoneResource": {
+                "title": "Timezone Resource (Ресурс для получения информации о временных зонах, поддерживаемых в системе)",
                 "description": "Ресурс часового пояса",
                 "properties": {
                     "id": {
                         "description": "Уникальный идентификатор",
                         "type": "integer",
-                        "format": "int64",
-                        "nullable": true
+                        "format": "int64"
                     },
                     "name": {
                         "description": "Название часового пояса",
-                        "type": "string",
-                        "nullable": true
+                        "type": "string"
                     },
                     "offset_utc": {
                         "description": "Смещение от UTC в минутах",
-                        "type": "integer",
-                        "nullable": true
+                        "type": "integer"
                     },
                     "created_at": {
                         "description": "Дата и время создания",
                         "type": "string",
-                        "format": "date-time",
-                        "nullable": true
+                        "format": "date-time"
                     },
                     "updated_at": {
                         "description": "Дата и время последнего обновления",
                         "type": "string",
-                        "format": "date-time",
-                        "nullable": true
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -4179,6 +4075,31 @@
             }
         },
         "responses": {
+            "NotVerifiedEmail": {
+                "description": "Электронный адрес пользователя не подтвержден",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Электронная почта авторизованного пользователя не подтверждена"
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "example": null,
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "Unauthorized": {
                 "description": "Пользователь не авторизован",
                 "content": {
@@ -4195,6 +4116,7 @@
                                 },
                                 "errors": {
                                     "type": "object",
+                                    "example": null,
                                     "nullable": true
                                 }
                             },

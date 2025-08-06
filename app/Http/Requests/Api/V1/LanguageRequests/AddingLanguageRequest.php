@@ -72,14 +72,14 @@ class AddingLanguageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'native_name' => 'required|string',
-            'code' => 'required|string|size:2',
+            'name' => ['required', 'string'],
+            'native_name' => ['required', 'string'],
+            'code' => ['required', 'string', 'size:2'],
             'flag' => ['required',
                 'string',
                 new ImagePathExistsRule(),
                 new IsFileBelongsToImagesRule()],
-            'locale_lang'=> 'required|string|unique:languages,locale'
+            'locale_lang'=> ['required', 'string', 'unique:languages,locale']
         ];
     }
 

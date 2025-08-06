@@ -41,9 +41,9 @@ class RegistrationController extends Controller
      *         response=201,
      *         description="Пользователь успешно зарегистрирован",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Пользователь успешно зарегистрирован"),
-     *             @OA\Property(property="data", type="object", nullable=true)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -70,7 +70,7 @@ class RegistrationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Не удалось зарегистрировать пользователя."),
-     *             @OA\Property(property="data", type="object", nullable=true)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     )
      * )

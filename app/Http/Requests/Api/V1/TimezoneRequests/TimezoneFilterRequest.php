@@ -15,21 +15,18 @@ use Illuminate\Foundation\Http\FormRequest;
  *         property="page",
  *         type="integer",
  *         minimum=1,
- *         nullable = true,
- *         description="Номер страницы"
+ *         description="Номер страницы (необязательный параметр)"
  *     ),
  *     @OA\Property(
  *         property="countOnPage",
  *         type="integer",
  *         minimum=1,
- *         nullable = true,
- *         description="Количество элементов на странице"
+ *         description="Количество элементов на странице (необязательный параметр)"
  *     ),
  *     @OA\Property(
  *         property="fields",
  *         type="string",
- *         nullable=true,
- *         description="Поля, которые нужно вернуть"
+ *         description="Поля, которые нужно вернуть (необязательный параметр)"
  *     )
  * )
  */
@@ -51,9 +48,9 @@ class TimezoneFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => ['nullable', 'integer', 'min:1'],
-            'countOnPage' => ['nullable', 'integer', 'min:1'],
-            'fields' => ['nullable', 'string'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'countOnPage' => ['sometimes', 'integer', 'min:1'],
+            'fields' => ['sometimes', 'string'],
         ];
     }
     public function messages(): array

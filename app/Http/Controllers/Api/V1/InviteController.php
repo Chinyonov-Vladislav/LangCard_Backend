@@ -6,13 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\InviteRequests\SetInviterRequest;
 use App\Http\Resources\v1\InviteResources\InviterResource;
 use App\Http\Responses\ApiResponse;
-use App\Models\User;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Container\CircularDependencyException;
-use function PHPUnit\Framework\objectEquals;
 
 class InviteController extends Controller
 {
@@ -54,15 +50,7 @@ class InviteController extends Controller
      *         )
      *     ),
      *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Пользователь не авторизован",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
-     *         )
-     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *
      *     @OA\Response(
      *         response=404,
@@ -70,7 +58,7 @@ class InviteController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Не найден пользователь, владеющий данным invite-кодом"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
      *
@@ -80,7 +68,7 @@ class InviteController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Конфликт — код уже установлен, код невалиден или нарушает бизнес-логику"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example = null)
      *         )
      *     ),
      *      @OA\Response(

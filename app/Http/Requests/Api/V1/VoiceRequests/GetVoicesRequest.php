@@ -44,8 +44,8 @@ class GetVoicesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => ['nullable', 'integer', 'min:1',],
-            'countOnPage' => ['nullable','integer', 'min:1'],
+            'page' => ['sometimes', 'integer', 'min:1',],
+            'countOnPage' => ['sometimes','integer', 'min:1'],
         ];
     }
 

@@ -19,7 +19,6 @@ use Illuminate\Validation\Rule;
  *          type="integer",
  *          minimum=1,
  *          example=1,
- *          nullable = true,
  *          description="Номер страницы"
  *      ),
  *      @OA\Property(
@@ -27,7 +26,6 @@ use Illuminate\Validation\Rule;
  *          type="integer",
  *          minimum=1,
  *          example=10,
- *          nullable = true,
  *          description="Количество элементов на странице"
  *      ),
  *      @OA\Property(
@@ -69,12 +67,12 @@ class DeckFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => ['nullable', 'integer', 'min:1'],
-            'countOnPage' => ['nullable', 'integer', 'min:1'],
-            'originalLanguages' => ['nullable', 'string', new LanguageCodesExistRule(app(LanguageRepositoryInterface::class))],
-            'targetLanguages' => ['nullable', 'string', new LanguageCodesExistRule(app(LanguageRepositoryInterface::class))],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'countOnPage' => ['sometimes', 'integer', 'min:1'],
+            'originalLanguages' => ['sometimes', 'string', new LanguageCodesExistRule(app(LanguageRepositoryInterface::class))],
+            'targetLanguages' => ['sometimes', 'string', new LanguageCodesExistRule(app(LanguageRepositoryInterface::class))],
             'showPremium' => [
-                'nullable',
+                'sometimes',
                 'string',
                 Rule::in(TypeShowingDeck::getValues())
             ],

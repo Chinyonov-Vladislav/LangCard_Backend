@@ -52,13 +52,13 @@ class DatesForCountUsersByMonthsRequest extends FormRequest
     {
         return [
             'start_month' => [
-                'nullable',
+                'sometimes',
                 'required_with:end_month',
                 'date_format:Y-m',
                 'before_or_equal:end_month',
             ],
             'end_month' => [
-                'nullable',
+                'sometimes',
                 'required_with:start_month',
                 'date_format:Y-m',
                 'after_or_equal:start_month',

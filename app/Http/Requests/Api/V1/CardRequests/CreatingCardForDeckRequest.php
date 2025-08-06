@@ -101,11 +101,11 @@ class CreatingCardForDeckRequest extends FormRequest
                 new ImagePathExistsRule(),
                 new IsFileBelongsToImagesRule()
             ],
-            'originalVoices' => ['nullable','array'],
+            'originalVoices' => ['sometimes','array'],
             'originalVoices.*' => ['required', 'string', 'exists:voices,voice_id'],
-            'targetVoices' => ['nullable','array'],
+            'targetVoices' => ['sometimes','array'],
             'targetVoices.*' => ['required','string', 'exists:voices,voice_id'],
-            'examples' => ['nullable','array'],
+            'examples' => ['sometimes','array'],
             'examples.*' => ['required', 'string'],
         ];
     }

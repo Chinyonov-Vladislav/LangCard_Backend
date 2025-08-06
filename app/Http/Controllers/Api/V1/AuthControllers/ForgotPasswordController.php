@@ -44,7 +44,7 @@ class ForgotPasswordController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="success"),
      *             @OA\Property(property="message", type="string", example="Ссылка для сброса пароля отправлена."),
-     *             @OA\Property(property="data", type="object", nullable=true)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -53,7 +53,7 @@ class ForgotPasswordController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Пользователь не зарегистрирован с паролем."),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true,example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -107,7 +107,7 @@ class ForgotPasswordController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="success"),
      *             @OA\Property(property="message", type="string", example="User password changed successfully"),
-     *             @OA\Property(property="data", type="object", nullable=true, description="Пустой объект или null")
+     *             @OA\Property(property="data", type="object", nullable=true,example=null)
      *         )
      *     ),
      *
@@ -118,7 +118,7 @@ class ForgotPasswordController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Invalid password reset token"),
-     *             @OA\Property(property="errors", type="object", nullable=true, description="Дополнительные ошибки")
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -129,7 +129,7 @@ class ForgotPasswordController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Expired password reset token"),
-     *             @OA\Property(property="errors", type="object", nullable=true, description="Дополнительные ошибки")
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
      *
@@ -183,7 +183,7 @@ class ForgotPasswordController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Пароль пользователя успешно изменён"),
-     *             @OA\Property(property="data", type="object", nullable=true)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -192,18 +192,10 @@ class ForgotPasswordController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Текущий авторизованный пользователь не зарегистрирован с использованием email - адреса и пароля, поэтому не обладает возможностью сменить пароль!"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Пользователь не авторизован",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
-     *             @OA\Property(property="errors", type="object", nullable=true)
-     *         )
-     *     )
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized")
      * )
      */
     public function updatePassword(UpdatePasswordRequest $request)

@@ -46,12 +46,12 @@ class GetHistoryAttemptsRequest extends FormRequest
     {
         return [
             'page' => [
-                'nullable',
+                'sometimes',
                 'integer',
                 'min:1'
             ],
             'countOnPage' => [
-                'nullable',
+                'sometimes',
                 'integer',
                 'min:1'
             ],

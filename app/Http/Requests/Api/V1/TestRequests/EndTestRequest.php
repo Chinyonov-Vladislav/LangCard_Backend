@@ -68,25 +68,25 @@ class EndTestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'attemptId' => ['required', 'int'],
+            'attemptId' => ['required', 'integer'],
             'automatic'=>['required', 'boolean'],
             'answers' => ['required', 'array'],
-            'answers.*.question_id' => ['required', 'int'],
-            'answers.*.answer_id' => ['nullable', 'int'],
+            'answers.*.question_id' => ['required', 'integer'],
+            'answers.*.answer_id' => ['nullable', 'integer'],
         ];
     }
     public function messages(): array
     {
         return [
             'attemptId.required' => __('validation.attemptId_required'),
-            'attemptId.int' => __('validation.attemptId_int'),
+            'attemptId.integer' => __('validation.attemptId_int'),
             'automatic.required' => __('validation.automatic_required'),
             'automatic.boolean' => __('validation.automatic_boolean'),
             'answers.required' => __('validation.answers_required'),
             'answers.array' => __('validation.answers_array'),
             'answers.*.question_id.required' => __('validation.answers_item_question_id_required'),
-            'answers.*.question_id.int' => __('validation.answers_item_question_id_int'),
-            'answers.*.answer_id.int' => __('validation.answers_item_answer_id_int'),
+            'answers.*.question_id.integer' => __('validation.answers_item_question_id_int'),
+            'answers.*.answer_id.integer' => __('validation.answers_item_answer_id_int'),
         ];
     }
 }
