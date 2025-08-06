@@ -82,6 +82,67 @@ class AuthController extends Controller
         $this->generationTwoFactorAuthorizationToken = new GenerationTwoFactorAuthorizationToken();
     }
 
+    /**
+     * @OA\Post(
+     *     path="/login",
+     *     summary="Authenticate user",
+     *     description="Authenticates user with email/password. Returns access tokens or 2FA data if enabled.",
+     *     tags={"Аутентификация"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="User credentials",
+     *         @OA\JsonContent(ref="#/components/schemas/AuthRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful authentication",
+     *         @OA\JsonContent(
+     *             oneOf={
+     *                 @OA\Schema(
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="data", type="object",
+     *                         @OA\Property(property="access_token", type="string"),
+     *                         @OA\Property(property="email_is_verified", type="boolean")
+     *                     )
+     *                 ),
+     *                 @OA\Schema(
+     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="data", type="object",
+     *                         @OA\Property(property="two_factor_email_enabled", type="boolean"),
+     *                         @OA\Property(property="two_factor_google_authenticator_enabled", type="boolean"),
+     *                         @OA\Property(property="two_factor_token", type="string")
+     *                     ),
+     *                     @OA\Property(property="message", type="string", example="Включена двухфакторная авторизация")
+     *                 )
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Invalid credentials",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="User not found"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="email", type="array",
+     *                     @OA\Items(type="string", example="The email field is required.")
+     *                 ),
+     *                 @OA\Property(property="password", type="array",
+     *                     @OA\Items(type="string", example="The password field is required.")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function login(AuthRequest $request)
     {
         $user = $this->loginRepository->getUserByEmail($request->email);

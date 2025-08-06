@@ -24,6 +24,56 @@ class RegistrationController extends Controller
         $this->userRepository = $userRepository;
         $this->apiService = app(ApiService::class);
     }
+    /**
+     * @OA\Post(
+     *     path="/registration",
+     *     tags={"Регистрация"},
+     *     summary="Регистрация нового пользователя",
+     *     operationId="registerUser",
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/RegistrationRequest")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=201,
+     *         description="Пользователь успешно зарегистрирован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Пользователь успешно зарегистрирован"),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации входных данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="email",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Поле email уже используется.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка при регистрации пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Не удалось зарегистрировать пользователя."),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     )
+     * )
+     */
     public function registration(RegistrationRequest $request): JsonResponse
     {
         $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null,null);
