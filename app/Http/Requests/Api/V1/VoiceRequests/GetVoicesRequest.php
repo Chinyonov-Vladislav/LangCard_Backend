@@ -4,6 +4,28 @@ namespace App\Http\Requests\Api\V1\VoiceRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="GetVoicesRequest",
+ *     title="Get Voices Request Query Params (Query параметры запроса получения данных о поддерживаемых голосах в системе)",
+ *     description="Query-параметры для получения данных о поддерживаемых голосах в системе. Оба параметра являются необязательными и используются для пагинации.",
+ *     type="object",
+ *     @OA\Property(
+ *         property="page",
+ *         type="integer",
+ *         minimum=1,
+ *         example=1,
+ *         description="Номер страницы"
+ *     ),
+ *     @OA\Property(
+ *         property="countOnPage",
+ *         type="integer",
+ *         minimum=1,
+ *         example=10,
+ *         description="Количество элементов на странице"
+ *     )
+ * )
+ */
 class GetVoicesRequest extends FormRequest
 {
     /**

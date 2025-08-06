@@ -6,6 +6,23 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Sabberworm\CSS\Rule\Rule;
 
+/**
+ * @OA\Schema(
+ *     schema="EnableDisableATwoFactorAuthorizationRequest",
+ *     title="Enable Disable A Two Factor Authorization Request (Включение или отключение двухфакторной аутентификации)",
+ *     description="Данные для включения или отключения двухфакторной аутентификации с помощью электронной почты или Google Authorization.",
+ *     type="object",
+ *     required={"type"},
+ *
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Тип двухфакторной аутентификации.",
+ *         enum={"email", "googleAuthenticator"},
+ *         example="email"
+ *     )
+ * )
+ */
 class EnableDisableATwoFactorAuthorizationRequest extends FormRequest
 {
     /**

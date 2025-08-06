@@ -4,6 +4,25 @@ namespace App\Http\Requests\Api\V1\PromocodeRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ActivatePromocodeRequest",
+ *     title="Activate Promocode Request (Активация промокода)",
+ *     description="Схема запроса для активации промокода. Код должен состоять из 19 символов, разделённых дефисами, и быть в формате XXXX-XXXX-XXXX-XXXX (заглавные латинские буквы и цифры).",
+ *     type="object",
+ *     required={"code"},
+ *
+ *     @OA\Property(
+ *         property="code",
+ *         type="string",
+ *         description="Промокод в формате XXXX-XXXX-XXXX-XXXX. Только заглавные буквы и цифры. Пример: A1B2-C3D4-E5F6-G7H8",
+ *         example="AB12-CD34-EF56-GH78",
+ *         minLength=19,
+ *         maxLength=19,
+ *         pattern="^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$"
+ *     )
+ * )
+ */
 class ActivatePromocodeRequest extends FormRequest
 {
     /**

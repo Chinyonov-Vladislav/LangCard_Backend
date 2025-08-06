@@ -6,6 +6,30 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingNewTariffRequest",
+ *     title="Adding New Tariff Request (Добавление нового тарифа)",
+ *     description="Схема запроса для создания нового тарифа с уникальным количеством дней и названием.",
+ *     type="object",
+ *     required={"name", "days"},
+ *
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         maxLength=255,
+ *         description="Название тарифа.",
+ *         example="Стандартный тариф"
+ *     ),
+ *     @OA\Property(
+ *         property="days",
+ *         type="integer",
+ *         minimum=1,
+ *         description="Количество дней тарифа. Должно быть уникальным в базе данных.",
+ *         example=30
+ *     )
+ * )
+ */
 class AddingNewTariffRequest extends FormRequest
 {
     /**

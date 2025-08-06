@@ -4,6 +4,29 @@ namespace App\Http\Requests\Api\V1\HistoryPurchaseRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
+/**
+ * @OA\Schema(
+ *     schema="GetHistoryPurchaseRequest",
+ *     title="Get History Purchase Request Query Params (Параметры запроса истории покупок)",
+ *     description="Query-параметры для получения истории покупок. Оба параметра являются необязательными и используются для пагинации.",
+ *     type="object",
+ *     @OA\Property(
+ *         property="page",
+ *         type="integer",
+ *         minimum=1,
+ *         example=1,
+ *         description="Номер страницы"
+ *     ),
+ *     @OA\Property(
+ *         property="countOnPage",
+ *         type="integer",
+ *         minimum=1,
+ *         example=10,
+ *         description="Количество элементов на странице"
+ *     )
+ * )
+ */
 class GetHistoryPurchaseRequest extends FormRequest
 {
     /**

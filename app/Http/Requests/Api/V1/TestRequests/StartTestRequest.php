@@ -4,6 +4,22 @@ namespace App\Http\Requests\Api\V1\TestRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="StartTestRequest",
+ *     title="Start Test Request (Начало теста)",
+ *     description="Запрос для начала теста с указанием идентификатора теста.",
+ *     type="object",
+ *     required={"testId"},
+ *
+ *     @OA\Property(
+ *         property="testId",
+ *         type="integer",
+ *         description="Идентификатор теста для запуска.",
+ *         example=101
+ *     )
+ * )
+ */
 class StartTestRequest extends FormRequest
 {
     /**

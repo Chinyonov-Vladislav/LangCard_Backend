@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="RegistrationRequest",
  *     required={"name", "email", "password", "password_confirmation"},
- *     title="Registration Request",
+ *     title="Registration Request (Данные для регистрации)",
  *     description="Данные, необходимые для регистрации нового пользователя",
  *     @OA\Property(
  *         property="name",

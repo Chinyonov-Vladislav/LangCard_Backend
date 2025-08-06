@@ -9,6 +9,30 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * @OA\Schema(
+ *     schema="DatesForCountUsersByMonthsRequestQuery",
+ *     title="Dates For Count Users By Months Request Query (Диапазон месяцев для подсчёта пользователей)",
+ *     description="Query-параметры для фильтрации по диапазону месяцев. Формат дат: YYYY-MM. Если указано одно значение, второе также обязательно. По умолчанию используется период с начала текущего года по текущий месяц.",
+ *     type="object",
+ *     @OA\Property(
+ *         property="start_month",
+ *         type="string",
+ *         format="date",
+ *         description="Начальный месяц в формате YYYY-MM. Должен быть меньше или равен end_month.",
+ *         example="2024-01",
+ *         pattern="^\d{4}-(0[1-9]|1[0-2])$"
+ *     ),
+ *     @OA\Property(
+ *         property="end_month",
+ *         type="string",
+ *         format="date",
+ *         description="Конечный месяц в формате YYYY-MM. Должен быть больше или равен start_month.",
+ *         example="2024-08",
+ *         pattern="^\d{4}-(0[1-9]|1[0-2])$"
+ *     )
+ * )
+ */
 class DatesForCountUsersByMonthsRequest extends FormRequest
 {
     /**

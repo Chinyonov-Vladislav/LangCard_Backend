@@ -5,6 +5,22 @@ namespace App\Http\Requests\Api\V1\EmailVerificationRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="EmailVerificationCodeRequest",
+ *     title = "Email Verification Code Request (Данные для подтверждения электронной почты)",
+ *     type="object",
+ *     required={"code"},
+ *     description="Запрос на подтверждение email кодом",
+ *     @OA\Property(
+ *         property="code",
+ *         type="string",
+ *         description="Код подтверждения email, состоящий из ровно 6 цифр",
+ *         example="123456",
+ *         pattern="^\d{6}$"
+ *     )
+ * )
+ */
 class EmailVerificationCodeRequest extends FormRequest
 {
     /**

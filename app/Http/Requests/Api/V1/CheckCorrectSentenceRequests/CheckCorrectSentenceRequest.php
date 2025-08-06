@@ -4,6 +4,27 @@ namespace App\Http\Requests\Api\V1\CheckCorrectSentenceRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="CheckCorrectSentenceRequest",
+ *     title="Check Correct Sentence Request (Проверка правильности предложения)",
+ *     description="Данные для проверки грамматической корректности текста",
+ *     required={"language", "text"},
+ *
+ *     @OA\Property(
+ *         property="language",
+ *         type="string",
+ *         example="en",
+ *         description="Код языка (например: en, ru, fr)"
+ *     ),
+ *     @OA\Property(
+ *         property="text",
+ *         type="string",
+ *         example="This is a test sentence.",
+ *         description="Предложение для проверки"
+ *     )
+ * )
+ */
 class CheckCorrectSentenceRequest extends FormRequest
 {
     /**

@@ -5,6 +5,28 @@ namespace App\Http\Requests\Api\V1\HistoryAttemptRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="GetHistoryAttemptsRequestQueryParams",
+ *     title="Get History Attempts Request Query Params (Параметры запроса истории попыток прохождения тестов)",
+ *     description="Query-параметры для получения истории попыток. Оба параметра являются необязательными и используются для пагинации.",
+ *     type="object",
+ *     @OA\Property(
+ *         property="page",
+ *         type="integer",
+ *         minimum=1,
+ *         example=1,
+ *         description="Номер страницы"
+ *     ),
+ *     @OA\Property(
+ *         property="countOnPage",
+ *         type="integer",
+ *         minimum=1,
+ *         example=10,
+ *         description="Количество элементов на странице"
+ *     )
+ * )
+ */
 class GetHistoryAttemptsRequest extends FormRequest
 {
     /**

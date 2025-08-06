@@ -9,6 +9,46 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @OA\Schema(
+ *     schema="DeckFilterRequest",
+ *     title="Deck Filter Request (Фильтрация колод)",
+ *     description="Параметры фильтрации колод, передаются через query string",
+ *     @OA\Property(
+ *          property="page",
+ *          type="integer",
+ *          minimum=1,
+ *          example=1,
+ *          description="Номер страницы"
+ *      ),
+ *      @OA\Property(
+ *          property="countOnPage",
+ *          type="integer",
+ *          minimum=1,
+ *          example=10,
+ *          description="Количество элементов на странице"
+ *      ),
+ *      @OA\Property(
+ *          property="originalLanguages",
+ *          type="string",
+ *          description="Коды оригинальных языков через запятую. Пример: en,fr,de",
+ *          example="en,fr"
+ *      ),
+ *      @OA\Property(
+ *          property="targetLanguages",
+ *          type="string",
+ *          description="Коды целевых языков через запятую. Пример: es,it",
+ *          example="es,it"
+ *      ),
+ *      @OA\Property(
+ *          property="showPremium",
+ *          type="string",
+ *          enum={"only", "exclude", "all"},
+ *          description="Тип фильтрации премиум-колод: only — только премиум, exclude — исключить премиум, all — все.",
+ *          example="all"
+ *       )
+ * )
+ */
 class DeckFilterRequest extends FormRequest
 {
     /**

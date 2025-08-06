@@ -4,6 +4,29 @@ namespace App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="CodeGoogleAuthenticatorRequest",
+ *     title="Code Google Authenticator Request (Данные для подтверждения Google Authenticator)",
+ *     description="Данные для подтверждения двухфакторной аутентификации с поомощью Google Authenticator.",
+ *     type="object",
+ *     required={"token", "code"},
+ *
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Токен для верификации пользователя.",
+ *         example="abcdef123456"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="code",
+ *         type="string",
+ *         description="Код Google Authenticator.",
+ *         example="123456"
+ *     )
+ * )
+ */
 class CodeGoogleAuthenticatorRequest extends FormRequest
 {
     /**

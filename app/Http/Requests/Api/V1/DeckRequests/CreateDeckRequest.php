@@ -5,6 +5,47 @@ namespace App\Http\Requests\Api\V1\DeckRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="CreateDeckRequest",
+ *     title="Create Deck Request (Создание колоды)",
+ *     description="Данные для создания новой языковой колоды",
+ *     required={"name", "original_language_id", "target_language_id"},
+ *
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         maxLength=255,
+ *         example="Фрукты и овощи",
+ *         description="Название колоды"
+ *     ),
+ *     @OA\Property(
+ *         property="original_language_id",
+ *         type="integer",
+ *         example=1,
+ *         description="ID оригинального языка (например, английский)"
+ *     ),
+ *     @OA\Property(
+ *         property="target_language_id",
+ *         type="integer",
+ *         example=2,
+ *         description="ID целевого языка (например, испанский); должен отличаться от оригинального"
+ *     ),
+ *     @OA\Property(
+ *         property="is_premium",
+ *         type="boolean",
+ *         example=false,
+ *         description="Флаг премиум-доступа к колоде"
+ *     ),
+ *     @OA\Property(
+ *         property="topic_ids",
+ *         type="array",
+ *         nullable=true,
+ *         @OA\Items(type="integer", example=3),
+ *         description="Список ID тем, связанных с колодой"
+ *     )
+ * )
+ */
 class CreateDeckRequest extends FormRequest
 {
     /**

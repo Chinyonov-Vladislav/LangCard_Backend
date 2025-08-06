@@ -10,7 +10,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost/api/v1",
+            "url": "http://127.0.0.1:8000/api/v1",
             "description": "Local development server"
         }
     ],
@@ -255,7 +255,8 @@
     "components": {
         "schemas": {
             "AuthRequest": {
-                "title": "Auth Request",
+                "title": "Auth Request (Данные для авторизации)",
+                "description": "Данные, необходимые для авторизации пользователя",
                 "required": [
                     "email",
                     "password"
@@ -276,7 +277,7 @@
                 "type": "object"
             },
             "RegistrationRequest": {
-                "title": "Registration Request",
+                "title": "Registration Request (Данные для регистрации)",
                 "description": "Данные, необходимые для регистрации нового пользователя",
                 "required": [
                     "name",
@@ -307,6 +308,633 @@
                         "type": "string",
                         "format": "password",
                         "example": "Str0ngP@ssword!"
+                    }
+                },
+                "type": "object"
+            },
+            "ResetPasswordRequest": {
+                "title": "Reset Password Request (Данные для сброса пароля неавторизованного пользователя)",
+                "description": "Данные, необходимые для сброса пароля пользователя",
+                "required": [
+                    "email",
+                    "password",
+                    "password_confirmation",
+                    "token"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "user@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8,
+                        "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
+                        "example": "NewP@ssword2025"
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "NewP@ssword2025"
+                    },
+                    "token": {
+                        "type": "string",
+                        "example": "eyJ0eXAiOiJKV1QiLCJh..."
+                    }
+                },
+                "type": "object"
+            },
+            "SendResetLinkRequest": {
+                "title": "Send Reset Link Request (Данные для отправки электронного сообщения на email - адрес с ссылкой для сброса пароля)",
+                "description": "Данные, необходимые для отправки ссылки для сброс пароля неавторизованного пользователя",
+                "required": [
+                    "email"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "user@example.com"
+                    }
+                },
+                "type": "object"
+            },
+            "CreatingCardForDeckRequest": {
+                "title": "Creating Card For Deck Request (Создание карточки в колоде)",
+                "description": "Данные, небходимые для создания новой карточки для колоды",
+                "required": [
+                    "deck_id",
+                    "word",
+                    "translate"
+                ],
+                "properties": {
+                    "deck_id": {
+                        "description": "ID существующей колоды",
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "word": {
+                        "description": "Оригинальное слово",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "apple"
+                    },
+                    "translate": {
+                        "description": "Перевод слова",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "яблоко"
+                    },
+                    "imagePath": {
+                        "description": "Путь к изображению (если передаётся)",
+                        "type": "string",
+                        "example": "/images/cards/apple.jpg",
+                        "nullable": true
+                    },
+                    "originalVoices": {
+                        "description": "Массив ID оригинальных голосов",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "abc123-voice-id"
+                        },
+                        "nullable": true
+                    },
+                    "targetVoices": {
+                        "description": "Массив ID целевых голосов",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "xyz789-voice-id"
+                        },
+                        "nullable": true
+                    },
+                    "examples": {
+                        "description": "Примеры употребления слова",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "I eat an apple every day."
+                        },
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CheckCorrectSentenceRequest": {
+                "title": "Check Correct Sentence Request (Проверка правильности предложения)",
+                "description": "Данные для проверки грамматической корректности текста",
+                "required": [
+                    "language",
+                    "text"
+                ],
+                "properties": {
+                    "language": {
+                        "description": "Код языка (например: en, ru, fr)",
+                        "type": "string",
+                        "example": "en"
+                    },
+                    "text": {
+                        "description": "Предложение для проверки",
+                        "type": "string",
+                        "example": "This is a test sentence."
+                    }
+                },
+                "type": "object"
+            },
+            "CreateDeckRequest": {
+                "title": "Create Deck Request (Создание колоды)",
+                "description": "Данные для создания новой языковой колоды",
+                "required": [
+                    "name",
+                    "original_language_id",
+                    "target_language_id"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Название колоды",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Фрукты и овощи"
+                    },
+                    "original_language_id": {
+                        "description": "ID оригинального языка (например, английский)",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "target_language_id": {
+                        "description": "ID целевого языка (например, испанский); должен отличаться от оригинального",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "is_premium": {
+                        "description": "Флаг премиум-доступа к колоде",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "topic_ids": {
+                        "description": "Список ID тем, связанных с колодой",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": 3
+                        },
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "DeckFilterRequest": {
+                "title": "Deck Filter Request (Фильтрация колод)",
+                "description": "Параметры фильтрации колод, передаются через query string",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
+                    },
+                    "originalLanguages": {
+                        "description": "Коды оригинальных языков через запятую. Пример: en,fr,de",
+                        "type": "string",
+                        "example": "en,fr"
+                    },
+                    "targetLanguages": {
+                        "description": "Коды целевых языков через запятую. Пример: es,it",
+                        "type": "string",
+                        "example": "es,it"
+                    },
+                    "showPremium": {
+                        "description": "Тип фильтрации премиум-колод: only — только премиум, exclude — исключить премиум, all — все.",
+                        "type": "string",
+                        "enum": [
+                            "only",
+                            "exclude",
+                            "all"
+                        ],
+                        "example": "all"
+                    }
+                },
+                "type": "object"
+            },
+            "EmailVerificationCodeRequest": {
+                "title": "Email Verification Code Request (Данные для подтверждения электронной почты)",
+                "description": "Запрос на подтверждение email кодом",
+                "required": [
+                    "code"
+                ],
+                "properties": {
+                    "code": {
+                        "description": "Код подтверждения email, состоящий из ровно 6 цифр",
+                        "type": "string",
+                        "pattern": "^\\d{6}$",
+                        "example": "123456"
+                    }
+                },
+                "type": "object"
+            },
+            "GetHistoryAttemptsRequestQueryParams": {
+                "title": "Get History Attempts Request Query Params (Параметры запроса истории попыток прохождения тестов)",
+                "description": "Query-параметры для получения истории попыток. Оба параметра являются необязательными и используются для пагинации.",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "GetHistoryPurchaseRequest": {
+                "title": "Get History Purchase Request Query Params (Параметры запроса истории покупок)",
+                "description": "Query-параметры для получения истории покупок. Оба параметра являются необязательными и используются для пагинации.",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "SetInviterRequest": {
+                "title": "Set Inviter Request (Установка пригласившего пользователя)",
+                "description": "Запрос для установки пригласившего пользователя по коду приглашения. Код должен состоять из 16 символов: только заглавные латинские буквы и цифры (A–Z, 0–9).",
+                "required": [
+                    "invite_code"
+                ],
+                "properties": {
+                    "invite_code": {
+                        "description": "Пригласительный код. Должен содержать ровно 16 символов: заглавные латинские буквы и цифры.",
+                        "type": "string",
+                        "maxLength": 16,
+                        "minLength": 16,
+                        "pattern": "^[A-Z0-9]{16}$",
+                        "example": "AB12CD34EF56GH78"
+                    }
+                },
+                "type": "object"
+            },
+            "AddingLanguageRequest": {
+                "title": "Adding Language Request (Добавление нового языка)",
+                "description": "Схема запроса на добавление нового языка в систему. Все поля обязательны.",
+                "required": [
+                    "name",
+                    "native_name",
+                    "code",
+                    "flag",
+                    "locale_lang"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Название языка на целевом языке (например, 'English')",
+                        "type": "string",
+                        "example": "English"
+                    },
+                    "native_name": {
+                        "description": "Название языка на родном языке (например, 'Deutsch' для немецкого)",
+                        "type": "string",
+                        "example": "English"
+                    },
+                    "code": {
+                        "description": "Двухсимвольный код языка по ISO 639-1",
+                        "type": "string",
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "pattern": "^[a-z]{2}$",
+                        "example": "en"
+                    },
+                    "flag": {
+                        "description": "Путь к изображению флага (проверяется существование и принадлежность к каталогу изображений)",
+                        "type": "string",
+                        "example": "flags/en.png"
+                    },
+                    "locale_lang": {
+                        "description": "Уникальный код локали (например, 'en_US', должен быть уникальным в таблице `languages` по полю `locale`)",
+                        "type": "string",
+                        "example": "en_US"
+                    }
+                },
+                "type": "object"
+            },
+            "ActivatePromocodeRequest": {
+                "title": "Activate Promocode Request (Активация промокода)",
+                "description": "Схема запроса для активации промокода. Код должен состоять из 19 символов, разделённых дефисами, и быть в формате XXXX-XXXX-XXXX-XXXX (заглавные латинские буквы и цифры).",
+                "required": [
+                    "code"
+                ],
+                "properties": {
+                    "code": {
+                        "description": "Промокод в формате XXXX-XXXX-XXXX-XXXX. Только заглавные буквы и цифры. Пример: A1B2-C3D4-E5F6-G7H8",
+                        "type": "string",
+                        "maxLength": 19,
+                        "minLength": 19,
+                        "pattern": "^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$",
+                        "example": "AB12-CD34-EF56-GH78"
+                    }
+                },
+                "type": "object"
+            },
+            "CreatePromocodeRequest": {
+                "title": "Create Promocode Request (Создание промокодов)",
+                "description": "Схема для создания одного или нескольких промокодов. Требуется указать количество создаваемых кодов (целое положительное число).",
+                "required": [
+                    "count"
+                ],
+                "properties": {
+                    "count": {
+                        "description": "Количество создаваемых промокодов. Целое положительное число, минимум 1.",
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 1,
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "DatesForCountUsersByMonthsRequestQuery": {
+                "title": "Dates For Count Users By Months Request Query (Диапазон месяцев для подсчёта пользователей)",
+                "description": "Query-параметры для фильтрации по диапазону месяцев. Формат дат: YYYY-MM. Если указано одно значение, второе также обязательно. По умолчанию используется период с начала текущего года по текущий месяц.",
+                "properties": {
+                    "start_month": {
+                        "description": "Начальный месяц в формате YYYY-MM. Должен быть меньше или равен end_month.",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                        "example": "2024-01"
+                    },
+                    "end_month": {
+                        "description": "Конечный месяц в формате YYYY-MM. Должен быть больше или равен start_month.",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                        "example": "2024-08"
+                    }
+                },
+                "type": "object"
+            },
+            "AddingNewTariffRequest": {
+                "title": "Adding New Tariff Request (Добавление нового тарифа)",
+                "description": "Схема запроса для создания нового тарифа с уникальным количеством дней и названием.",
+                "required": [
+                    "name",
+                    "days"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Название тарифа.",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Стандартный тариф"
+                    },
+                    "days": {
+                        "description": "Количество дней тарифа. Должно быть уникальным в базе данных.",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 30
+                    }
+                },
+                "type": "object"
+            },
+            "EndTestRequest": {
+                "title": "End Test Request (Завершение теста)",
+                "description": "Запрос для завершения теста с идентификатором попытки, флагом автоматического завершения и массивом ответов.",
+                "required": [
+                    "attemptId",
+                    "automatic",
+                    "answers"
+                ],
+                "properties": {
+                    "attemptId": {
+                        "description": "Идентификатор попытки теста.",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "automatic": {
+                        "description": "Флаг, указывающий, было ли завершение автоматическим.",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "answers": {
+                        "description": "Массив ответов на вопросы теста.",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "question_id"
+                            ],
+                            "properties": {
+                                "question_id": {
+                                    "description": "Идентификатор вопроса.",
+                                    "type": "integer",
+                                    "example": 10
+                                },
+                                "answer_id": {
+                                    "description": "Идентификатор выбранного ответа. Может быть null.",
+                                    "type": "integer",
+                                    "example": 5,
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "StartTestRequest": {
+                "title": "Start Test Request (Начало теста)",
+                "description": "Запрос для начала теста с указанием идентификатора теста.",
+                "required": [
+                    "testId"
+                ],
+                "properties": {
+                    "testId": {
+                        "description": "Идентификатор теста для запуска.",
+                        "type": "integer",
+                        "example": 101
+                    }
+                },
+                "type": "object"
+            },
+            "CodeGoogleAuthenticatorRequest": {
+                "title": "Code Google Authenticator Request (Данные для подтверждения Google Authenticator)",
+                "description": "Данные для подтверждения двухфакторной аутентификации с поомощью Google Authenticator.",
+                "required": [
+                    "token",
+                    "code"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Токен для верификации пользователя.",
+                        "type": "string",
+                        "example": "abcdef123456"
+                    },
+                    "code": {
+                        "description": "Код Google Authenticator.",
+                        "type": "string",
+                        "example": "123456"
+                    }
+                },
+                "type": "object"
+            },
+            "ConfirmationCodeEmailTwoFactorAuthorizationRequest": {
+                "title": "Confirmation Code Email Two Factor Authorization Request (Подтверждение двухфакторной аутентификации по Email)",
+                "description": "Данные для подтверждения двухфакторной аутентификации по Email.",
+                "required": [
+                    "token",
+                    "code"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Токен для верификации пользователя.",
+                        "type": "string",
+                        "example": "abcdef123456"
+                    },
+                    "code": {
+                        "description": "Код подтверждения из email, ровно 6 символов.",
+                        "type": "string",
+                        "maxLength": 6,
+                        "minLength": 6,
+                        "example": "123456"
+                    }
+                },
+                "type": "object"
+            },
+            "EnableDisableATwoFactorAuthorizationRequest": {
+                "title": "Enable Disable A Two Factor Authorization Request (Включение или отключение двухфакторной аутентификации)",
+                "description": "Данные для включения или отключения двухфакторной аутентификации с помощью электронной почты или Google Authorization.",
+                "required": [
+                    "type"
+                ],
+                "properties": {
+                    "type": {
+                        "description": "Тип двухфакторной аутентификации.",
+                        "type": "string",
+                        "enum": [
+                            "email",
+                            "googleAuthenticator"
+                        ],
+                        "example": "email"
+                    }
+                },
+                "type": "object"
+            },
+            "TwoFactorAuthorizationTokenRequest": {
+                "title": "TwoFactorAuthorizationTokenRequest (Запрос токена двухфакторной аутентификации для отправки электронного письма с кодом для авторизации)",
+                "description": "Запрос токена двухфакторной аутентификации для отправки электронного письма с кодом для авторизации",
+                "required": [
+                    "token"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Токен для двухфакторной аутентификации.",
+                        "type": "string",
+                        "example": "abcdef123456"
+                    }
+                },
+                "type": "object"
+            },
+            "UseRecoveryCodeRequest": {
+                "title": "Use Recovery Code Request (Данные на использование кода восстановления)",
+                "description": "Данные для запроса с токеном и кодом восстановления для двухфакторной аутентификации.",
+                "required": [
+                    "token",
+                    "recovery_code"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Токен двухфакторной аутентификации.",
+                        "type": "string",
+                        "example": "abcdef123456"
+                    },
+                    "recovery_code": {
+                        "description": "Код восстановления длиной ровно 8 символов.",
+                        "type": "string",
+                        "maxLength": 8,
+                        "minLength": 8,
+                        "example": "1234ABCD"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdatePasswordRequest": {
+                "title": "Update Password Request Auth User (Данные для обновления пароля авторизованного пользователя )",
+                "description": "Данные для запроса для обновления пароля авторизованного пользователя",
+                "required": [
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "password": {
+                        "description": "Новый пароль, минимум 8 символов, должен содержать заглавные и строчные буквы, цифры и специальные символы.",
+                        "type": "string",
+                        "minLength": 8,
+                        "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
+                        "example": "StrongPass1!"
+                    },
+                    "password_confirmation": {
+                        "description": "Подтверждение пароля, должно совпадать с полем password.",
+                        "type": "string",
+                        "example": "StrongPass1!"
+                    }
+                },
+                "type": "object"
+            },
+            "UploadRequest": {
+                "title": "Upload Request (Загрузка файла)",
+                "description": "Данные запроса для загрузки файла (максимальный размер 10 МБ).",
+                "required": [
+                    "file"
+                ],
+                "properties": {
+                    "file": {
+                        "description": "Файл для загрузки",
+                        "type": "string",
+                        "format": "binary",
+                        "example": null
+                    }
+                },
+                "type": "object"
+            },
+            "GetVoicesRequest": {
+                "title": "Get Voices Request Query Params (Query параметры запроса получения данных о поддерживаемых голосах в системе)",
+                "description": "Query-параметры для получения данных о поддерживаемых голосах в системе. Оба параметра являются необязательными и используются для пагинации.",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
                     }
                 },
                 "type": "object"

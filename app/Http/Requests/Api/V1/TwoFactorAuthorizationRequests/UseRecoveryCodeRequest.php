@@ -4,6 +4,30 @@ namespace App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="UseRecoveryCodeRequest",
+ *     title="Use Recovery Code Request (Данные на использование кода восстановления)",
+ *     description="Данные для запроса с токеном и кодом восстановления для двухфакторной аутентификации.",
+ *     type="object",
+ *     required={"token", "recovery_code"},
+ *
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Токен двухфакторной аутентификации.",
+ *         example="abcdef123456"
+ *     ),
+ *     @OA\Property(
+ *         property="recovery_code",
+ *         type="string",
+ *         description="Код восстановления длиной ровно 8 символов.",
+ *         minLength=8,
+ *         maxLength=8,
+ *         example="1234ABCD"
+ *     )
+ * )
+ */
 class UseRecoveryCodeRequest extends FormRequest
 {
     /**

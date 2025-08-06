@@ -7,6 +7,72 @@ use App\Rules\IsFileBelongsToImagesRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="CreatingCardForDeckRequest",
+ *     title="Creating Card For Deck Request (Создание карточки в колоде)",
+ *     description="Данные, небходимые для создания новой карточки для колоды",
+ *     required={"deck_id", "word", "translate"},
+ *
+ *     @OA\Property(
+ *         property="deck_id",
+ *         type="integer",
+ *         example=12,
+ *         description="ID существующей колоды"
+ *     ),
+ *     @OA\Property(
+ *         property="word",
+ *         type="string",
+ *         maxLength=255,
+ *         example="apple",
+ *         description="Оригинальное слово"
+ *     ),
+ *     @OA\Property(
+ *         property="translate",
+ *         type="string",
+ *         maxLength=255,
+ *         example="яблоко",
+ *         description="Перевод слова"
+ *     ),
+ *     @OA\Property(
+ *         property="imagePath",
+ *         type="string",
+ *         nullable=true,
+ *         example="/images/cards/apple.jpg",
+ *         description="Путь к изображению (если передаётся)"
+ *     ),
+ *     @OA\Property(
+ *         property="originalVoices",
+ *         type="array",
+ *         nullable=true,
+ *         @OA\Items(
+ *             type="string",
+ *             example="abc123-voice-id"
+ *         ),
+ *         description="Массив ID оригинальных голосов"
+ *     ),
+ *     @OA\Property(
+ *         property="targetVoices",
+ *         type="array",
+ *         nullable=true,
+ *         @OA\Items(
+ *             type="string",
+ *             example="xyz789-voice-id"
+ *         ),
+ *         description="Массив ID целевых голосов"
+ *     ),
+ *     @OA\Property(
+ *         property="examples",
+ *         type="array",
+ *         nullable=true,
+ *         @OA\Items(
+ *             type="string",
+ *             example="I eat an apple every day."
+ *         ),
+ *         description="Примеры употребления слова"
+ *     )
+ * )
+ */
 class CreatingCardForDeckRequest extends FormRequest
 {
     /**

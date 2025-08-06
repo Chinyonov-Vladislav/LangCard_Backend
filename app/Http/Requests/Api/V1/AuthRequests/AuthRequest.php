@@ -8,7 +8,8 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="AuthRequest",
  *     required={"email", "password"},
- *     title="Auth Request",
+ *     title="Auth Request (Данные для авторизации)",
+ *     description="Данные, необходимые для авторизации пользователя",
  *     @OA\Property(property="email", type="string", format="email", maxLength=255, example="user@example.com"),
  *     @OA\Property(property="password", type="string", minLength=8, example="password123")
  * )

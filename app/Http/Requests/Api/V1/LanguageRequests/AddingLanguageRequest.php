@@ -7,6 +7,53 @@ use App\Rules\IsFileBelongsToImagesRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingLanguageRequest",
+ *     title="Adding Language Request (Добавление нового языка)",
+ *     description="Схема запроса на добавление нового языка в систему. Все поля обязательны.",
+ *     type="object",
+ *     required={"name", "native_name", "code", "flag", "locale_lang"},
+ *
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         description="Название языка на целевом языке (например, 'English')",
+ *         example="English"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="native_name",
+ *         type="string",
+ *         description="Название языка на родном языке (например, 'Deutsch' для немецкого)",
+ *         example="English"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="code",
+ *         type="string",
+ *         description="Двухсимвольный код языка по ISO 639-1",
+ *         example="en",
+ *         minLength=2,
+ *         maxLength=2,
+ *         pattern="^[a-z]{2}$"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="flag",
+ *         type="string",
+ *         description="Путь к изображению флага (проверяется существование и принадлежность к каталогу изображений)",
+ *         example="flags/en.png"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="locale_lang",
+ *         type="string",
+ *         description="Уникальный код локали (например, 'en_US', должен быть уникальным в таблице `languages` по полю `locale`)",
+ *         example="en_US"
+ *     )
+ * )
+ */
 class AddingLanguageRequest extends FormRequest
 {
     /**

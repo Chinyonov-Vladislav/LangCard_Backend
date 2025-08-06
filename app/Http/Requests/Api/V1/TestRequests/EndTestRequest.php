@@ -4,6 +4,52 @@ namespace App\Http\Requests\Api\V1\TestRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="EndTestRequest",
+ *     title="End Test Request (Завершение теста)",
+ *     description="Запрос для завершения теста с идентификатором попытки, флагом автоматического завершения и массивом ответов.",
+ *     type="object",
+ *     required={"attemptId", "automatic", "answers"},
+ *
+ *     @OA\Property(
+ *         property="attemptId",
+ *         type="integer",
+ *         description="Идентификатор попытки теста.",
+ *         example=123
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="automatic",
+ *         type="boolean",
+ *         description="Флаг, указывающий, было ли завершение автоматическим.",
+ *         example=false
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="answers",
+ *         type="array",
+ *         description="Массив ответов на вопросы теста.",
+ *         @OA\Items(
+ *             type="object",
+ *             required={"question_id"},
+ *             @OA\Property(
+ *                 property="question_id",
+ *                 type="integer",
+ *                 description="Идентификатор вопроса.",
+ *                 example=10
+ *             ),
+ *             @OA\Property(
+ *                 property="answer_id",
+ *                 type="integer",
+ *                 nullable=true,
+ *                 description="Идентификатор выбранного ответа. Может быть null.",
+ *                 example=5
+ *             )
+ *         )
+ *     )
+ * )
+ */
 class EndTestRequest extends FormRequest
 {
     /**

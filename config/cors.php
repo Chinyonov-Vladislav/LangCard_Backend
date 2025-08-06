@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'], // GET, POST и т.д.
 
-    'allowed_origins' => ['http://localhost:5173'], // Разрешить все источники (НЕ безопасно для продакшена)
+    'allowed_origins' => ['http://localhost:5173', 'http://localhost:8000', 'http://127.0.0.1:8000'], // Разрешить все источники (НЕ безопасно для продакшена)
 
     'allowed_origins_patterns' => [],
 

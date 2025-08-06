@@ -5,6 +5,23 @@ namespace App\Http\Requests\Api\V1;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="UploadRequest",
+ *     title="Upload Request (Загрузка файла)",
+ *     description="Данные запроса для загрузки файла (максимальный размер 10 МБ).",
+ *     type="object",
+ *     required={"file"},
+ *
+ *     @OA\Property(
+ *         property="file",
+ *         type="string",
+ *         format="binary",
+ *         description="Файл для загрузки",
+ *         example=null
+ *     )
+ * )
+ */
 class UploadRequest extends FormRequest
 {
     /**

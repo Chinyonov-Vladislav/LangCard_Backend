@@ -5,6 +5,31 @@ namespace App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ConfirmationCodeEmailTwoFactorAuthorizationRequest",
+ *     title="Confirmation Code Email Two Factor Authorization Request (Подтверждение двухфакторной аутентификации по Email)",
+ *     description="Данные для подтверждения двухфакторной аутентификации по Email.",
+ *     type="object",
+ *     required={"token", "code"},
+ *
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Токен для верификации пользователя.",
+ *         example="abcdef123456"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="code",
+ *         type="string",
+ *         description="Код подтверждения из email, ровно 6 символов.",
+ *         minLength=6,
+ *         maxLength=6,
+ *         example="123456"
+ *     )
+ * )
+ */
 class ConfirmationCodeEmailTwoFactorAuthorizationRequest extends FormRequest
 {
     /**

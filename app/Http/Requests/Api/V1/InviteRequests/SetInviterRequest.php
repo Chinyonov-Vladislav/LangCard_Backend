@@ -5,6 +5,24 @@ namespace App\Http\Requests\Api\V1\InviteRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="SetInviterRequest",
+ *     title="Set Inviter Request (Установка пригласившего пользователя)",
+ *     description="Запрос для установки пригласившего пользователя по коду приглашения. Код должен состоять из 16 символов: только заглавные латинские буквы и цифры (A–Z, 0–9).",
+ *     type="object",
+ *     required={"invite_code"},
+ *     @OA\Property(
+ *         property="invite_code",
+ *         type="string",
+ *         description="Пригласительный код. Должен содержать ровно 16 символов: заглавные латинские буквы и цифры.",
+ *         example="AB12CD34EF56GH78",
+ *         minLength=16,
+ *         maxLength=16,
+ *         pattern="^[A-Z0-9]{16}$"
+ *     )
+ * )
+ */
 class SetInviterRequest extends FormRequest
 {
     /**
