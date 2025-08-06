@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\v1\VoiceResources;
+namespace App\Http\Resources\V1\VoiceResources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

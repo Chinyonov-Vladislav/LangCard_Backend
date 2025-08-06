@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\v1\UserTestAnswerResources;
+namespace App\Http\Resources\V1\UserTestAnswerResources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

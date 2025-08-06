@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\v1\TariffResources;
+namespace App\Http\Resources\V1\TariffResources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

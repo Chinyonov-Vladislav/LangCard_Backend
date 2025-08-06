@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\v1\QuestionResources;
+namespace App\Http\Resources\V1\QuestionResources;
 
 use App\Enums\TypeQuestionInTest;
 use Illuminate\Http\Request;

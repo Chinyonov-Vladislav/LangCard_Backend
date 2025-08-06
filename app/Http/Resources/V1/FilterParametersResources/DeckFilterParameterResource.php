@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\v1\DailyRewardResources;
+namespace App\Http\Resources\V1\FilterParametersResources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DailyRewardResource extends JsonResource
+class DeckFilterParameterResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,10 +15,9 @@ class DailyRewardResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'number_date' => $this->number_date,
-            'reward' => $this->reward,
-            'is_take' => (bool)$this->is_take,
+            'originalLanguages'=>$this->originalLanguages,
+            'targetLanguages'=>$this->targetLanguages,
+            'typesShowDeck'=>$this->typesShowDeck,
         ];
     }
 }
