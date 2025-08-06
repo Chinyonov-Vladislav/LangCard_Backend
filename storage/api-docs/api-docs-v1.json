@@ -3114,6 +3114,342 @@
                 },
                 "type": "object"
             },
+            "DailyRewardResource": {
+                "title": "DailyRewardResource (Ресурс ежедневной награды)",
+                "description": "Информация об одной ежедневной награде пользователя",
+                "required": [
+                    "id",
+                    "number_date",
+                    "reward",
+                    "is_take"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID записи награды",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "number_date": {
+                        "description": "Номер дня (например, 3 — третий день подряд)",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "reward": {
+                        "description": "Размер награды (например, количество монет)",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "is_take": {
+                        "description": "Флаг, получена ли награда пользователем",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "DeckResource": {
+                "title": "Deck Resource (Ресурс колоды)",
+                "description": "Ресурс колоды с карточками, языками, тестами и пользователем",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Английский для начинающих"
+                    },
+                    "is_premium": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "creation_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-06 15:23:12"
+                    },
+                    "visitors_count": {
+                        "type": "integer",
+                        "example": 120
+                    },
+                    "tests_count": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "cards_count": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "original_language": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Английский"
+                            },
+                            "code": {
+                                "type": "string",
+                                "example": "en"
+                            },
+                            "flag_url": {
+                                "type": "string",
+                                "format": "url",
+                                "example": "https://example.com/flags/en.svg"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "target_language": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Русский"
+                            },
+                            "code": {
+                                "type": "string",
+                                "example": "ru"
+                            },
+                            "flag_url": {
+                                "type": "string",
+                                "format": "url",
+                                "example": "https://example.com/flags/ru.svg"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "user": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "avatar_url": {
+                                "type": "string",
+                                "format": "url",
+                                "example": "https://example.com/avatars/user.png"
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Иван Иванов"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "topics": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "Путешествия"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nullable": true
+                    },
+                    "tests": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "Тест 1"
+                                },
+                                "time_seconds": {
+                                    "type": "integer",
+                                    "example": 300
+                                },
+                                "count_attempts": {
+                                    "type": "integer",
+                                    "example": 3
+                                },
+                                "creation_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2025-08-06 15:00:00"
+                                },
+                                "authorized_user_attempts": {
+                                    "type": "integer",
+                                    "example": 2,
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nullable": true
+                    },
+                    "cards": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 100
+                                },
+                                "word": {
+                                    "type": "string",
+                                    "example": "Apple"
+                                },
+                                "translate": {
+                                    "type": "string",
+                                    "example": "Яблоко"
+                                },
+                                "image_url": {
+                                    "type": "string",
+                                    "format": "url",
+                                    "example": "https://example.com/images/apple.png"
+                                },
+                                "creation_time": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2025-08-06 15:20:00"
+                                },
+                                "original_word_audiofiles": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "path": {
+                                                "type": "string",
+                                                "example": "/audio/en/apple.mp3"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "nullable": true
+                                },
+                                "target_word_audiofiles": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "path": {
+                                                "type": "string",
+                                                "example": "/audio/ru/apple.mp3"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ApiLimitFilterParametersResource": {
+                "title": "API Limit Filter Parameters Resource (Ресурс для фильтров модели ApiLimit)",
+                "description": "Доступные фильтры для модели API Limit: количество дней и запросов.",
+                "properties": {
+                    "day_range": {
+                        "description": "Диапазон дней",
+                        "properties": {
+                            "min": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "max": {
+                                "type": "integer",
+                                "example": 30
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "request_count_range": {
+                        "description": "Диапазон количества запросов",
+                        "properties": {
+                            "min": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "max": {
+                                "type": "integer",
+                                "example": 1000
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "DeckFilterParameterResource": {
+                "title": "API Limit Filter Parameters Resource (Ресурс для фильтров модели Deck)",
+                "description": "Параметры фильтрации колод: исходные и целевые языки, типы отображения колод.",
+                "properties": {
+                    "originalLanguages": {
+                        "description": "Список исходных языков (только имя языка).",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "English"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "targetLanguages": {
+                        "description": "Список целевых языков (только имя языка).",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "Russian"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "typesShowDeck": {
+                        "description": "Типы отображения колод",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "all"
+                                },
+                                "displayValue": {
+                                    "type": "string",
+                                    "example": "Все"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "InviterResource": {
                 "title": "Inviter Resource",
                 "description": "Информация о пригласившем пользователе",
@@ -3132,6 +3468,502 @@
                         "description": "URL аватара пользователя, может отсутствовать",
                         "type": "string",
                         "example": "https://example.com/avatars/123.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "LanguageResource": {
+                "title": "Language Resource",
+                "description": "Ресурс языка с основными свойствами",
+                "required": [
+                    "id",
+                    "name",
+                    "native_name",
+                    "code",
+                    "flag_url",
+                    "locale"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор языка",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Название языка на английском",
+                        "type": "string",
+                        "example": "English"
+                    },
+                    "native_name": {
+                        "description": "Название языка на родном языке",
+                        "type": "string",
+                        "example": "English"
+                    },
+                    "code": {
+                        "description": "Код языка (например, en, ru)",
+                        "type": "string",
+                        "example": "en"
+                    },
+                    "flag_url": {
+                        "description": "URL изображения флага языка",
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://example.com/flags/en.png"
+                    },
+                    "locale": {
+                        "description": "Локаль языка",
+                        "type": "string",
+                        "example": "en_US"
+                    }
+                },
+                "type": "object"
+            },
+            "ProfileUserResource": {
+                "title": "Profile User Resource",
+                "description": "Ресурс профиля пользователя с основной информацией",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "created_at"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор пользователя",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "name": {
+                        "description": "Имя пользователя",
+                        "type": "string",
+                        "example": "Иван Иванов"
+                    },
+                    "email": {
+                        "description": "Email пользователя",
+                        "type": "string",
+                        "format": "email",
+                        "example": "ivan@example.com"
+                    },
+                    "vip_status_time_end": {
+                        "description": "Дата и время окончания VIP-статуса или null",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-12-31 23:59:59",
+                        "nullable": true
+                    },
+                    "invite_code": {
+                        "description": "Код приглашения, доступен только для авторизованного пользователя",
+                        "type": "string",
+                        "example": "INVITE123",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Дата и время создания профиля",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-08-06 12:34:56"
+                    },
+                    "currency": {
+                        "description": "Валюта пользователя",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "US Dollar"
+                            },
+                            "code": {
+                                "type": "string",
+                                "example": "USD"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "example": "$"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "timezone": {
+                        "description": "Часовой пояс пользователя",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Europe/Moscow"
+                            },
+                            "offset_utc": {
+                                "type": "string",
+                                "example": "+03:00"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "inviter": {
+                        "description": "Пригласивший пользователь",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Пётр Петров"
+                            },
+                            "avatar": {
+                                "type": "string",
+                                "format": "uri",
+                                "example": "https://example.com/avatar.jpg"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "QuestionResource": {
+                "title": "Question Resource",
+                "description": "Ресурс вопроса с опциональными вложенными данными",
+                "required": [
+                    "id",
+                    "type",
+                    "text"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор вопроса",
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "type": {
+                        "description": "Тип вопроса",
+                        "type": "string",
+                        "example": "translate"
+                    },
+                    "text": {
+                        "description": "Текст вопроса",
+                        "type": "string",
+                        "example": "Переведите слово"
+                    },
+                    "card": {
+                        "description": "Карточка, связанная с вопросом",
+                        "properties": {
+                            "word": {
+                                "description": "Слово из карточки (только если type = 'translate')",
+                                "type": "string",
+                                "example": "apple",
+                                "nullable": true
+                            },
+                            "image_url": {
+                                "description": "URL изображения карточки",
+                                "type": "string",
+                                "format": "uri",
+                                "example": "https://example.com/images/apple.png"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "answers": {
+                        "description": "Список вариантов ответов",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "id",
+                                "text"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "description": "Идентификатор ответа",
+                                    "type": "integer",
+                                    "example": 201
+                                },
+                                "text": {
+                                    "description": "Текст ответа",
+                                    "type": "string",
+                                    "example": "яблоко"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TariffResource": {
+                "title": "Tariff Resource (Ресурс тарифа)",
+                "required": [
+                    "id",
+                    "name",
+                    "days"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор тарифа",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Название тарифа",
+                        "type": "string",
+                        "example": "Premium Plan"
+                    },
+                    "days": {
+                        "description": "Количество дней действия тарифа",
+                        "type": "integer",
+                        "example": 30
+                    },
+                    "costs": {
+                        "description": "Список цен тарифа в разных валютах",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "id",
+                                "cost"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "description": "Идентификатор стоимости",
+                                    "type": "integer",
+                                    "example": 10
+                                },
+                                "cost": {
+                                    "description": "Стоимость тарифа",
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 99.99
+                                },
+                                "currency": {
+                                    "description": "Валюта стоимости",
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "code",
+                                        "symbol"
+                                    ],
+                                    "properties": {
+                                        "id": {
+                                            "description": "Идентификатор валюты",
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "description": "Название валюты",
+                                            "type": "string",
+                                            "example": "US Dollar"
+                                        },
+                                        "code": {
+                                            "description": "Код валюты",
+                                            "type": "string",
+                                            "example": "USD"
+                                        },
+                                        "symbol": {
+                                            "description": "Символ валюты",
+                                            "type": "string",
+                                            "example": "$"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserTestAnswerResource": {
+                "title": "User Test Answer Resource (ресурс пользовательских ответов на вопросы к тесту)",
+                "properties": {
+                    "question": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 123
+                            },
+                            "text": {
+                                "type": "string",
+                                "example": "What is the capital of France?"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "multiple_choice"
+                            },
+                            "card": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 456
+                                    },
+                                    "image_url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://example.com/images/card1.png"
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "correct_answer": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 789
+                                    },
+                                    "text_answer": {
+                                        "type": "string",
+                                        "example": "Paris"
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "user_answer": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1011
+                                    },
+                                    "text_answer": {
+                                        "type": "string",
+                                        "example": "Paris"
+                                    },
+                                    "is_correct": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "UserTestResultResource": {
+                "title": "User Test Result (Ресурс для результатов пользователя для попытки прохождения теста)",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "score": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 85.5
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-06T12:00:00Z"
+                    },
+                    "finish_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-06T12:30:00Z",
+                        "nullable": true
+                    },
+                    "number_attempt": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "test": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Math Test"
+                            },
+                            "time_seconds": {
+                                "type": "integer",
+                                "example": 1800
+                            },
+                            "count_attempts": {
+                                "type": "integer",
+                                "example": 3
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "VoiceResource": {
+                "title": "Voice Resource (ресурс для информации о голосе с помощью которого можно озвучить текст)",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "voice_id": {
+                        "type": "string",
+                        "example": "voice_123"
+                    },
+                    "voice_name": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "sex": {
+                        "type": "string",
+                        "enum": [
+                            "male",
+                            "female",
+                            "other"
+                        ],
+                        "example": "male"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "language": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "English"
+                            },
+                            "native_name": {
+                                "type": "string",
+                                "example": "English"
+                            },
+                            "code": {
+                                "type": "string",
+                                "example": "en"
+                            },
+                            "flag_url": {
+                                "type": "string",
+                                "format": "url",
+                                "example": "https://example.com/flags/en.png"
+                            },
+                            "locale": {
+                                "type": "string",
+                                "example": "en_US"
+                            }
+                        },
+                        "type": "object",
                         "nullable": true
                     }
                 },

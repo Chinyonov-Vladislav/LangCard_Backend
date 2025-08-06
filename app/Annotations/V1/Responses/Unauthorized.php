@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Annotations\V1;
+namespace App\Annotations\V1\Responses;
 
 /**
  * @OA\Response(
