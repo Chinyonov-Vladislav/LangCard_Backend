@@ -25,6 +25,80 @@ class InviteController extends Controller
     }
 
 
+    /**
+     * @OA\Post(
+     *     path="/setInviter",
+     *     summary="Установить пригласившего пользователя",
+     *     description="Позволяет авторизованному пользователю указать другого пользователя, который его пригласил, по коду приглашения.",
+     *     operationId="setInviter",
+     *     tags={"Привязка к пользователю, который пригласил в систему"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/SetInviterRequest")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешная установка пригласившего пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Благодарим! Вы указали пригласившего пользователя."),
+     *             @OA\Property(property="data", type="object",
+     *                  required={"inviter"},
+     *                  @OA\Property(property="inviter", ref="#/components/schemas/InviterResource")
+     *              )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Не найден пользователь с таким кодом",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Не найден пользователь, владеющий данным invite-кодом"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=409,
+     *         description="Конфликт — код уже установлен, код невалиден или нарушает бизнес-логику",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Конфликт — код уже установлен, код невалиден или нарушает бизнес-логику"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Ошибка валидации",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *              @OA\Property(
+     *                  property="errors",
+     *                  type="object",
+     *                  @OA\Property(
+     *                      property="invite_code",
+     *                      type="array",
+     *                      @OA\Items(type="string", example="Invite Code is required")
+     *                  ),
+     *              )
+     *          )
+     *      )
+     * )
+     */
     public function setInviter(SetInviterRequest $request)
     {
         $userWithInviteCode = $this->inviteCodeRepository->getUserWithInviteCode($request->invite_code);
@@ -48,7 +122,7 @@ class InviteController extends Controller
         $inviter = $this->userRepository->getInfoUserById($userWithInviteCode->id);
         $ancestorsOfUser = $this->userRepository->getAncestorsInviterOfUser($currentAuthUserId);
         foreach ($ancestorsOfUser as $ancestor) {
-            // #TODO добавить уведомление о продлении vip - статуса
+            // TODO добавить уведомление о продлении vip - статуса
             $currentEndDate = $ancestor->vip_status_time_end ? Carbon::parse($ancestor->vip_status_time_end) : Carbon::now();
             $dateEndOfVipStatus = $currentEndDate->max(Carbon::now())->addDays($ancestor->depth * -1);
             $this->userRepository->updateEndDateOfVipStatusByIdUser($ancestor->id, $dateEndOfVipStatus);

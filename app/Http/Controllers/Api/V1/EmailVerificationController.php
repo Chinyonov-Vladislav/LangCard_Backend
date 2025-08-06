@@ -40,6 +40,69 @@ class EmailVerificationController extends Controller
         $this->generationInviteCodeService = new GenerationInviteCodeService();
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/sendVerificationCodeEmail",
+     *     summary="Отправка кода подтверждения на email",
+     *     description="Отправляет код подтверждения на email текущего авторизованного пользователя, если его email ещё не был подтверждён.",
+     *     operationId="sendVerificationCodeEmail",
+     *     tags={"Верификация электронного адреса"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Код подтверждения успешно отправлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Сообщение с кодом для подтверждения email - адреса было отправлено на электронный адрес, указанный при регистрации"
+     *             ),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Email уже подтверждён",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Email - адрес текущего авторизованного пользователя уже был ранее подтвержден!"
+     *             ),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Пользовать не авторизован и не имеет доступа к данным"
+     *             ),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка при генерации кода",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Произошла ошибка при генерации кода"
+     *             ),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     )
+     * )
+     */
     public function sendVerificationCodeEmail()
     {
         try {
@@ -64,6 +127,90 @@ class EmailVerificationController extends Controller
 
     }
 
+    /**
+     * @OA\Post(
+     *     path="/verificationEmailAddress",
+     *     summary="Подтверждение email авторизованного пользователя кодом",
+     *     description="Позволяет подтвердить email пользователя по коду, отправленному на электронную почту.",
+     *     operationId="verificationEmailAddress",
+     *     tags={"Верификация электронного адреса"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/EmailVerificationCodeRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email успешно подтверждён",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Электронный адрес авторизованного пользователя был успешно подтвержден"),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Пользователь с id = 5 не найден"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Email уже подтверждён",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Email - адрес текущего авторизованного пользователя уже был ранее подтвержден!"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Код не был запрошен ранее",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Текущий авторизованный пользователь не запрашивал код для подтверждения почты"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=412,
+     *         description="Неверный код подтверждения",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Предоставленный код не соответствует коду из электронного сообщения"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Неавторизован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Ошибка валидации",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Предоставленные данные не валидны"),
+     *              @OA\Property(
+     *                  property="errors",
+     *                  type="object",
+     *                  @OA\Property(
+     *                      property="code",
+     *                      type="array",
+     *                      @OA\Items(type="string", example="Token is required")
+     *                  ),
+     *              )
+     *          )
+     *      )
+     * )
+     */
     public function verificationEmailAddress(EmailVerificationCodeRequest $request)
     {
         $authUserId = auth()->user()->id;
@@ -72,6 +219,7 @@ class EmailVerificationController extends Controller
         {
             return ApiResponse::error("Пользователь с id = $authUserId не найден", null, 404);
         }
+
         if($infoCode->email_verified_at !== null)
         {
             return ApiResponse::error('Email - адрес текущего авторизованного пользователя уже был ранее подтвержден!',null, 409);
@@ -82,7 +230,7 @@ class EmailVerificationController extends Controller
         }
         if($infoCode->email_verification_code !== $request->code)
         {
-            return ApiResponse::error('Предоставленный код не соответствует коду из электронного сообщения', null, 422);
+            return ApiResponse::error('Предоставленный код не соответствует коду из электронного сообщения', null, 412);
         }
         $this->emailVerificationCodeRepository->verificateEmailAddress($authUserId);
         if(!$this->userRepository->hasUserInviteCode(auth()->user()->id))

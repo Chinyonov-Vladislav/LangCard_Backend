@@ -24,8 +24,10 @@ return [
                 'docs_yaml' => 'api-docs-v1.yaml',
                 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
                 'annotations' => [
+                    base_path('app/Annotations/V1'),
+                    base_path('app/Http/Requests/Api/V1'),
                     base_path('app/Http/Controllers/Api/V1'),
-                    base_path('app/Http/Requests/Api/V1')
+                    base_path('app/Http/Resources/V1'),
                 ],
                 'excludes' => [],
             ],
@@ -51,8 +53,10 @@ return [
                 'docs_yaml' => 'api-docs-v2.yaml',
                 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
                 'annotations' => [
+                    base_path('app/Annotations/V2'),
+                    base_path('app/Http/Requests/Api/V2'),
                     base_path('app/Http/Controllers/Api/V2'),
-                    base_path('app/Http/Requests/Api/V2')
+                    base_path('app/Http/Resources/V2'),
                 ],
                 'excludes' => [],
             ],
@@ -181,7 +185,7 @@ return [
         /*
          * API security definitions. Will be generated into documentation file.
         */
-        'securityDefinitions' => [
+        /*'securityDefinitions' => [
             'securitySchemes' => [
                 'bearerAuth' => [
                     'type' => 'http',
@@ -195,8 +199,22 @@ return [
                     'bearerAuth' => [],
                 ],
             ],
+        ],*/
+        'components' => [
+            'securitySchemes' => [
+                'bearerAuth' => [
+                    'type' => 'http',
+                    'scheme' => 'bearer',
+                    'bearerFormat' => 'JWT',
+                    'description' => 'Введите JWT токен в формате: Bearer <token>',
+                ],
+            ],
         ],
-
+        'security' => [
+            [
+                'bearerAuth' => [],
+            ],
+        ],
         /*
          * Set this to `true` in development mode so that docs would be regenerated on each request
          * Set this to `false` to disable swagger generation on production

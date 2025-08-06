@@ -6,7 +6,7 @@ interface ForgotPasswordRepositoryInterface
 {
 
     public function getInfoAboutTokenResetPassword($email);
-    public function updateOrCreateTokenByEmail($email, $token);
+    public function updateOrCreateTokenByEmail(string $email, string $token);
 
     public function updatePassword($email, $password);
 

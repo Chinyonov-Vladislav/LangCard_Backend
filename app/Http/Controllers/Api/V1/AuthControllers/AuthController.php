@@ -88,6 +88,7 @@ class AuthController extends Controller
      *     summary="Authenticate user",
      *     description="Authenticates user with email/password. Returns access tokens or 2FA data if enabled.",
      *     tags={"Аутентификация"},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
      *     @OA\RequestBody(
      *         required=true,
      *         description="User credentials",
@@ -99,14 +100,14 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             oneOf={
      *                 @OA\Schema(
-     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
      *                     @OA\Property(property="data", type="object",
      *                         @OA\Property(property="access_token", type="string"),
      *                         @OA\Property(property="email_is_verified", type="boolean")
      *                     )
      *                 ),
      *                 @OA\Schema(
-     *                     @OA\Property(property="success", type="boolean", example=true),
+     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
      *                     @OA\Property(property="data", type="object",
      *                         @OA\Property(property="two_factor_email_enabled", type="boolean"),
      *                         @OA\Property(property="two_factor_google_authenticator_enabled", type="boolean"),
@@ -121,7 +122,7 @@ class AuthController extends Controller
      *         response=404,
      *         description="Invalid credentials",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="User not found"),
      *             @OA\Property(property="data", type="null")
      *         )
@@ -166,6 +167,47 @@ class AuthController extends Controller
         //$response->headers->set('Set-Cookie', $cookieForRefreshToken, false);
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/auth/{provider}/redirect",
+     *     summary="Получить OAuth redirect URL для провайдера",
+     *     tags={"Аутентификация через OAuth"},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\Parameter(
+     *         name="provider",
+     *         in="path",
+     *         required=true,
+     *         description="Провайдер OAuth аутентификации",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"google", "yandex", "microsoft"}
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="URL редиректа получен успешно",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *             @OA\Property(property="message", type="string", example="OAuth URL получен успешно"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="url", type="string", example="https://accounts.google.com/o/oauth2/auth?...")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Неподдерживаемый провайдер",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Провайдер 'facebook' не поддерживается."),
+     *             @OA\Property(property="data", type="null", example=null)
+     *         )
+     *     )
+     * )
+     */
     public function redirect($provider)
     {
         if (!in_array($provider, $this->acceptedProviders)) {
@@ -178,6 +220,77 @@ class AuthController extends Controller
         return ApiResponse::success(__('api.getting_oauth_url', ['provider' => $provider]), (object)['url' => $url]);
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/auth/{provider}/callback",
+     *     summary="OAuth Callback от провайдера",
+     *     description="Обработка callback-аутентификации от OAuth-провайдера. Возвращает access_token или two_factor_token. Устанавливает refresh_token в cookie.",
+     *     tags={"Аутентификация через OAuth"},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\Parameter(
+     *         name="provider",
+     *         in="path",
+     *         required=true,
+     *         description="Провайдер OAuth-аутентификации",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"google", "yandex", "microsoft"}
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешная авторизация или требуется двухфакторная авторизация",
+     *         @OA\JsonContent(
+     *             oneOf={
+     *                 @OA\Schema(
+     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *                     @OA\Property(property="message", type="string", example="Авторизация прошла успешно."),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         type="object",
+     *                         @OA\Property(property="access_token", type="string", example="eyJhbGciOiJIUzI1...")
+     *                     )
+     *                 ),
+     *                 @OA\Schema(
+     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *                     @OA\Property(property="message", type="string", example="Включена двухфакторная авторизация"),
+     *                     @OA\Property(
+     *                         property="data",
+     *                         type="object",
+     *                         @OA\Property(property="two_factor_email_enabled", type="boolean", example=true),
+     *                         @OA\Property(property="two_factor_google_authenticator_enabled", type="boolean", example=false),
+     *                         @OA\Property(property="two_factor_token", type="string", example="abc123def456")
+     *                     )
+     *                 )
+     *             }
+     *         ),
+     *         @OA\Header(
+     *             header="Set-Cookie",
+     *             description="Refresh токен устанавливается в cookie (если 2FA отключена)",
+     *             @OA\Schema(type="string", example="refresh_token=abc123; HttpOnly; Secure")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Провайдер не поддерживается",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *             @OA\Property(property="message", type="string", example="Провайдер 'facebook' не поддерживается."),
+     *             @OA\Property(property="data", type="null", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка при аутентификации",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Произошла ошибка при авторизации через yandex."),
+     *             @OA\Property(property="data", type="null", example=null)
+     *         )
+     *     )
+     * )
+     */
     public function handleCallback($provider)
     {
         try {
@@ -249,6 +362,13 @@ class AuthController extends Controller
                 $code = $this->generationInviteCodeService->generateInviteCode();
                 $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
             }
+            if($user->two_factor_email_enabled || $user->google2fa_enable)
+            {
+                $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
+                $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
+                return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled,
+                    'two_factor_google_authenticator_enabled'=>$user->google2fa_enable, 'two_factor_token'=>$tokenData['token']]);
+            }
             $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
             $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
             $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
@@ -259,7 +379,60 @@ class AuthController extends Controller
         }
 
     }
-
+    /**
+     * @OA\Post(
+     *     path="/refresh",
+     *     summary="Обновление access и refresh токенов",
+     *     description="Обновляет access токен и refresh токен пользователя, используя refresh token из cookie",
+     *     operationId="refreshTokens",
+     *     tags={"Обновление токенов авторизации"},
+     *
+     *     @OA\Parameter(
+     *         name="refresh_token",
+     *         in="cookie",
+     *         required=true,
+     *         description="Refresh токен, передаваемый через cookie",
+     *         @OA\Schema(type="string")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Токены успешно обновлены",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="success"),
+     *             @OA\Property(property="message", type="string", example="Access и Refresh токены успешно обновлены"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="access_token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Невалидный refresh токен или отсутствует токен",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Невалидный refresh токен"),
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=403,
+     *         description="Недопустимый тип владельца токена",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Недопустимый тип владельца токена"),
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *         )
+     *     )
+     * )
+     */
     public function refresh(Request $request)
     {
         $refreshToken = $request->cookie('refresh_token');
@@ -283,6 +456,36 @@ class AuthController extends Controller
         return ApiResponse::success('Access и Refresh токены успешно обновлены', (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/logout",
+     *     summary="Выход из системы (отзыв токенов)",
+     *     description="Удаляет access и refresh токены текущего авторизованного пользователя. Требуется Bearer токен.",
+     *     operationId="logoutUser",
+     *     tags={"Выход из аккаунта"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный выход из системы",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Пользователь успешно вышел из системы"),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Пользовать не авторизован и не имеет доступа к данным"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     )
+     * )
+     */
     public function logout()
     {
         $accessTokenId = auth()->user()->currentAccessToken()->id;

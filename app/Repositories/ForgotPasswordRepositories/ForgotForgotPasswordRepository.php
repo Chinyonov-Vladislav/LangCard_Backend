@@ -9,12 +9,11 @@ use Illuminate\Support\Facades\Hash;
 class ForgotForgotPasswordRepository implements ForgotPasswordRepositoryInterface
 {
 
-    public function updateOrCreateTokenByEmail($email, $token): void
+    public function updateOrCreateTokenByEmail(string $email, string $token): void
     {
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $email],
-            ['token' => Hash::make($token),
-                'created_at' => Carbon::now()]
+            ['token' => $token, 'created_at' => Carbon::now()]
         );
     }
 

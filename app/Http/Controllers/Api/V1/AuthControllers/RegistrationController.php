@@ -30,6 +30,7 @@ class RegistrationController extends Controller
      *     tags={"Регистрация"},
      *     summary="Регистрация нового пользователя",
      *     operationId="registerUser",
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
      *
      *     @OA\RequestBody(
      *         required=true,
@@ -40,7 +41,7 @@ class RegistrationController extends Controller
      *         response=201,
      *         description="Пользователь успешно зарегистрирован",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
      *             @OA\Property(property="message", type="string", example="Пользователь успешно зарегистрирован"),
      *             @OA\Property(property="data", type="object", nullable=true)
      *         )
@@ -67,7 +68,7 @@ class RegistrationController extends Controller
      *         response=500,
      *         description="Ошибка при регистрации пользователя",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="status", type="string", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Не удалось зарегистрировать пользователя."),
      *             @OA\Property(property="data", type="object", nullable=true)
      *         )
