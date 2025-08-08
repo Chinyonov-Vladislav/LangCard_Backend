@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\TypeInfoAboutDeck;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\DeckFilter;
+use App\Http\Requests\Api\V1\DeckRequests\AddingTopicsToDeckRequest;
 use App\Http\Requests\Api\V1\DeckRequests\CreateDeckRequest;
 use App\Http\Requests\Api\V1\DeckRequests\DeckFilterRequest;
 use App\Http\Resources\v1\DeckResources\DeckResource;
@@ -97,21 +98,25 @@ class DeckController extends Controller
     {
         try {
             DB::beginTransaction();
-            $unique_topic_ids = array_unique($request->topic_ids);
             $newDeck = $this->deckRepository->saveNewDeck($request->name, $request->original_language_id, $request->target_language_id,auth()->id(), $request->is_premium);
-
-            foreach ($unique_topic_ids as $unique_topic_id)
-            {
-                $this->deckTopicRepository->saveNewDeckTopic($newDeck->id, $unique_topic_id);
-            }
             $newDeck = $this->deckRepository->getDeckById($newDeck->id, TypeInfoAboutDeck::maximum);
             DB::commit();
-            return ApiResponse::success('Новая колода была успешно создана', (object)['newDeck'=>new DeckResource($newDeck)]);
+            return ApiResponse::success('Новая колода была успешно создана', (object)['newDeck'=>new DeckResource($newDeck)], 201);
         }
         catch (Exception|Throwable $exception)
         {
             DB::rollBack();
             return ApiResponse::error($exception->getMessage(), null, 500);
         }
+    }
+    public function addTopicsToDeck(AddingTopicsToDeckRequest $request)
+    {
+        $unique_topic_ids = array_unique($request->topic_ids);
+        foreach ($unique_topic_ids as $unique_topic_id)
+        {
+            $this->deckTopicRepository->saveNewDeckTopic($request->deck_id, $unique_topic_id);
+        }
+        $newDeck = $this->deckRepository->getDeckById($request->deck_id, TypeInfoAboutDeck::maximum);
+        return ApiResponse::success('Темы установлены для колоды', (object)['newDeck'=>new DeckResource($newDeck)], 201);
     }
 }

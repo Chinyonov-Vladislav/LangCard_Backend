@@ -36,13 +36,6 @@ use Illuminate\Foundation\Http\FormRequest;
  *         type="boolean",
  *         example=false,
  *         description="Флаг премиум-доступа к колоде"
- *     ),
- *     @OA\Property(
- *         property="topic_ids",
- *         type="array",
- *         nullable=true,
- *         @OA\Items(type="integer", example=3),
- *         description="Список ID тем, связанных с колодой"
  *     )
  * )
  */
@@ -68,8 +61,7 @@ class CreateDeckRequest extends FormRequest
             'original_language_id' => ['required', 'exists:languages,id'],
             'target_language_id' => ['required', 'exists:languages,id', 'different:original_language_id'],
             'is_premium' => ['required', 'boolean'],
-            'topic_ids' => ['sometimes', 'array'],
-            'topic_ids.*' => ['required', 'integer', 'exists:topics,id']
+
         ];
     }
 

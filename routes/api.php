@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\PromocodeController;
 use App\Http\Controllers\Api\V1\SpellingController;
 use App\Http\Controllers\Api\V1\StatsController;
 use App\Http\Controllers\Api\V1\TariffController;
+use App\Http\Controllers\Api\V1\TopicController;
 use App\Http\Controllers\Api\V1\TwoFactorAuthorizationController;
 use App\Http\Controllers\Api\V1\UploadController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
@@ -75,7 +76,14 @@ Route::prefix('v1')->group(callback: function () {
                     Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
                     Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
                     Route::post('/', [DeckController::class, 'createDeck'])->name('createDeck');
+                    Route::post('/{id}/topics',[DeckController::class, 'addTopicsToDeck'] )->where('id', '[0-9]+')->name('addTopicsToDeck');
                     Route::delete('/{id}', [DeckController::class, 'deleteDeck'])->where('id', '[0-9]+')->name('deleteDeck');
+                });
+                Route::prefix('topics')->group(function () {
+                    Route::get('/', [TopicController::class, 'getTopics'])->name('getTopics');
+                    Route::post('/', [TopicController::class, 'createTopic'])->name('createTopic')->middleware('isAdmin');
+                    Route::put('/', [TopicController::class, 'updateTopic'])->name('updateTopic')->middleware('isAdmin');
+                    Route::delete('/{id}', [TopicController::class, 'deleteTopic'])->where('id', '[0-9]+')->name('deleteTopic')->middleware('isAdmin');
                 });
                 Route::prefix('historyAttempts')->group(function () {
                     Route::get('/', [HistoryAttemptsTestController::class, 'getAttemptsTests'])->name('getAttemptsTests');
