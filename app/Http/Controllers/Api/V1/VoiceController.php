@@ -8,6 +8,8 @@ use App\Http\Filters\FiltersForModels\VoiceFilter;
 use App\Http\Requests\Api\V1\VoiceRequests\GetVoicesRequest;
 use App\Http\Resources\v1\VoiceResources\VoiceResource;
 use App\Http\Responses\ApiResponse;
+use App\Jobs\FetchVoicesFromFreetts;
+use App\Jobs\SyncVoiceStatusesFromFreetts;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use App\Services\PaginatorService;
@@ -48,71 +50,13 @@ class VoiceController extends Controller
 
     public function createVoice()
     {
-        try {
-            $countNewVoices = 0;
-            $request = Http::get('https://freetts.ru/api/list');
-            $response = $request->json();
-            if ($response['status'] === TypeStatus::success->value) {
-                $voicesInfo = $response['data']['voices'];
-                foreach ($voicesInfo as $voice) {
-                    if(!$this->voiceRepository->isExistVoice($voice['id']))
-                    {
-                        $convertedLang = str_replace('-', '_', $voice['lang']);
-                        $languageByLocale = $this->languageRepository->getLanguageByLocale($convertedLang);
-                        if ($languageByLocale === null) {
-                            continue;
-                        }
-                        $convertedSex = $voice['sex'] === 'm' ? 'male' : 'female';
-                        $this->voiceRepository->saveNewVoice($voice['id'], $voice['name'], $convertedSex,true, $languageByLocale->id);
-                        $countNewVoices++;
-                    }
-                }
-                return ApiResponse::success("Количество новых голосов = $countNewVoices");
-            }
-            return ApiResponse::error('Произошла ошибка при получении языков с сайта freetts.ru', null, 500);
-        }
-        catch (ConnectionException $e) {
-            return ApiResponse::error('Произошла ошибка при получении языков с сайта freetts.ru: ' . $e->getMessage(), null, 500);
-        }
+        FetchVoicesFromFreetts::dispatch();
+        return ApiResponse::success('Задача на обновление голосов поставлена в очередь');
     }
 
     public function updateStatusOfVoices()
     {
-        try {
-            $voiceIdNewNonActiveLanguages = [];
-            $dataVoices = $this->voiceRepository->getVoicesWithPaginationAndFilters();
-            $request = Http::get('https://freetts.ru/api/list');
-            $response = $request->json();
-            if ($response['status'] === TypeStatus::success->value) {
-                $voicesInfo = $response['data']['voices'];
-                //unset($voicesInfo[3]);
-                foreach ($dataVoices as $voiceFromDb) {
-                    $isFound = false;
-                    foreach ($voicesInfo as $voiceFromSite) {
-                        if($voiceFromSite['id'] === $voiceFromDb->voice_id) {
-                            $isFound = true;
-                            break;
-                        }
-                    }
-                    if(!$isFound) {
-                        $this->voiceRepository->updateStatusActive($voiceFromDb->voice_id, false);
-                        $voiceIdNewNonActiveLanguages[] = $voiceFromDb->voice_id;
-                    }
-                    else
-                    {
-                        if(!$voiceFromDb->is_active)
-                        {
-                            $this->voiceRepository->updateStatusActive($voiceFromDb->voice_id, true);
-                            $voiceIdNewNonActiveLanguages[] = $voiceFromDb->voice_id;
-                        }
-                    }
-                }
-                $items = $this->voiceRepository->getVoicesByVoiceId($voiceIdNewNonActiveLanguages);
-                return ApiResponse::success('Изменения статусов языков', (object)['items'=>VoiceResource::collection($items)]);
-            }
-            return ApiResponse::error('Произошла ошибка при получении языков с сайта freetts.ru', null, 500);
-        } catch (ConnectionException $e) {
-            return ApiResponse::error('Произошла ошибка при получении языков с сайта freetts.ru: ' . $e->getMessage(), null, 500);
-        }
+        SyncVoiceStatusesFromFreetts::dispatch();
+        return ApiResponse::success('Синхронизация статусов голосов запущена');
     }
 }

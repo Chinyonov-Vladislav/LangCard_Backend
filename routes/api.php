@@ -122,8 +122,8 @@ Route::prefix('v1')->group(callback: function () {
                 });
                 Route::prefix('voices')->group(function () {
                     Route::get('/', [VoiceController::class, 'getVoices'])->name('getVoices');
-                    Route::post('/', [VoiceController::class, 'createVoice'])->name('createVoice');
-                    Route::patch('/', [VoiceController::class, 'updateStatusOfVoices'])->name('updateStatusOfVoices');
+                    Route::post('/', [VoiceController::class, 'createVoice'])->name('createVoice')->middleware('isAdmin');
+                    Route::patch('/', [VoiceController::class, 'updateStatusOfVoices'])->name('updateStatusOfVoices')->middleware('isAdmin');
                 });
                 Route::post('/upload', [UploadController::class, 'uploadFile'])->name('uploadFile');
                 Route::post('checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
