@@ -17,7 +17,7 @@ class EnsureEmailIsVerified
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user()->email_verified_at === null) {
-            return ApiResponse::error('Электронная почта авторизованного пользователя не подтверждена', null, 403);
+            return ApiResponse::error('Электронная почта авторизованного пользователя не подтверждена', null, 420);
         }
         return $next($request);
     }

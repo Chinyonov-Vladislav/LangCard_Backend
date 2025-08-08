@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\HistoryAttemptRequests\GetHistoryAttemptsRequest;
+use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Resources\v1\UserTestResultResources\UserTestResultResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
@@ -26,6 +27,6 @@ class HistoryAttemptsTestController extends Controller
         $numberCurrentPage = (int)$request->input('page', config('app.default_page'));
         $data = $this->userTestResultRepository->getResultAttemptsOfCurrentUserWithPagination($paginator, auth()->id(), $numberCurrentPage, $countOnPage);
         return ApiResponse::success(__('api.attempts_data_on_page', ['numberCurrentPage'=>$numberCurrentPage]), (object)['items'=>UserTestResultResource::collection($data['items']),
-            'pagination' => $data['pagination']]);
+            'pagination' => new PaginationResource($data['pagination'])]);
     }
 }

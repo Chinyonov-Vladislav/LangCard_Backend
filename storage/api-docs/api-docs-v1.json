@@ -1087,7 +1087,7 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
@@ -1165,7 +1165,619 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/decks": {
+            "get": {
+                "tags": [
+                    "Колоды"
+                ],
+                "summary": "Получение списка колод",
+                "description": "Возвращает список колод с фильтрацией и пагинацией.",
+                "operationId": "getDecks",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "originalLanguages",
+                        "in": "query",
+                        "description": "Коды оригинальных языков через запятую (en,fr,de)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en,fr"
+                        }
+                    },
+                    {
+                        "name": "targetLanguages",
+                        "in": "query",
+                        "description": "Коды целевых языков через запятую (es,it)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "es,it"
+                        }
+                    },
+                    {
+                        "name": "showPremium",
+                        "in": "query",
+                        "description": "Фильтр премиум-колод: only — только премиум, exclude — исключить, all — все",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "only",
+                                "exclude",
+                                "all"
+                            ],
+                            "example": "all"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с пагинированным списком колод",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные колод на странице 1"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/DeckResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Колоды"
+                ],
+                "summary": "Создание новой колоды",
+                "description": "Создаёт новую языковую колоду и возвращает её полную информацию.",
+                "operationId": "createDeck",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Данные для создания новой колоды",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateDeckRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Новая колода успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Новая колода была успешно создана"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "newDeck": {
+                                                    "$ref": "#/components/schemas/DeckResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "В запросе содержатся ошибки"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Название обязательно для заполнения."
+                                                    }
+                                                },
+                                                "original_language_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Необходимо указать язык оригинала."
+                                                    }
+                                                },
+                                                "target_language_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Язык перевода должен отличаться от языка оригинала."
+                                                    }
+                                                },
+                                                "is_premium": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'is_premium' должно быть булевым значением (true/false)."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Произошла непредвиденная ошибка"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/decks/{id}": {
+            "get": {
+                "tags": [
+                    "Колоды"
+                ],
+                "summary": "Получить колоду по ID",
+                "description": "Возвращает полную информацию о колоде по её ID.",
+                "operationId": "getDeck",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID колоды",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Колода найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода с ID 5 найдена"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "item": {
+                                                    "$ref": "#/components/schemas/DeckResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Колода не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода с ID 99 не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Доступ к премиум-колоде запрещён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Доступ к премиум-колоде с ID 5 запрещён"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Колоды"
+                ],
+                "summary": "Удаление колоды",
+                "description": "Удаляет колоду по её ID. Если для колоды нет запущенных тестов — удаление будет физическим, иначе — мягким (soft delete).",
+                "operationId": "deleteDeck",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID колоды для удаления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Колода успешно удалена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода 5 была удалена (мягко или физически)."
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Колода не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода с ID 5 не найдена"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является владельцем колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользователь не является владельцем колоды."
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/decks/{id}/topics": {
+            "post": {
+                "tags": [
+                    "Колоды"
+                ],
+                "summary": "Добавление тем в колоду",
+                "description": "Добавляет одну или несколько тем в существующую колоду по её ID.",
+                "operationId": "addTopicsToDeck",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID колоды, в которую добавляются темы",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingTopicsToDeckRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Темы успешно добавлены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Темы установлены для колоды"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "newDeck": {
+                                                    "$ref": "#/components/schemas/DeckResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Колода не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода с ID 5 не найдена"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "topic_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'topic_ids' обязательно для заполнения."
+                                                    }
+                                                },
+                                                "topic_ids.*": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Каждый элемент 'topic_ids' должен быть существующим ID темы."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
@@ -1661,7 +2273,7 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     },
                     "404": {
@@ -1741,7 +2353,7 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
@@ -1850,8 +2462,332 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/topics": {
+            "get": {
+                "tags": [
+                    "Топики"
+                ],
+                "summary": "Получить список тем",
+                "description": "Возвращает все темы из базы данных",
+                "operationId": "getTopics",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с коллекцией тем",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Темы из базы данных"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/TopicResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Топики"
+                ],
+                "summary": "Создание новой темы",
+                "description": "Создает новую тему. Доступно только для администраторов.",
+                "operationId": "createTopic",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatingTopicRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Тема успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Информация о новом топике успешно создана"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "item": {
+                                                    "$ref": "#/components/schemas/TopicResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Topic name is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/topics/{id}": {
+            "put": {
+                "tags": [
+                    "Топики"
+                ],
+                "summary": "Update an existing topic",
+                "description": "Обновляет информацию о существующей теме по её ID. Доступно только для администраторов.",
+                "operationId": "updateTopic",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID темы для обновления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatingTopicRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Информация о топике успешно обновлена"
+                    },
+                    "404": {
+                        "description": "Топик с указанным ID не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Топик с id = 1 не найден"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Topic name is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Топики"
+                ],
+                "summary": "Delete a topic",
+                "description": "Удаляет тему по ID. Доступно только для администраторов.",
+                "operationId": "deleteTopic",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID темы для удаления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Топик был успешно удалён"
+                    },
+                    "404": {
+                        "description": "Топик не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Топик c id = 1 не найден"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
                     }
                 },
                 "security": [
@@ -2762,14 +3698,14 @@
                 ]
             }
         },
-        "/api/v1/tests/start": {
+        "/tests/start": {
             "post": {
                 "tags": [
                     "Тестирование (прохождение тестов на сайте)"
                 ],
                 "summary": "Начало теста",
                 "description": "Запускает тест по его идентификатору. Возвращает ID попытки и список вопросов для прохождения.",
-                "operationId": "9c00e54dea753bf6fe8d27938edd29c1",
+                "operationId": "3ee81b39c92520fe6ffe815731a8ae86",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/AcceptLanguageHeader"
@@ -2818,7 +3754,7 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     },
                     "404": {
@@ -2844,6 +3780,34 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "testId": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле \\'testId\\' обязательно для заполнения."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2853,7 +3817,7 @@
                 ]
             }
         },
-        "/questionsForTest/{attemptId}": {
+        "/tests/questionsForTest/{attemptId}": {
             "get": {
                 "tags": [
                     "Тестирование (прохождение тестов на сайте)"
@@ -2911,11 +3875,35 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     },
                     "409": {
                         "description": "Ошибка бизнес-логики: попытка не принадлежит пользователю, уже завершена или истекло время теста.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The attempt does not belong to the current user"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ошибка бизнес-логики: запрашиваемая попытка не найдена",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2946,7 +3934,7 @@
                 ]
             }
         },
-        "/end": {
+        "/tests/end": {
             "post": {
                 "tags": [
                     "Тестирование (прохождение тестов на сайте)"
@@ -3015,7 +4003,7 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
-                    "403": {
+                    "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
                     },
                     "404": {
@@ -3059,6 +4047,55 @@
                                         "errors": {
                                             "type": "object",
                                             "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "attemptId": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'attemptId' обязательно для заполнения."
+                                                    }
+                                                },
+                                                "answers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'answers' обязательно для заполнения."
+                                                    }
+                                                },
+                                                "answers.*.question_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'question_id' обязательно для заполнения в каждом элементе массива answers."
+                                                    }
+                                                },
+                                                "answers.*.answer_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'answer_id' должно быть целым числом в каждом элементе массива answers."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -3265,6 +4302,24 @@
                         "description": "Предложение для проверки",
                         "type": "string",
                         "example": "This is a test sentence."
+                    }
+                },
+                "type": "object"
+            },
+            "AddingTopicsToDeckRequest": {
+                "title": "Adding Topics To Deck Request (Добавление тем в колоду)",
+                "description": "Данные для добавления одной или нескольких тем в существующую колоду",
+                "required": [
+                    "topic_ids"
+                ],
+                "properties": {
+                    "topic_ids": {
+                        "description": "Список ID тем для добавления в колоду. Должен содержать хотя бы один элемент.",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": 12
+                        }
                     }
                 },
                 "type": "object"
@@ -3574,21 +4629,6 @@
                 },
                 "type": "object"
             },
-            "GetQuestionsForTestRequest": {
-                "title": "Get Questions For Test Request (Получение вопросов для теста)",
-                "description": "Запрос для получения списка вопросов по ID попытки прохождения теста.",
-                "required": [
-                    "attemptId"
-                ],
-                "properties": {
-                    "attemptId": {
-                        "description": "Идентификатор попытки прохождения теста.",
-                        "type": "integer",
-                        "example": 125
-                    }
-                },
-                "type": "object"
-            },
             "StartTestRequest": {
                 "title": "Start Test Request (Начало теста)",
                 "description": "Запрос для начала теста с указанием идентификатора теста.",
@@ -3621,6 +4661,37 @@
                     "fields": {
                         "description": "Поля, которые нужно вернуть (необязательный параметр)",
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "CreatingTopicRequest": {
+                "title": "Creating Topic Request (схема для создания топика)",
+                "description": "Данные для создания новой темы",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "История"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdatingTopicRequest": {
+                "title": "Updating Topic Request (Обновление темы)",
+                "description": "Данные для обновления существующей темы",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Новое имя темы",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "История России"
                     }
                 },
                 "type": "object"
@@ -4189,6 +5260,65 @@
                 },
                 "type": "object"
             },
+            "PaginationResource": {
+                "title": "Pagination Resource (ресурс пагинации)",
+                "description": "Структура данных пагинации",
+                "properties": {
+                    "current_page": {
+                        "description": "Текущая страница",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "per_page": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "total": {
+                        "description": "Общее количество элементов",
+                        "type": "integer",
+                        "example": 125
+                    },
+                    "last_page": {
+                        "description": "Последняя страница",
+                        "type": "integer",
+                        "example": 13
+                    },
+                    "from": {
+                        "description": "Номер первого элемента на странице",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "to": {
+                        "description": "Номер последнего элемента на странице",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "links": {
+                        "description": "Массив ссылок для навигации",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "url": {
+                                    "type": "string",
+                                    "example": "https://example.com?page=2",
+                                    "nullable": true
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "example": "2"
+                                },
+                                "active": {
+                                    "type": "boolean",
+                                    "example": false
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "ProfileUserResource": {
                 "title": "Profile User Resource",
                 "description": "Ресурс профиля пользователя с основной информацией",
@@ -4483,6 +5613,20 @@
                 },
                 "type": "object"
             },
+            "TopicResource": {
+                "title": "Topic Resource (ресурс топика)",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "История"
+                    }
+                },
+                "type": "object"
+            },
             "UserTestAnswerResource": {
                 "title": "User Test Answer Resource (ресурс пользовательских ответов на вопросы к тесту)",
                 "properties": {
@@ -4671,6 +5815,31 @@
             }
         },
         "responses": {
+            "NotAdmin": {
+                "description": "Пользователь не является администратором",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Пользователь не является администратором"
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "example": null,
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "NotVerifiedEmail": {
                 "description": "Электронный адрес пользователя не подтвержден",
                 "content": {
@@ -4780,6 +5949,10 @@
             "description": "Ежедневная награда"
         },
         {
+            "name": "Колоды",
+            "description": "Колоды"
+        },
+        {
             "name": "Верификация электронного адреса",
             "description": "Верификация электронного адреса"
         },
@@ -4794,6 +5967,10 @@
         {
             "name": "Временные зоны",
             "description": "Временные зоны"
+        },
+        {
+            "name": "Топики",
+            "description": "Топики"
         },
         {
             "name": "Двухфакторная аутентификация",

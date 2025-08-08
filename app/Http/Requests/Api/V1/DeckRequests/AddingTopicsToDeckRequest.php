@@ -2,8 +2,24 @@
 
 namespace App\Http\Requests\Api\V1\DeckRequests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingTopicsToDeckRequest",
+ *     title="Adding Topics To Deck Request (Добавление тем в колоду)",
+ *     description="Данные для добавления одной или нескольких тем в существующую колоду",
+ *     required={"topic_ids"},
+ *
+ *     @OA\Property(
+ *         property="topic_ids",
+ *         type="array",
+ *         description="Список ID тем для добавления в колоду. Должен содержать хотя бы один элемент.",
+ *         @OA\Items(type="integer", example=12)
+ *     )
+ * )
+ */
 class AddingTopicsToDeckRequest extends FormRequest
 {
     /**
@@ -17,13 +33,12 @@ class AddingTopicsToDeckRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'deck_id'=> ['required', 'integer', 'exists:decks,id'],
-            'topic_ids' => ['sometimes', 'array'],
+            'topic_ids' => ['required', 'array'],
             'topic_ids.*' => ['required', 'integer', 'exists:topics,id']
         ];
     }
@@ -31,9 +46,6 @@ class AddingTopicsToDeckRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'deck_id.required' => 'Deck is required.',
-            'deck_id.integer' => 'Deck must be an integer.',
-            'deck_id.exists' => 'Deck does not exist.',
             'topic_ids.required' => 'Topics is required.',
             'topic_ids.array' => 'Topics must be an array.',
             'topic_ids.*.required' => 'Topics is required.',

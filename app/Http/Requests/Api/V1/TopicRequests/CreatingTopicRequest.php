@@ -4,6 +4,20 @@ namespace App\Http\Requests\Api\V1\TopicRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="CreatingTopicRequest",
+ *     title="Creating Topic Request (схема для создания топика)",
+ *     description="Данные для создания новой темы",
+ *     required={"name"},
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         maxLength=255,
+ *         example="История"
+ *     )
+ * )
+ */
 class CreatingTopicRequest extends FormRequest
 {
     /**

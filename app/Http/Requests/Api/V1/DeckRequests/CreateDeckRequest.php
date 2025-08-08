@@ -81,12 +81,6 @@ class CreateDeckRequest extends FormRequest
 
             'is_premium.required' => 'Необходимо указать, является ли колода премиумной.',
             'is_premium.boolean' => 'Поле "is_premium" должно быть булевым значением (true/false).',
-
-            'topic_ids.array' => 'Поле "topic_ids" должно быть массивом.',
-
-            'topic_ids.*.required' => 'Каждый элемент в "topic_ids" обязателен.',
-            'topic_ids.*.integer' => 'Каждый элемент в "topic_ids" должен быть целым числом.',
-            'topic_ids.*.exists' => 'Некоторые темы в "topic_ids" не найдены.',
         ];
     }
 }

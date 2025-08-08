@@ -75,16 +75,18 @@ Route::prefix('v1')->group(callback: function () {
                     Route::post('/end', [UserTestResultController::class, 'end'])->name('endTest');
                 });
                 Route::prefix('decks')->group(function () {
-                    Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
+                    Route::get('', [DeckController::class, 'getDecks'])->name('getDecks');
                     Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
                     Route::post('/', [DeckController::class, 'createDeck'])->name('createDeck');
-                    Route::post('/{id}/topics',[DeckController::class, 'addTopicsToDeck'] )->where('id', '[0-9]+')->name('addTopicsToDeck');
+                    Route::prefix('/{id}/topics')->group(function () {
+                        Route::post('',[DeckController::class, 'addTopicsToDeck'] )->where('id', '[0-9]+')->name('addTopicsToDeck');
+                    });
                     Route::delete('/{id}', [DeckController::class, 'deleteDeck'])->where('id', '[0-9]+')->name('deleteDeck');
                 });
                 Route::prefix('topics')->group(function () {
                     Route::get('/', [TopicController::class, 'getTopics'])->name('getTopics');
                     Route::post('/', [TopicController::class, 'createTopic'])->name('createTopic')->middleware('isAdmin');
-                    Route::put('/', [TopicController::class, 'updateTopic'])->name('updateTopic')->middleware('isAdmin');
+                    Route::put('/{id}', [TopicController::class, 'updateTopic'])->name('updateTopic')->middleware('isAdmin');
                     Route::delete('/{id}', [TopicController::class, 'deleteTopic'])->where('id', '[0-9]+')->name('deleteTopic')->middleware('isAdmin');
                 });
                 Route::prefix('historyAttempts')->group(function () {

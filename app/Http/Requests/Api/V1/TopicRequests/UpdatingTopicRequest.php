@@ -5,6 +5,22 @@ namespace App\Http\Requests\Api\V1\TopicRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdatingTopicRequest",
+ *     title="Updating Topic Request (Обновление темы)",
+ *     description="Данные для обновления существующей темы",
+ *     required={"name"},
+ *
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         maxLength=255,
+ *         description="Новое имя темы",
+ *         example="История России"
+ *     )
+ * )
+ */
 class UpdatingTopicRequest extends FormRequest
 {
     /**
@@ -23,7 +39,6 @@ class UpdatingTopicRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'topic_id'=> ['required', 'integer', 'exists:topics,id'],
             'name'=>['required', 'string', 'max:255'],
         ];
     }
@@ -31,9 +46,6 @@ class UpdatingTopicRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'topic_id.required' => 'Topic is required.',
-            'topic_id.integer' => 'Topic must be an integer.',
-            'topic_id.exists' => 'Topic does not exist.',
             'name.required' => 'Topic name is required.',
             'name.string' => 'Topic name must be a string.',
             'name.max' => 'Topic name cannot be longer than 255 characters.',

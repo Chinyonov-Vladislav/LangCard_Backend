@@ -76,7 +76,7 @@ class TimezoneController extends Controller
      *         )
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
+     *     @OA\Response(response=420, ref="#/components/responses/NotVerifiedEmail"),
      * )
      */
     public function getTimezones(TimezoneFilterRequest $request, PaginatorService $paginator)
