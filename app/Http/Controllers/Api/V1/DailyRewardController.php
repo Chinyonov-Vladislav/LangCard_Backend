@@ -17,6 +17,42 @@ class DailyRewardController extends Controller
         $this->dailyRewardRepository = $dailyRewardRepository;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/dailyRewards",
+     *     summary="Получить данные о ежедневных наградах авторизованного пользователя",
+     *     description="Возвращает список ежедневных наград и информацию о том, может ли текущий пользователь забрать награду сегодня.",
+     *     tags={"Ежедневная награда"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Данные получены успешно",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Данные о ежедневных наградах для авторизованного пользователя"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/DailyRewardResource")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="can_user_take_daily_reward",
+     *                     type="boolean",
+     *                     example=true,
+     *                     description="Флаг, указывающий, может ли пользователь забрать награду сегодня"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
+     * )
+     */
+
     public function getDailyRewardsForAuthUser()
     {
         $dataDailyRewardInfoOfUser = $this->dailyRewardRepository->getDailyRewardInfoOfUser(auth()->id());
@@ -48,6 +84,42 @@ class DailyRewardController extends Controller
             'can_user_take_daily_reward' => $canUserTakeDailyReward]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/dailyRewards",
+     *     summary="Забрать ежедневную награду",
+     *     description="Позволяет авторизованному пользователю получить награду за текущий день, если она доступна.",
+     *     tags={"Ежедневная награда"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Награда успешно получена",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Пользователь успешно забрал ежедневную награду"),
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Конфликт — награда уже забрана сегодня или отсутствует для этого дня",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Пользователь не может забрать ежедневную награду, так как сегодня он уже её забирал"
+     *             ),
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail")
+     * )
+     */
     public function takeDailyReward()
     {
         $dataDailyRewardInfoOfUser = $this->dailyRewardRepository->getDailyRewardInfoOfUser(auth()->id());
@@ -57,7 +129,6 @@ class DailyRewardController extends Controller
             $now = Carbon::now();
             $lastDateTakenDailyReward = Carbon::parse($dataDailyRewardInfoOfUser->last_date_daily_reward);
             $differenceInDays = (int)$now->diffInDays($lastDateTakenDailyReward, true);
-            logger("Разница в количестве дней = $differenceInDays");
             if ($differenceInDays === 0) {
                 return ApiResponse::error('Пользователь не может забрать ежедневную награду, так как сегодня он уже её забирал', null, 409);
             } elseif ($differenceInDays === 1) {
@@ -68,14 +139,11 @@ class DailyRewardController extends Controller
         }
         $countDaysForRewardExist = $this->dailyRewardRepository->getCountDaysExistReward();
         $numberDay = ($numberDayStreak % $countDaysForRewardExist) + 1;
-        logger("Текущий streak = $numberDayStreak");
-        logger("Номер дня награды = $numberDay");
         $infoDailyRewardForCurrentDay = $this->dailyRewardRepository->getRewardForDay($numberDay);
         if($infoDailyRewardForCurrentDay === null)
         {
             return ApiResponse::error("Отсутствует награда для дня с номером = $numberDay", null, 409);
         }
-        logger("награда = $infoDailyRewardForCurrentDay->reward");
         $newCountPoints = $infoDailyRewardForCurrentDay->reward + $dataDailyRewardInfoOfUser->point_count;
         $newDayStreak = $numberDayStreak+1;
         $newDate = Carbon::now();

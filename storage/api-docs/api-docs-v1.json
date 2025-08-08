@@ -1039,6 +1039,143 @@
                 }
             }
         },
+        "/dailyRewards": {
+            "get": {
+                "tags": [
+                    "Ежедневная награда"
+                ],
+                "summary": "Получить данные о ежедневных наградах авторизованного пользователя",
+                "description": "Возвращает список ежедневных наград и информацию о том, может ли текущий пользователь забрать награду сегодня.",
+                "operationId": "48ea13440cf884c81735f0e07f2d4431",
+                "responses": {
+                    "200": {
+                        "description": "Данные получены успешно",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о ежедневных наградах для авторизованного пользователя"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/DailyRewardResource"
+                                                    }
+                                                },
+                                                "can_user_take_daily_reward": {
+                                                    "description": "Флаг, указывающий, может ли пользователь забрать награду сегодня",
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dailyRewards": {
+            "post": {
+                "tags": [
+                    "Ежедневная награда"
+                ],
+                "summary": "Забрать ежедневную награду",
+                "description": "Позволяет авторизованному пользователю получить награду за текущий день, если она доступна.",
+                "operationId": "39230f86b0b0af8fe789f9fd462c5124",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Награда успешно получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользователь успешно забрал ежедневную награду"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Конфликт — награда уже забрана сегодня или отсутствует для этого дня",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользователь не может забрать ежедневную награду, так как сегодня он уже её забирал"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/sendVerificationCodeEmail": {
             "post": {
                 "tags": [
@@ -1460,6 +1597,152 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile/{id}": {
+            "get": {
+                "tags": [
+                    "Профиль"
+                ],
+                "summary": "Получение профиля пользователя",
+                "description": "Возвращает данные профиля. Если id не передан — возвращаются данные авторизованного пользователя.",
+                "operationId": "320a30f61ad09f7ce9e45334f0c00018",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID пользователя. Если не указан — берётся ID авторизованного пользователя.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные профиля успешно получены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о профиле пользователя с id = 15"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "item": {
+                                                    "$ref": "#/components/schemas/ProfileUserResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользователь с id = 15 не найден"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile/": {
+            "get": {
+                "tags": [
+                    "Профиль"
+                ],
+                "summary": "Получение профиля авторизованного пользователя",
+                "description": "Возвращает данные профиля авторизованного пользователя",
+                "operationId": "87e59e5bafdf593b4a2dd77a78324b07",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные профиля успешно получены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о профиле пользователя с id = 15"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "item": {
+                                                    "$ref": "#/components/schemas/ProfileUserResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
                 "security": [
@@ -2478,6 +2761,318 @@
                     }
                 ]
             }
+        },
+        "/api/v1/tests/start": {
+            "post": {
+                "tags": [
+                    "Тестирование (прохождение тестов на сайте)"
+                ],
+                "summary": "Начало теста",
+                "description": "Запускает тест по его идентификатору. Возвращает ID попытки и список вопросов для прохождения.",
+                "operationId": "9c00e54dea753bf6fe8d27938edd29c1",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StartTestRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Тест успешно запущен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Тест с id = 101 был запущен пользователем с id = 55"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "attemptId": {
+                                                    "type": "integer",
+                                                    "example": 125
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "404": {
+                        "description": "Тест не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Тест с id = 101 не найден"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/questionsForTest/{attemptId}": {
+            "get": {
+                "tags": [
+                    "Тестирование (прохождение тестов на сайте)"
+                ],
+                "summary": "Получение списка вопросов для теста",
+                "description": "Возвращает список вопросов по идентификатору попытки прохождения теста. Доступно только авторизованному пользователю, которому принадлежит попытка, и только если попытка ещё не завершена и не истекло время выполнения теста.",
+                "operationId": "questionsForTest",
+                "parameters": [
+                    {
+                        "name": "attemptId",
+                        "in": "path",
+                        "description": "Идентификатор попытки прохождения теста.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 125
+                        }
+                    },
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список вопросов для теста.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Вопросы с теста = 101"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/QuestionResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "409": {
+                        "description": "Ошибка бизнес-логики: попытка не принадлежит пользователю, уже завершена или истекло время теста.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Attempt does not exist"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/end": {
+            "post": {
+                "tags": [
+                    "Тестирование (прохождение тестов на сайте)"
+                ],
+                "summary": "Завершение теста",
+                "description": "Завершает тестовую попытку с передачей ответов пользователя. Проверяет валидность попытки, принадлежность текущему пользователю и срок действия теста.",
+                "operationId": "endTest",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EndTestRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Результаты завершения теста с процентом правильных ответов.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Результаты теста для attemptId=123"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "results": {
+                                                    "properties": {
+                                                        "percent": {
+                                                            "type": "integer",
+                                                            "example": 85
+                                                        },
+                                                        "total_count_questions": {
+                                                            "type": "integer",
+                                                            "example": 20
+                                                        },
+                                                        "correct_count_answers": {
+                                                            "type": "integer",
+                                                            "example": 17
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "404": {
+                        "description": "Попытка теста не найдена.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Attempt not found"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Ошибка бизнес-логики: попытка не принадлежит пользователю, уже завершена или истекло время теста.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Attempt does not belong to user or attempt already completed or test time expired"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -2703,15 +3298,6 @@
                         "description": "Флаг премиум-доступа к колоде",
                         "type": "boolean",
                         "example": false
-                    },
-                    "topic_ids": {
-                        "description": "Список ID тем, связанных с колодой",
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "example": 3
-                        },
-                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -2962,11 +3548,6 @@
                         "type": "integer",
                         "example": 123
                     },
-                    "automatic": {
-                        "description": "Флаг, указывающий, было ли завершение автоматическим.",
-                        "type": "boolean",
-                        "example": false
-                    },
                     "answers": {
                         "description": "Массив ответов на вопросы теста.",
                         "type": "array",
@@ -2989,6 +3570,21 @@
                             },
                             "type": "object"
                         }
+                    }
+                },
+                "type": "object"
+            },
+            "GetQuestionsForTestRequest": {
+                "title": "Get Questions For Test Request (Получение вопросов для теста)",
+                "description": "Запрос для получения списка вопросов по ID попытки прохождения теста.",
+                "required": [
+                    "attemptId"
+                ],
+                "properties": {
+                    "attemptId": {
+                        "description": "Идентификатор попытки прохождения теста.",
+                        "type": "integer",
+                        "example": 125
                     }
                 },
                 "type": "object"
@@ -4180,6 +4776,10 @@
             "description": "Регистрация"
         },
         {
+            "name": "Ежедневная награда",
+            "description": "Ежедневная награда"
+        },
+        {
             "name": "Верификация электронного адреса",
             "description": "Верификация электронного адреса"
         },
@@ -4188,12 +4788,20 @@
             "description": "Привязка к пользователю, который пригласил в систему"
         },
         {
+            "name": "Профиль",
+            "description": "Профиль"
+        },
+        {
             "name": "Временные зоны",
             "description": "Временные зоны"
         },
         {
             "name": "Двухфакторная аутентификация",
             "description": "Двухфакторная аутентификация"
+        },
+        {
+            "name": "Тестирование (прохождение тестов на сайте)",
+            "description": "Тестирование (прохождение тестов на сайте)"
         }
     ]
 }

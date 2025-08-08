@@ -62,7 +62,8 @@ Route::prefix('v1')->group(callback: function () {
                 Route::get('columns/{nameTable}', [ColumnsController::class, 'getColumns'])->name('getColumns');
                 Route::get('filtersData/{nameTable}', [FilterDataController::class, 'getFilterData'])->name('getFilterData');
                 Route::prefix('profile')->group(function () {
-                    Route::get('/{id?}', [ProfileController::class, 'getProfile'])->name('getProfile');
+                    Route::get('/', [ProfileController::class, 'getProfileAuthUser'])->name('getProfileAuthUser');
+                    Route::get('/{id}', [ProfileController::class, 'getProfile'])->where('id', '[0-9]+')->name('getProfile');
                 });
                 Route::prefix('dailyRewards')->group(function () {
                     Route::get('', [DailyRewardController::class, 'getDailyRewardsForAuthUser'])->name('getDailyRewardsForAuthUser');
@@ -70,6 +71,7 @@ Route::prefix('v1')->group(callback: function () {
                 });
                 Route::prefix('tests')->group(function () {
                     Route::post('/start', [UserTestResultController::class, 'start'])->name('startTest');
+                    Route::get('/questionsForTest/{attemptId}', [UserTestResultController::class, 'questionsForTest'])->name('questionsForTest');
                     Route::post('/end', [UserTestResultController::class, 'end'])->name('endTest');
                 });
                 Route::prefix('decks')->group(function () {

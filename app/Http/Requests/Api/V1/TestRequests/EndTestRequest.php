@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\TestRequests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -17,13 +18,6 @@ use Illuminate\Foundation\Http\FormRequest;
  *         type="integer",
  *         description="Идентификатор попытки теста.",
  *         example=123
- *     ),
- *
- *     @OA\Property(
- *         property="automatic",
- *         type="boolean",
- *         description="Флаг, указывающий, было ли завершение автоматическим.",
- *         example=false
  *     ),
  *
  *     @OA\Property(
@@ -63,13 +57,12 @@ class EndTestRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'attemptId' => ['required', 'integer'],
-            'automatic'=>['required', 'boolean'],
+            'attemptId' => ['required', 'integer', 'exists:user_test_results,id'],
             'answers' => ['required', 'array'],
             'answers.*.question_id' => ['required', 'integer'],
             'answers.*.answer_id' => ['nullable', 'integer'],
@@ -80,8 +73,7 @@ class EndTestRequest extends FormRequest
         return [
             'attemptId.required' => __('validation.attemptId_required'),
             'attemptId.integer' => __('validation.attemptId_int'),
-            'automatic.required' => __('validation.automatic_required'),
-            'automatic.boolean' => __('validation.automatic_boolean'),
+            'attemptId.exists' => 'Attempt does not exist',
             'answers.required' => __('validation.answers_required'),
             'answers.array' => __('validation.answers_array'),
             'answers.*.question_id.required' => __('validation.answers_item_question_id_required'),

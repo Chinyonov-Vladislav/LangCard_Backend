@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\TestRequests\EndTestRequest;
+use App\Http\Requests\Api\V1\TestRequests\GetQuestionsForTestRequest;
 use App\Http\Requests\Api\V1\TestRequests\StartTestRequest;
 use App\Http\Resources\v1\QuestionResources\QuestionResource;
 use App\Http\Responses\ApiResponse;
@@ -43,6 +44,47 @@ class UserTestResultController extends Controller
         $this->questionAnswerRepository = $questionAnswerRepository;
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/tests/start",
+     *     summary="Начало теста",
+     *     description="Запускает тест по его идентификатору. Возвращает ID попытки и список вопросов для прохождения.",
+     *     tags={"Тестирование (прохождение тестов на сайте)"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StartTestRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Тест успешно запущен",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Тест с id = 101 был запущен пользователем с id = 55"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="attemptId", type="integer", example=125),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Тест не найден",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Тест с id = 101 не найден"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     )
+     * )
+     */
     public function start(StartTestRequest $request)
     {
         if(!$this->testRepository->isExistTestById($request->testId))
@@ -64,10 +106,139 @@ class UserTestResultController extends Controller
         //
         $currentTime = Carbon::now();
         $newUserTestResultId =$this->userTestResultRepository->saveNewUserTestResult($currentTime, $userId, $request->testId, $countOfAttemptsTestByUser+1);
-        $questionsForTest = $this->questionRepository->getQuestionsForTest($request->testId);
         return ApiResponse::success(__('api.test_started_by_user', ['testId'=>$request->testId,'userId'=>$userId]),
-            (object)['attemptId'=>$newUserTestResultId,'items'=>QuestionResource::collection($questionsForTest)]);
+            (object)['attemptId'=>$newUserTestResultId]);
     }
+
+
+    /**
+     * @OA\Get(
+     *     path="/questionsForTest/{attemptId}",
+     *     summary="Получение списка вопросов для теста",
+     *     description="Возвращает список вопросов по идентификатору попытки прохождения теста. Доступно только авторизованному пользователю, которому принадлежит попытка, и только если попытка ещё не завершена и не истекло время выполнения теста.",
+     *     operationId="questionsForTest",
+     *     tags={"Тестирование (прохождение тестов на сайте)"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="attemptId",
+     *         in="path",
+     *         required=true,
+     *         description="Идентификатор попытки прохождения теста.",
+     *         @OA\Schema(type="integer", example=125)
+     *     ),
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список вопросов для теста.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Вопросы с теста = 101"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/QuestionResource")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
+     *     @OA\Response(
+     *          response=409,
+     *          description="Ошибка бизнес-логики: попытка не принадлежит пользователю, уже завершена или истекло время теста.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="error"),
+     *              @OA\Property(property="message", type="string", example="Attempt does not exist"),
+     *              @OA\Property(property="errors", type="object", nullable=true)
+     *          )
+     *      )
+     * )
+     */
+    public function questionsForTest(GetQuestionsForTestRequest $request)
+    {
+        $infoAttempt = $this->userTestResultRepository->getUserTestResultById($request->attemptId);
+        if($infoAttempt->user_id !== auth()->id()) // проверка, что попытка принадлежит текущему пользователю
+        {
+            return ApiResponse::error(__('api.attempt_does_not_belong_to_auth_user', ['attemptId'=>$request->attemptId]), null, 409);
+        }
+        if($infoAttempt->finish_time !== null) // проверка, что попытка не была окончена
+        {
+            return ApiResponse::error(__('api.attempt_already_completed',['attemptId'=>$request->attemptId]), null, 409);
+        }
+        if($infoAttempt->test->time_seconds !== null)
+        {
+            $endTime = Carbon::parse($infoAttempt->start_time)->addSeconds($infoAttempt->test->time_seconds);
+            if ($endTime->isPast()) {
+                return ApiResponse::error(__('api.test_time_expired', ['testId' => $infoAttempt->test->id]), null, 409);
+            }
+        }
+        $questionsForTest = $this->questionRepository->getQuestionsForTest($request->testId);
+        return ApiResponse::success("Вопросы с теста = {$infoAttempt->test->id}", (object)['items'=>QuestionResource::collection($questionsForTest)]);
+    }
+
+
+    /**
+     * @OA\Post(
+     *     path="/end",
+     *     summary="Завершение теста",
+     *     description="Завершает тестовую попытку с передачей ответов пользователя. Проверяет валидность попытки, принадлежность текущему пользователю и срок действия теста.",
+     *     operationId="endTest",
+     *     tags={"Тестирование (прохождение тестов на сайте)"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/EndTestRequest")
+     *     ),
+     *
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Результаты завершения теста с процентом правильных ответов.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Результаты теста для attemptId=123"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="results",
+     *                     type="object",
+     *                     @OA\Property(property="percent", type="integer", example=85),
+     *                     @OA\Property(property="total_count_questions", type="integer", example=20),
+     *                     @OA\Property(property="correct_count_answers", type="integer", example=17)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=403, ref="#/components/responses/NotVerifiedEmail"),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Попытка теста не найдена.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Attempt not found"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Ошибка бизнес-логики: попытка не принадлежит пользователю, уже завершена или истекло время теста.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Attempt does not belong to user or attempt already completed or test time expired"),
+     *             @OA\Property(property="errors", type="object", nullable=true)
+     *         )
+     *     )
+     * )
+     */
     public function end(EndTestRequest $request)
     {
         $infoAttempt = $this->userTestResultRepository->getUserTestResultById($request->attemptId);
@@ -77,16 +248,16 @@ class UserTestResultController extends Controller
         }
         if($infoAttempt->user_id !== auth()->id()) // проверка, что попытка принадлежит текущему пользователю
         {
-            return ApiResponse::error(__('api.attempt_does_not_belong_to_auth_user', ['attemptId'=>$request->attemptId]), null, 403);
+            return ApiResponse::error(__('api.attempt_does_not_belong_to_auth_user', ['attemptId'=>$request->attemptId]), null, 409);
         }
         if($infoAttempt->finish_time !== null) // проверка, что попытка не была окончена
         {
-            return ApiResponse::error(__('api.attempt_already_completed',['attemptId'=>$request->attemptId]), null, 403);
+            return ApiResponse::error(__('api.attempt_already_completed',['attemptId'=>$request->attemptId]), null, 409);
         }
-        if (!$request->automatic && $infoAttempt->test->time_seconds) {
-            $endTime = Carbon::parse($infoAttempt->start_time)->addSeconds($infoAttempt->test->time_seconds);
+        if ($infoAttempt->test->time_seconds) {
+            $endTime = Carbon::parse($infoAttempt->start_time)->addSeconds($infoAttempt->test->time_seconds)->addMinutes(1);
             if ($endTime->isPast()) {
-                return ApiResponse::error(__('api.test_time_expired', ['testId' => $infoAttempt->test->id]), null, 403);
+                return ApiResponse::error(__('api.test_time_expired', ['testId' => $infoAttempt->test->id]), null, 409);
             }
         }
         $countCorrectAnswers = 0;
