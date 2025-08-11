@@ -52,11 +52,21 @@ class TimezoneResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->when(array_key_exists('id', $this->resource->getAttributes()), $this->id),
-            'name'=>$this->when(array_key_exists('name', $this->resource->getAttributes()), $this->name),
-            'offset_utc'=>$this->when(array_key_exists('offset_utc', $this->resource->getAttributes()), $this->offset_utc),
-            'created_at'=>$this->when(array_key_exists('created_at', $this->resource->getAttributes()), $this->created_at),
-            'updated_at'=>$this->when(array_key_exists('updated_at', $this->resource->getAttributes()), $this->updated_at),
+            'id' => $this->when(array_key_exists('id', $this->resource->getAttributes()), function () {
+                return $this->id;
+            }),
+            'name'=>$this->when(array_key_exists('name', $this->resource->getAttributes()), function () {
+                return $this->name;
+            }),
+            'offset_utc'=>$this->when(array_key_exists('offset_utc', $this->resource->getAttributes()), function (){
+                return $this->offset_utc;
+            }),
+            'created_at'=>$this->when(array_key_exists('created_at', $this->resource->getAttributes()), function () {
+                return $this->created_at;
+            }),
+            'updated_at'=>$this->when(array_key_exists('updated_at', $this->resource->getAttributes()), function (){
+                return $this->updated_at;
+            }),
         ];
     }
 }

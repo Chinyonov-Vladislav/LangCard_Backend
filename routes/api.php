@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\ColumnsController;
 use App\Http\Controllers\Api\V1\DailyRewardController;
 use App\Http\Controllers\Api\V1\DeckController;
 use App\Http\Controllers\Api\V1\EmailVerificationController;
+use App\Http\Controllers\Api\V1\ExampleController;
 use App\Http\Controllers\Api\V1\FilterDataController;
 use App\Http\Controllers\Api\V1\HistoryAttemptsTestController;
 use App\Http\Controllers\Api\V1\HistoryPurchaseController;
@@ -131,9 +132,16 @@ Route::prefix('v1')->group(callback: function () {
                 Route::post('/upload', [UploadController::class, 'uploadFile'])->name('uploadFile');
                 Route::post('/checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
 
-
                 Route::prefix('cards')->group(function () {
                     Route::post('/', [CardController::class, 'createCardForDeck'])->name('createCardForDeck');
+                });
+
+                Route::prefix('examples')->group(function () {
+                    Route::post('/singleAdding', [ExampleController::class, 'addExampleToCard'])->name('addExampleToCard');
+                    Route::post('/multipleAdding', [ExampleController::class, 'addMultipleExamplesToCard'])->name('addMultipleExamplesToCard');
+                    Route::put('/singleUpdate', [ExampleController::class, 'updateSingleExample'])->name('updateSingleExample');
+                    Route::put('/multipleUpdate', [ExampleController::class, 'updateMultipleExample'])->name('updateMultipleExample');
+                    Route::delete("/{id}", [ExampleController::class, 'deleteExample'])->name('deleteExample');
                 });
             });
         });

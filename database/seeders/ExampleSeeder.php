@@ -32,38 +32,50 @@ class ExampleSeeder extends Seeder
             [
                 'name' => 'The dog is barking loudly',
                 'card_id' => 1,
+                'source'=>'target'
             ],
             [
                 'name' => 'I walk my dog every morning',
                 'card_id' => 1,
+                'source'=>'target'
             ],
             [
                 'name' => 'The cat is sleeping on the sofa.',
                 'card_id' => 2,
+                'source'=>'target'
             ],
             [
                 'name' => 'My cat loves chasing birds',
                 'card_id' => 2,
+                'source'=>'target'
             ],
             [
                 'name' => 'The horse is running in the field',
                 'card_id' => 3,
+                'source'=>'target'
             ],
             [
                 'name' => 'He rides his horse every weekend',
                 'card_id' => 3,
+                'source'=>'target'
             ]
         ];
         foreach ($data as $item) {
             if(!$this->cardRepository->isExistCardById($item['card_id'])) {
                 continue;
             }
-            $translatedWord = $this->cardRepository->getCardById($item['card_id'])->translate;
+            if($item['source'] == 'target') {
+                $word = $this->cardRepository->getCardById($item['card_id'])->translate;
+            }
+            else
+            {
+                $word = $this->cardRepository->getCardById($item['card_id'])->word;
+            }
             $normalizedExample = $this->formatter->normalizeSentence($item['name']);
-            if(!$this->validationExampleUsageTranslatedWord->validateTranslatedWord($normalizedExample, $translatedWord)) {
+            if(!$this->validationExampleUsageTranslatedWord->validateTranslatedWord($normalizedExample, $word)) {
                 continue;
             }
-            $this->exampleRepository->saveNewExample($normalizedExample, $item['card_id']);
+            $this->exampleRepository->saveNewExample($normalizedExample, $item['card_id'], $item['source']);
         }
     }
 }

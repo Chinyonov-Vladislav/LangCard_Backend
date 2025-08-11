@@ -54,6 +54,14 @@ class Card extends Model implements  ColumnLabelsableInterface
     {
         return $this->hasMany(Example::class, 'card_id');
     }
+    public function examplesOriginal(): HasMany
+    {
+        return $this->hasMany(Example::class, 'card_id')->where('source', '=', 'original');
+    }
+    public function examplesTarget(): HasMany
+    {
+        return $this->hasMany(Example::class, 'card_id')->where('source', '=', 'target');
+    }
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class, 'card_id');

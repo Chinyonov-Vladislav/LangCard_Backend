@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Requests\Api\V1\ExampleRequests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateSingleExampleRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'example_id'=>['required', 'integer', 'exists:examples,id'],
+            'example' => ['required', 'string', 'max:255'],
+            'source'=>['required', 'string', 'in:original,target']
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'example_id.required' => 'Идентификатор примера обязателен.',
+            'example_id.integer' => 'Идентификатор примера должен быть числом.',
+            'example_id.exists' => 'Указанный пример не найден.',
+
+            'example.required' => 'Поле "example" обязательно для заполнения.',
+            'example.string' => 'Поле "example" должно быть строкой.',
+            'example.max' => 'Поле "example" не должно превышать 255 символов.',
+
+            'source.required' => 'Поле "source" обязательно для заполнения.',
+            'source.string' => 'Поле "source" должно быть строкой.',
+            'source.in' => 'Поле "source" должно принимать значения "original" или "target".',
+        ];
+    }
+}

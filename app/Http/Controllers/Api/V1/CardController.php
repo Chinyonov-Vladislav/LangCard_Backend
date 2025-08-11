@@ -59,35 +59,16 @@ class CardController extends Controller
     public function createCardForDeck(CreatingCardForDeckRequest $request)
     {
         try {
-            $originalVoices = array_unique($request->originalVoices);
-            $targetVoices = array_unique($request->targetVoices);
             $deckInfo = $this->deckRepository->getDeckById($request->deck_id, TypeInfoAboutDeck::maximum);
             if ($deckInfo === null) {
                 return ApiResponse::error('Колода не найдена', null, 404);
             }
             if ($deckInfo->user_id !== auth()->id()) {
-                return ApiResponse::error('Авторизованный пользователь не является создателем колоды', null, 403);
+                return ApiResponse::error('Авторизованный пользователь не является создателем колоды', null, 409);
             }
-            DB::beginTransaction();
-            $newCard = $this->cardRepository->saveNewCard($request->word, $request->translate, $request->imagePath, $request->deck_id);
-            $originalVoices = $this->voiceRepository->getVoicesByVoiceId($originalVoices);
-            $targetVoices = $this->voiceRepository->getVoicesByVoiceId($targetVoices);
-            $resultGenerationFilesPronunciationForOriginalLanguages = $this->generatePronunciationFiles($originalVoices, $deckInfo, $request->word, 'original');
-            $resultGenerationFilesPronunciationForTargetLanguages = $this->generatePronunciationFiles($targetVoices, $deckInfo, $request->translate, 'target');
-            foreach ($resultGenerationFilesPronunciationForOriginalLanguages as $path) {
-                $this->audiofileRepository->saveNewAudiofile($path, 'original', $newCard->id);
-            }
-            foreach ($resultGenerationFilesPronunciationForTargetLanguages as $path) {
-                $this->audiofileRepository->saveNewAudiofile($path, 'target', $newCard->id);
-            }
-            $examples = array_unique($request->examples);
-            foreach ($examples as $example) {
-                $this->exampleRepository->saveNewExample($example, $newCard->id);
-            }
-            DB::commit();
-            return ApiResponse::success("Карточки для колоды с id = $request->deck_id были успешно созданы");
+            $this->cardRepository->saveNewCard($request->word, $request->translate, $request->imagePath, $request->deck_id);
+            return ApiResponse::success("Карточка для колоды с id = $request->deck_id была успешно создана");
         } catch (Throwable $e) {
-            DB::rollBack();
             return ApiResponse::error($e->getMessage(), null, 500);
         }
     }

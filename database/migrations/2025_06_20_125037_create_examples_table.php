@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('card_id')->references('id')->on('cards')
                 ->onUpdate('cascade')->onDelete('cascade');
+            $table->enum('source',['original', 'target'])->default('original');
             $table->timestamps();
         });
     }
