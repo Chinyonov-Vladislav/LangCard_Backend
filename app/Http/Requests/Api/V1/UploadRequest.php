@@ -18,7 +18,6 @@ use Illuminate\Foundation\Http\FormRequest;
  *         type="string",
  *         format="binary",
  *         description="Файл для загрузки",
- *         example=null
  *     )
  * )
  */

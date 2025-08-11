@@ -12,10 +12,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     title="API Limit Filter Parameters Resource (Ресурс для фильтров модели ApiLimit)",
  *     description="Доступные фильтры для модели API Limit: количество дней и запросов.",
  *     type="object",
+ *     required = {"day_range", "request_count_range"},
  *     @OA\Property(
  *         property="day_range",
  *         type="object",
  *         description="Диапазон дней",
+ *         required = {"min", "max"},
  *         @OA\Property(property="min", type="integer", example=1),
  *         @OA\Property(property="max", type="integer", example=30)
  *     ),
@@ -23,6 +25,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *         property="request_count_range",
  *         type="object",
  *         description="Диапазон количества запросов",
+ *         required = {"min", "max"},
  *         @OA\Property(property="min", type="integer", example=10),
  *         @OA\Property(property="max", type="integer", example=1000)
  *     )

@@ -19,6 +19,51 @@ class HistoryAttemptsTestController extends Controller
     {
         $this->userTestResultRepository = $userTestResultRepository;
     }
+    /**
+     * @OA\Get(
+     *     path="/historyAttempts",
+     *     summary="Получить историю попыток прохождения тестов",
+     *     description="Возвращает пагинированный список попыток прохождения тестов текущего авторизованного пользователя.",
+     *     operationId="getAttemptsTests",
+     *     tags={"История попыток прохождения тестов"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         description="Номер страницы",
+     *         @OA\Schema(type="integer", minimum=1, example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="countOnPage",
+     *         in="query",
+     *         required=false,
+     *         description="Количество элементов на странице",
+     *         @OA\Schema(type="integer", minimum=1, example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список попыток получен успешно",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Данные о попытках на странице 1"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/UserTestResultResource")
+     *                 ),
+     *                 @OA\Property(property="pagination", ref="#/components/schemas/PaginationResource")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=420, ref="#/components/responses/NotVerifiedEmail")
+     * )
+     */
     #[QueryParameter('page', 'Номер страницы', type: 'int',default:10, example: 1)]
     #[QueryParameter('countOnPage', 'Количество элементов на странице', type: 'int',default:10, example: 10)]
     public function getAttemptsTests(PaginatorService $paginator, GetHistoryAttemptsRequest $request)

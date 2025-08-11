@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @OA\Schema(
  *     schema="TopicResource",
  *     title="Topic Resource (ресурс топика)",
+ *     required={"id", "name"},
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="История")
  * )

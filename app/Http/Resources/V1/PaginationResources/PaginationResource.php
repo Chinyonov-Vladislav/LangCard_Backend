@@ -11,6 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     schema="PaginationResource",
  *     title="Pagination Resource (ресурс пагинации)",
  *     description="Структура данных пагинации",
+ *     required= {"current_page", "per_page", "total", "last_page", "from", "to", "links"},
  *     @OA\Property(property="current_page", type="integer", example=1, description="Текущая страница"),
  *     @OA\Property(property="per_page", type="integer", example=10, description="Количество элементов на странице"),
  *     @OA\Property(property="total", type="integer", example=125, description="Общее количество элементов"),
@@ -21,6 +22,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *         property="links",
  *         type="array",
  *         description="Массив ссылок для навигации",
+ *         required = {"url", "label", "active"},
  *         @OA\Items(
  *             @OA\Property(property="url", type="string", nullable=true, example="https://example.com?page=2"),
  *             @OA\Property(property="label", type="string", example="2"),

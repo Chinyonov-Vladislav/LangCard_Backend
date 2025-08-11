@@ -106,6 +106,7 @@ class TwoFactorAuthorizationController extends Controller
      *         description="Невозможно включить двухфакторную аутентификацию по email (email отсутствует)",
      *         @OA\JsonContent(
      *             type="object",
+     *             required = {"status","message","errors"},
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Вы не можете включить двухфакторную авторизацию через электронную почту, так как аккаунт не имеет электронной почты"),
      *             @OA\Property(property="errors", type="object", nullable=true, example=null)
@@ -117,6 +118,7 @@ class TwoFactorAuthorizationController extends Controller
      *         description="Ошибка генерации Google QR-кода или ключа",
      *         @OA\JsonContent(
      *             type="object",
+     *             required = {"status","message","errors"},
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Произошла ошибка при подключении двухфакторной авторизации через Google Authenticator"),
      *             @OA\Property(property="errors", type="object", nullable=true, example=null)

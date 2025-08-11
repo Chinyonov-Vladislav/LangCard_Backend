@@ -15,6 +15,153 @@
         }
     ],
     "paths": {
+        "/answers/{attemptId}": {
+            "get": {
+                "tags": [
+                    "Ответы"
+                ],
+                "summary": "Получить ответы пользователя в попытке прохождения теста",
+                "description": "Возвращает все ответы пользователя на вопросы в рамках указанной попытки прохождения теста. Доступно только владельцу попытки.",
+                "operationId": "getAnswersInAttempt",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "attemptId",
+                        "in": "path",
+                        "description": "ID попытки прохождения теста",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список ответов пользователя для указанной попытки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ответы пользователя для попытки с id = 15"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "attempt": {
+                                                    "$ref": "#/components/schemas/UserTestResultResource"
+                                                },
+                                                "questionsWithAnswers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/UserTestAnswerResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Попытка не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Попытка с id = 15 не найдена"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Попытка не принадлежит авторизованному пользователю",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Попытка с id = 15 не принадлежит авторизованному пользователю"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Попытка ещё не завершена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Попытка с id = 15 ещё не завершена"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
@@ -247,8 +394,9 @@
                                             "example": "Провайдер 'facebook' не поддерживается."
                                         },
                                         "data": {
-                                            "type": "null",
-                                            "example": null
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -370,6 +518,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
                                     "properties": {
                                         "status": {
                                             "enum": [
@@ -383,8 +536,9 @@
                                             "example": "Провайдер 'facebook' не поддерживается."
                                         },
                                         "data": {
-                                            "type": "null",
-                                            "example": null
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -397,6 +551,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
                                     "properties": {
                                         "status": {
                                             "enum": [
@@ -409,9 +568,10 @@
                                             "type": "string",
                                             "example": "Произошла ошибка при авторизации через yandex."
                                         },
-                                        "data": {
-                                            "type": "null",
-                                            "example": null
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -1025,7 +1185,7 @@
                                             "type": "string",
                                             "example": "Не удалось зарегистрировать пользователя."
                                         },
-                                        "data": {
+                                        "errors": {
                                             "type": "object",
                                             "example": null,
                                             "nullable": true
@@ -1249,6 +1409,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
                                     "properties": {
                                         "status": {
                                             "type": "string",
@@ -1589,7 +1754,9 @@
                                             "example": "Колода 5 была удалена (мягко или физически)."
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -1612,7 +1779,9 @@
                                             "example": "Колода с ID 5 не найдена"
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -1635,7 +1804,9 @@
                                             "example": "Пользователь не является владельцем колоды."
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -1731,7 +1902,9 @@
                                             "example": "Колода с ID 5 не найдена"
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -2074,6 +2247,182 @@
                 ]
             }
         },
+        "/historyAttempts": {
+            "get": {
+                "tags": [
+                    "История попыток прохождения тестов"
+                ],
+                "summary": "Получить историю попыток прохождения тестов",
+                "description": "Возвращает пагинированный список попыток прохождения тестов текущего авторизованного пользователя.",
+                "operationId": "getAttemptsTests",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список попыток получен успешно",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о попытках на странице 1"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/UserTestResultResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/historyPurchases": {
+            "get": {
+                "tags": [
+                    "История покупок"
+                ],
+                "summary": "Получить историю покупок авторизованного пользователя",
+                "operationId": "c8bb155e70df625a3e094e6d5c9c56e2",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы для пагинации",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с историей покупок и пагинацией",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "История покупок пользователя (ID: 5) успешно получена."
+                                        },
+                                        "data": {
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ],
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/HistoryPurchaseResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/setInviter": {
             "post": {
                 "tags": [
@@ -2209,6 +2558,202 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/languages": {
+            "get": {
+                "tags": [
+                    "Языки"
+                ],
+                "summary": "Получить список всех языков",
+                "operationId": "0965a1dc5ee3cfa258b3b4a36dba8d89",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список языков успешно получен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Все данные о языках"
+                                        },
+                                        "data": {
+                                            "required": [
+                                                "items"
+                                            ],
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/LanguageResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Языки"
+                ],
+                "summary": "Добавить новый язык",
+                "operationId": "624cee562a79f240e4c121cdd9dc90ac",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingLanguageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Язык успешно добавлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о новом языке успешно сохранены"
+                                        },
+                                        "data": {
+                                            "required": [
+                                                "language"
+                                            ],
+                                            "properties": {
+                                                "language": {
+                                                    "$ref": "#/components/schemas/LanguageResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Название' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "native_name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Родное название' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "code": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Код языка' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "flag": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Флаг' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "locale_lang": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Локаль' обязательно для заполнения."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
                     }
                 },
                 "security": [
@@ -2355,6 +2900,1047 @@
                     },
                     "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/promocodes": {
+            "post": {
+                "tags": [
+                    "Промокоды"
+                ],
+                "summary": "Создание нескольких промокодов",
+                "description": "Создаёт указанное количество промокодов и автоматически привязывает их к случайным активным тарифам. Доступно только администраторам.",
+                "operationId": "createPromocodes",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatePromocodeRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Промокоды успешно созданы",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Промокоды были успешно созданы в количестве 10 штук"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Нет существующих тарифов для привязки промокодов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Нет существующих тарифов"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "count": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'count' обязательно для заполнения"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Сообщение об ошибке"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/promocodes/activate": {
+            "post": {
+                "tags": [
+                    "Промокоды"
+                ],
+                "summary": "Активация промокода пользователем",
+                "description": "Позволяет пользователю активировать промокод для продления VIP-статуса. Требует авторизации через Bearer токен.",
+                "operationId": "activatePromocode",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActivatePromocodeRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Промокод успешно активирован, VIP-статус обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Обновлена дата окончания VIP - статуса."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "new_date_end_vip_status": {
+                                                    "$ref": "#/components/schemas/VipStatusEndResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Промокод не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Промокод не найден"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Промокод уже был активирован ранее",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Предоставленный промокод уже был активирован ранее"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'code' обязательно для заполнения"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/promocodes/download/{type}/{tariffId}": {
+            "get": {
+                "tags": [
+                    "Промокоды"
+                ],
+                "summary": "Скачать PDF с активными промокодами для конкретного тарифа",
+                "description": "Возвращает PDF-файл с активными промокодами для конкретного тарифа",
+                "operationId": "downloadPromocodesCertaionTariff",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Тип PDF: 'table' — таблица, 'card' — карточки",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "table",
+                                "card"
+                            ],
+                            "example": "table"
+                        }
+                    },
+                    {
+                        "name": "tariffId",
+                        "in": "path",
+                        "description": "Идентификатор тарифа",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF-файл с активными промокодами",
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Тариф с указанным id не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Тариф с id = 1 не существует"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/promocodes/download/{type}": {
+            "get": {
+                "tags": [
+                    "Промокоды"
+                ],
+                "summary": "Скачать PDF с активными промокодами для всех тарифов",
+                "description": "Возвращает PDF-файл с активными промокодами для всех тарифов",
+                "operationId": "downloadPromocodesAllTariffs",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Тип PDF: 'table' — таблица, 'card' — карточки",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "table",
+                                "card"
+                            ],
+                            "example": "table"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF-файл с активными промокодами",
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/checkSpelling": {
+            "post": {
+                "tags": [
+                    "Проверка правописания"
+                ],
+                "summary": "Проверка правописания",
+                "description": "Проверяет грамматическую корректность предложений с помощью Hunspell. Возвращает список слов с ошибками и варианты исправлений.",
+                "operationId": "checkSpelling",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckCorrectSentenceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Результат проверки правописания",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Результат проверки правописания"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/SpellingCheckItemResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при проверке текста",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка при запуске Hunspell"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/stats/countUsersByMonths": {
+            "get": {
+                "tags": [
+                    "Статистика"
+                ],
+                "summary": "Получение количества пользователей по месяцам",
+                "operationId": "386bd64da531e483082b8c1cd6da2fa7",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "start_month",
+                        "in": "query",
+                        "description": "Начальный месяц в формате YYYY-MM",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                            "example": "2024-01"
+                        }
+                    },
+                    {
+                        "name": "end_month",
+                        "in": "query",
+                        "description": "Конечный месяц в формате YYYY-MM",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                            "example": "2024-08"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с количеством пользователей по месяцам",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Количество пользователей, зарегистрировавшихся в системе по месяцам"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "countUsersByMonths": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/CountUsersByMonthsResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "start_month": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The field 'Start month' must be in YYYY-MM format"
+                                                    }
+                                                },
+                                                "end_month": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The field 'End month' must be in YYYY-MM format"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/stats/countDecksByTopic": {
+            "get": {
+                "tags": [
+                    "Статистика"
+                ],
+                "summary": "Получить количество активных колод по тематикам с процентным соотношением",
+                "description": "Возвращает список тем с количеством колод и их процентом от общего количества колод. Доступно только администраторам.",
+                "operationId": "getTopicsWithCountDecksAndPercentage",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с данными статистики по темам",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Количество колод по топикам с процентным соотношением"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "topicsWithCountDecksAndPercentage": {
+                                                    "description": "Массив тем с количеством колод и процентом",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/TopicWithDecksCountResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tariffs": {
+            "get": {
+                "tags": [
+                    "Тарифы"
+                ],
+                "summary": "Получить список активных тарифов",
+                "operationId": "c0f342655c3fbeaa75d45d6f6dcf1ab6",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с данными тарифов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные всех тарифов успешно получены"
+                                        },
+                                        "data": {
+                                            "required": [
+                                                "items"
+                                            ],
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/TariffResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Тарифы"
+                ],
+                "summary": "Добавить новый тариф",
+                "operationId": "6ca6d1949e95dac02336136db991d9f9",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingNewTariffRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Тариф успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Тариф успешно создан"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Topic name is required."
+                                                    }
+                                                },
+                                                "days": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The 'days' field is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    },
+                    "500": {
+                        "description": "Ошибка сервера при создании тарифа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Не удалось создать тариф"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tariffs/{id}": {
+            "patch": {
+                "tags": [
+                    "Тарифы"
+                ],
+                "summary": "Изменить статус тарифа",
+                "operationId": "9a617b8ad3650f1a8d50ab7e0aacf632",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID тарифа",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус тарифа успешно изменён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Статус тарифа с ID 1 изменён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Тариф с указанным ID не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Тариф с ID 1 не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
                     }
                 },
                 "security": [
@@ -2679,7 +4265,9 @@
                                             "example": "Топик с id = 1 не найден"
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -2772,7 +4360,9 @@
                                             "example": "Топик c id = 1 не найден"
                                         },
                                         "data": {
-                                            "type": "null"
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -2903,6 +4493,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
                                     "properties": {
                                         "status": {
                                             "type": "string",
@@ -2928,6 +4523,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
                                     "properties": {
                                         "status": {
                                             "type": "string",
@@ -3698,6 +5298,107 @@
                 ]
             }
         },
+        "/upload": {
+            "post": {
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Загрузить файл на сервер",
+                "description": "Загружает файл (максимум 10 МБ) и возвращает путь к нему. Доступ только авторизованным пользователям.",
+                "operationId": "uploadFile",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Файл для загрузки",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UploadRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Файл успешно загружен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Файл был сохранён на сервере"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "/uploads/files/document.pdf"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при определении файла",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка определения типа файла"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/tests/start": {
             "post": {
                 "tags": [
@@ -4102,6 +5803,223 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/voices": {
+            "get": {
+                "tags": [
+                    "Голоса"
+                ],
+                "summary": "Получение информации о допустимых голосах для озвучки в системе",
+                "description": "Получение информации о допустимых голосах для озвучки в системе",
+                "operationId": "getInfoVoices",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "languages",
+                        "in": "query",
+                        "description": "Параметр для фильтрации по языкам (коды языков через запятую)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en_US,ru_RU,de_DE"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Полученные данные о голосах для озвучки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные колод на странице 1"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/DeckResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Голоса"
+                ],
+                "summary": "Запустить обновление голосов",
+                "description": "Ставит задачу на обновление голосов в очередь. Доступно только администраторам.",
+                "operationId": "createVoice",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Задача поставлена в очередь",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Задача на обновление голосов поставлена в очередь"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Голоса"
+                ],
+                "summary": "Синхронизировать статусы голосов",
+                "description": "Запускает процесс синхронизации статусов голосов из FreeTTS. Доступно только администраторам.",
+                "operationId": "updateStatusOfVoices",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Синхронизация запущена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Синхронизация статусов голосов запущена"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/NotAdmin"
                     }
                 },
                 "security": [
@@ -4830,8 +6748,7 @@
                     "file": {
                         "description": "Файл для загрузки",
                         "type": "string",
-                        "format": "binary",
-                        "example": null
+                        "format": "binary"
                     }
                 },
                 "type": "object"
@@ -4890,38 +6807,60 @@
             },
             "DeckResource": {
                 "title": "Deck Resource (Ресурс колоды)",
-                "description": "Ресурс колоды с карточками, языками, тестами и пользователем",
+                "required": [
+                    "id",
+                    "name",
+                    "is_premium",
+                    "creation_time",
+                    "visitors_count",
+                    "tests_count",
+                    "cards_count"
+                ],
                 "properties": {
                     "id": {
+                        "description": "ID колоды",
                         "type": "integer",
-                        "example": 1
+                        "example": 10
                     },
                     "name": {
+                        "description": "Название колоды",
                         "type": "string",
-                        "example": "Английский для начинающих"
+                        "example": "Основная колода"
                     },
                     "is_premium": {
+                        "description": "Является ли колода премиум",
                         "type": "boolean",
-                        "example": true
+                        "example": false
                     },
                     "creation_time": {
+                        "description": "Дата и время создания",
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-08-06 15:23:12"
+                        "example": "2025-08-11T12:34:56"
                     },
                     "visitors_count": {
+                        "description": "Количество посетителей",
                         "type": "integer",
-                        "example": 120
+                        "example": 100
                     },
                     "tests_count": {
+                        "description": "Количество тестов в колоде",
                         "type": "integer",
-                        "example": 4
+                        "example": 5
                     },
                     "cards_count": {
+                        "description": "Количество карточек в колоде",
                         "type": "integer",
-                        "example": 150
+                        "example": 50
                     },
                     "original_language": {
+                        "description": "Исходный язык колоды",
+                        "required": [
+                            "id",
+                            "name",
+                            "code",
+                            "flag_url"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -4929,7 +6868,7 @@
                             },
                             "name": {
                                 "type": "string",
-                                "example": "Английский"
+                                "example": "English"
                             },
                             "code": {
                                 "type": "string",
@@ -4937,14 +6876,20 @@
                             },
                             "flag_url": {
                                 "type": "string",
-                                "format": "url",
-                                "example": "https://example.com/flags/en.svg"
+                                "format": "uri",
+                                "example": "https://example.com/flags/en.png"
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     },
                     "target_language": {
+                        "description": "Целевой язык колоды",
+                        "required": [
+                            "id",
+                            "name",
+                            "code",
+                            "flag_url"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -4952,7 +6897,7 @@
                             },
                             "name": {
                                 "type": "string",
-                                "example": "Русский"
+                                "example": "Russian"
                             },
                             "code": {
                                 "type": "string",
@@ -4960,148 +6905,181 @@
                             },
                             "flag_url": {
                                 "type": "string",
-                                "format": "url",
-                                "example": "https://example.com/flags/ru.svg"
+                                "format": "uri",
+                                "example": "https://example.com/flags/ru.png"
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     },
                     "user": {
+                        "description": "Пользователь - владелец колоды",
+                        "required": [
+                            "id",
+                            "avatar_url",
+                            "name"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
-                                "example": 10
+                                "example": 42
                             },
                             "avatar_url": {
                                 "type": "string",
-                                "format": "url",
-                                "example": "https://example.com/avatars/user.png"
+                                "format": "uri",
+                                "example": "https://example.com/avatar.jpg"
                             },
                             "name": {
                                 "type": "string",
-                                "example": "Иван Иванов"
+                                "example": "Владислав"
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     },
                     "topics": {
+                        "description": "Список тем, связанных с колодой",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "id",
+                                "name"
+                            ],
                             "properties": {
                                 "id": {
                                     "type": "integer",
-                                    "example": 1
+                                    "example": 3
                                 },
                                 "name": {
                                     "type": "string",
-                                    "example": "Путешествия"
+                                    "example": "Грамматика"
                                 }
                             },
                             "type": "object"
-                        },
-                        "nullable": true
+                        }
                     },
                     "tests": {
+                        "description": "Список тестов колоды",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "id",
+                                "name",
+                                "time_seconds",
+                                "count_attempts",
+                                "creation_time"
+                            ],
                             "properties": {
                                 "id": {
                                     "type": "integer",
-                                    "example": 1
+                                    "example": 101
                                 },
                                 "name": {
                                     "type": "string",
-                                    "example": "Тест 1"
+                                    "example": "Тест №1"
                                 },
                                 "time_seconds": {
+                                    "description": "Время на прохождение теста в секундах",
                                     "type": "integer",
-                                    "example": 300
+                                    "example": 900
                                 },
                                 "count_attempts": {
+                                    "description": "Максимальное количество попыток",
                                     "type": "integer",
                                     "example": 3
                                 },
                                 "creation_time": {
                                     "type": "string",
                                     "format": "date-time",
-                                    "example": "2025-08-06 15:00:00"
+                                    "example": "2025-08-01T10:00:00"
                                 },
                                 "authorized_user_attempts": {
+                                    "description": "Количество попыток пользователя (опционально)",
                                     "type": "integer",
-                                    "example": 2,
+                                    "example": 1,
                                     "nullable": true
                                 }
                             },
                             "type": "object"
-                        },
-                        "nullable": true
+                        }
                     },
                     "cards": {
+                        "description": "Список карточек колоды",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "id",
+                                "word",
+                                "translate",
+                                "creation_time"
+                            ],
                             "properties": {
                                 "id": {
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 555
                                 },
                                 "word": {
                                     "type": "string",
-                                    "example": "Apple"
+                                    "example": "Hello"
                                 },
                                 "translate": {
                                     "type": "string",
-                                    "example": "Яблоко"
+                                    "example": "Привет"
                                 },
                                 "image_url": {
                                     "type": "string",
-                                    "format": "url",
-                                    "example": "https://example.com/images/apple.png"
+                                    "format": "uri",
+                                    "example": "https://example.com/images/hello.png",
+                                    "nullable": true
                                 },
                                 "creation_time": {
                                     "type": "string",
                                     "format": "date-time",
-                                    "example": "2025-08-06 15:20:00"
+                                    "example": "2025-08-10T15:45:00"
                                 },
                                 "original_word_audiofiles": {
+                                    "description": "Аудиофайлы для исходного слова",
                                     "type": "array",
                                     "items": {
+                                        "required": [
+                                            "id",
+                                            "path"
+                                        ],
                                         "properties": {
                                             "id": {
                                                 "type": "integer",
-                                                "example": 1
+                                                "example": 1001
                                             },
                                             "path": {
                                                 "type": "string",
-                                                "example": "/audio/en/apple.mp3"
+                                                "example": "/audio/original/hello.mp3"
                                             }
                                         },
                                         "type": "object"
-                                    },
-                                    "nullable": true
+                                    }
                                 },
                                 "target_word_audiofiles": {
+                                    "description": "Аудиофайлы для целевого слова",
                                     "type": "array",
                                     "items": {
+                                        "required": [
+                                            "id",
+                                            "path"
+                                        ],
                                         "properties": {
                                             "id": {
                                                 "type": "integer",
-                                                "example": 2
+                                                "example": 1002
                                             },
                                             "path": {
                                                 "type": "string",
-                                                "example": "/audio/ru/apple.mp3"
+                                                "example": "/audio/target/hello.mp3"
                                             }
                                         },
                                         "type": "object"
-                                    },
-                                    "nullable": true
+                                    }
                                 }
                             },
                             "type": "object"
-                        },
-                        "nullable": true
+                        }
                     }
                 },
                 "type": "object"
@@ -5109,9 +7087,17 @@
             "ApiLimitFilterParametersResource": {
                 "title": "API Limit Filter Parameters Resource (Ресурс для фильтров модели ApiLimit)",
                 "description": "Доступные фильтры для модели API Limit: количество дней и запросов.",
+                "required": [
+                    "day_range",
+                    "request_count_range"
+                ],
                 "properties": {
                     "day_range": {
                         "description": "Диапазон дней",
+                        "required": [
+                            "min",
+                            "max"
+                        ],
                         "properties": {
                             "min": {
                                 "type": "integer",
@@ -5126,6 +7112,10 @@
                     },
                     "request_count_range": {
                         "description": "Диапазон количества запросов",
+                        "required": [
+                            "min",
+                            "max"
+                        ],
                         "properties": {
                             "min": {
                                 "type": "integer",
@@ -5144,12 +7134,25 @@
             "DeckFilterParameterResource": {
                 "title": "API Limit Filter Parameters Resource (Ресурс для фильтров модели Deck)",
                 "description": "Параметры фильтрации колод: исходные и целевые языки, типы отображения колод.",
+                "required": [
+                    "original_languages",
+                    "target_languages",
+                    "types_show_deck"
+                ],
                 "properties": {
-                    "originalLanguages": {
+                    "original_languages": {
                         "description": "Список исходных языков (только имя языка).",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "id",
+                                "name"
+                            ],
                             "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": "1"
+                                },
                                 "name": {
                                     "type": "string",
                                     "example": "English"
@@ -5158,11 +7161,19 @@
                             "type": "object"
                         }
                     },
-                    "targetLanguages": {
+                    "target_languages": {
                         "description": "Список целевых языков (только имя языка).",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "id",
+                                "name"
+                            ],
                             "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": "1"
+                                },
                                 "name": {
                                     "type": "string",
                                     "example": "Russian"
@@ -5171,16 +7182,20 @@
                             "type": "object"
                         }
                     },
-                    "typesShowDeck": {
+                    "types_show_deck": {
                         "description": "Типы отображения колод",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "name",
+                                "display_value"
+                            ],
                             "properties": {
                                 "name": {
                                     "type": "string",
                                     "example": "all"
                                 },
-                                "displayValue": {
+                                "display_value": {
                                     "type": "string",
                                     "example": "Все"
                                 }
@@ -5191,9 +7206,124 @@
                 },
                 "type": "object"
             },
+            "HistoryPurchaseResource": {
+                "title": "HistoryPurchaseResource (Ресурс истории покупок пользователя)",
+                "required": [
+                    "id",
+                    "date_purchase",
+                    "date_end_vip_status_after_buying"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID записи о покупке",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "date_purchase": {
+                        "description": "Дата и время покупки",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-11T14:30:00"
+                    },
+                    "date_end_vip_status_after_buying": {
+                        "description": "Дата окончания VIP-статуса после покупки",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-09-11T14:30:00"
+                    },
+                    "cost": {
+                        "description": "Стоимость покупки",
+                        "required": [
+                            "id",
+                            "cost"
+                        ],
+                        "properties": {
+                            "id": {
+                                "description": "ID стоимости",
+                                "type": "integer",
+                                "example": 55
+                            },
+                            "cost": {
+                                "description": "Сумма стоимости",
+                                "type": "number",
+                                "format": "float",
+                                "example": 199.99
+                            },
+                            "tariff": {
+                                "description": "Тариф, связанный со стоимостью",
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "days"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "description": "ID тарифа",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "name": {
+                                        "description": "Название тарифа",
+                                        "type": "string",
+                                        "example": "Месячный"
+                                    },
+                                    "days": {
+                                        "description": "Количество дней тарифа",
+                                        "type": "integer",
+                                        "example": 30
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "currency": {
+                                "description": "Валюта стоимости",
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "code",
+                                    "symbol"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "description": "ID валюты",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "description": "Название валюты",
+                                        "type": "string",
+                                        "example": "Российский рубль"
+                                    },
+                                    "code": {
+                                        "description": "Код валюты",
+                                        "type": "string",
+                                        "example": "RUB"
+                                    },
+                                    "symbol": {
+                                        "description": "Символ валюты",
+                                        "type": "string",
+                                        "example": "₽"
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "InviterResource": {
-                "title": "Inviter Resource",
+                "title": "Inviter Resource (Ресурс для данных о пригласившем пользователе",
                 "description": "Информация о пригласившем пользователе",
+                "required": [
+                    "id",
+                    "name",
+                    "avatar"
+                ],
                 "properties": {
                     "id": {
                         "description": "Уникальный идентификатор пользователя",
@@ -5215,7 +7345,7 @@
                 "type": "object"
             },
             "LanguageResource": {
-                "title": "Language Resource",
+                "title": "Language Resource (ресурс языка)",
                 "description": "Ресурс языка с основными свойствами",
                 "required": [
                     "id",
@@ -5263,6 +7393,15 @@
             "PaginationResource": {
                 "title": "Pagination Resource (ресурс пагинации)",
                 "description": "Структура данных пагинации",
+                "required": [
+                    "current_page",
+                    "per_page",
+                    "total",
+                    "last_page",
+                    "from",
+                    "to",
+                    "links"
+                ],
                 "properties": {
                     "current_page": {
                         "description": "Текущая страница",
@@ -5296,6 +7435,11 @@
                     },
                     "links": {
                         "description": "Массив ссылок для навигации",
+                        "required": [
+                            "url",
+                            "label",
+                            "active"
+                        ],
                         "type": "array",
                         "items": {
                             "properties": {
@@ -5320,52 +7464,60 @@
                 "type": "object"
             },
             "ProfileUserResource": {
-                "title": "Profile User Resource",
-                "description": "Ресурс профиля пользователя с основной информацией",
+                "title": "Profile User Resource (ресурс профиля пользователя)",
                 "required": [
                     "id",
                     "name",
                     "email",
-                    "created_at"
+                    "created_at",
+                    "vip_status_time_end",
+                    "invite_code"
                 ],
                 "properties": {
                     "id": {
-                        "description": "Уникальный идентификатор пользователя",
+                        "description": "ID пользователя",
                         "type": "integer",
-                        "example": 123
+                        "example": 101
                     },
                     "name": {
                         "description": "Имя пользователя",
                         "type": "string",
-                        "example": "Иван Иванов"
+                        "example": "Владислав"
                     },
                     "email": {
                         "description": "Email пользователя",
                         "type": "string",
                         "format": "email",
-                        "example": "ivan@example.com"
+                        "example": "user@example.com",
+                        "nullable": true
                     },
                     "vip_status_time_end": {
-                        "description": "Дата и время окончания VIP-статуса или null",
+                        "description": "Дата окончания VIP-статуса или null",
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-12-31 23:59:59",
+                        "example": "2025-09-10 12:00:00",
                         "nullable": true
                     },
                     "invite_code": {
-                        "description": "Код приглашения, доступен только для авторизованного пользователя",
+                        "description": "Код приглашения (доступен только аутентифицированному пользователю)",
                         "type": "string",
-                        "example": "INVITE123",
+                        "example": "ABCD1234",
                         "nullable": true
                     },
                     "created_at": {
-                        "description": "Дата и время создания профиля",
+                        "description": "Дата и время создания пользователя",
                         "type": "string",
                         "format": "date-time",
-                        "example": "2023-08-06 12:34:56"
+                        "example": "2023-04-01 10:30:00"
                     },
                     "currency": {
                         "description": "Валюта пользователя",
+                        "required": [
+                            "id",
+                            "name",
+                            "code",
+                            "symbol"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -5373,15 +7525,15 @@
                             },
                             "name": {
                                 "type": "string",
-                                "example": "US Dollar"
+                                "example": "Российский рубль"
                             },
                             "code": {
                                 "type": "string",
-                                "example": "USD"
+                                "example": "RUB"
                             },
                             "symbol": {
                                 "type": "string",
-                                "example": "$"
+                                "example": "₽"
                             }
                         },
                         "type": "object",
@@ -5389,6 +7541,11 @@
                     },
                     "timezone": {
                         "description": "Часовой пояс пользователя",
+                        "required": [
+                            "id",
+                            "name",
+                            "offset_utc"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -5407,15 +7564,20 @@
                         "nullable": true
                     },
                     "inviter": {
-                        "description": "Пригласивший пользователь",
+                        "description": "Пользователь, который пригласил",
+                        "required": [
+                            "id",
+                            "name",
+                            "avatar"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
-                                "example": 10
+                                "example": 45
                             },
                             "name": {
                                 "type": "string",
-                                "example": "Пётр Петров"
+                                "example": "Иван Иванов"
                             },
                             "avatar": {
                                 "type": "string",
@@ -5429,9 +7591,24 @@
                 },
                 "type": "object"
             },
+            "VipStatusEndResource": {
+                "title": "Vip Status End Resource (ресурс окончания vip-статуса пользователя)",
+                "required": [
+                    "vip_status_time_end"
+                ],
+                "properties": {
+                    "vip_status_time_end": {
+                        "description": "Дата окончания VIP-статуса или null",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-09-10 12:00:00",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "QuestionResource": {
-                "title": "Question Resource",
-                "description": "Ресурс вопроса с опциональными вложенными данными",
+                "title": "Question Resource (ресурс вопроса)",
                 "required": [
                     "id",
                     "type",
@@ -5439,9 +7616,9 @@
                 ],
                 "properties": {
                     "id": {
-                        "description": "Уникальный идентификатор вопроса",
+                        "description": "ID вопроса",
                         "type": "integer",
-                        "example": 101
+                        "example": 123
                     },
                     "type": {
                         "description": "Тип вопроса",
@@ -5454,26 +7631,26 @@
                         "example": "Переведите слово"
                     },
                     "card": {
-                        "description": "Карточка, связанная с вопросом",
+                        "description": "Карточка, связанная с вопросом (опционально, если загружена)",
                         "properties": {
                             "word": {
-                                "description": "Слово из карточки (только если type = 'translate')",
+                                "description": "Слово (только для типа 'translate', иначе null)",
                                 "type": "string",
-                                "example": "apple",
+                                "example": "cat",
                                 "nullable": true
                             },
                             "image_url": {
                                 "description": "URL изображения карточки",
                                 "type": "string",
                                 "format": "uri",
-                                "example": "https://example.com/images/apple.png"
+                                "example": "https://example.com/image.jpg",
+                                "nullable": true
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     },
                     "answers": {
-                        "description": "Список вариантов ответов",
+                        "description": "Варианты ответов (опционально, если загружены)",
                         "type": "array",
                         "items": {
                             "required": [
@@ -5482,25 +7659,100 @@
                             ],
                             "properties": {
                                 "id": {
-                                    "description": "Идентификатор ответа",
+                                    "description": "ID варианта ответа",
                                     "type": "integer",
-                                    "example": 201
+                                    "example": 10
                                 },
                                 "text": {
-                                    "description": "Текст ответа",
+                                    "description": "Текст варианта ответа",
                                     "type": "string",
-                                    "example": "яблоко"
+                                    "example": "Кошка"
                                 }
                             },
                             "type": "object"
-                        },
-                        "nullable": true
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "SpellingCheckItemResource": {
+                "title": "Spelling Check Item (ресурс проверки правописания)",
+                "description": "Элемент результата проверки правописания",
+                "properties": {
+                    "original_word": {
+                        "description": "Исходное слово, найденное с ошибкой",
+                        "type": "string",
+                        "example": "mispelled"
+                    },
+                    "suggestion": {
+                        "description": "Возможные варианты исправления слова",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "misspelled"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "CountUsersByMonthsResource": {
+                "title": "Count Users By Months Resource (ресурс статистики - количество зарегистрированных пользователей по месяцам)",
+                "required": [
+                    "date",
+                    "count",
+                    "text"
+                ],
+                "properties": {
+                    "date": {
+                        "description": "Месяц и год в формате YYYY-MM",
+                        "type": "string",
+                        "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                        "example": "2023-01"
+                    },
+                    "count": {
+                        "description": "Количество пользователей, зарегистрированных в этом месяце",
+                        "type": "integer",
+                        "example": 15
+                    }
+                },
+                "type": "object"
+            },
+            "TopicWithDecksCountResource": {
+                "title": "Topic with Decks Count and Percentage (ресурс статистики о количестве активных колод в каждой тематике с процентным соотношении)",
+                "description": "Ресурс, содержащий информацию о теме, количестве колод и их процентном соотношении",
+                "required": [
+                    "id",
+                    "name",
+                    "decks_count",
+                    "percentage"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Уникальный идентификатор темы",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Название темы",
+                        "type": "string",
+                        "example": "Mathematics"
+                    },
+                    "decks_count": {
+                        "description": "Количество колод в данной теме",
+                        "type": "integer",
+                        "example": 42
+                    },
+                    "percentage": {
+                        "description": "Процентное соотношение количества колод темы от общего количества колод",
+                        "type": "number",
+                        "format": "float",
+                        "example": 15.25
                     }
                 },
                 "type": "object"
             },
             "TariffResource": {
-                "title": "Tariff Resource (Ресурс тарифа)",
+                "title": "Tariff Resource (ресурс тарифа)",
                 "required": [
                     "id",
                     "name",
@@ -5508,22 +7760,22 @@
                 ],
                 "properties": {
                     "id": {
-                        "description": "Уникальный идентификатор тарифа",
+                        "description": "ID тарифа",
                         "type": "integer",
                         "example": 1
                     },
                     "name": {
                         "description": "Название тарифа",
                         "type": "string",
-                        "example": "Premium Plan"
+                        "example": "Premium"
                     },
                     "days": {
-                        "description": "Количество дней действия тарифа",
+                        "description": "Длительность тарифа в днях",
                         "type": "integer",
                         "example": 30
                     },
                     "costs": {
-                        "description": "Список цен тарифа в разных валютах",
+                        "description": "Список цен, связанных с тарифом",
                         "type": "array",
                         "items": {
                             "required": [
@@ -5532,18 +7784,18 @@
                             ],
                             "properties": {
                                 "id": {
-                                    "description": "Идентификатор стоимости",
+                                    "description": "ID цены",
                                     "type": "integer",
                                     "example": 10
                                 },
                                 "cost": {
-                                    "description": "Стоимость тарифа",
+                                    "description": "Стоимость",
                                     "type": "number",
                                     "format": "float",
-                                    "example": 99.99
+                                    "example": 499.99
                                 },
                                 "currency": {
-                                    "description": "Валюта стоимости",
+                                    "description": "Валюта цены",
                                     "required": [
                                         "id",
                                         "name",
@@ -5552,24 +7804,24 @@
                                     ],
                                     "properties": {
                                         "id": {
-                                            "description": "Идентификатор валюты",
+                                            "description": "ID валюты",
                                             "type": "integer",
                                             "example": 1
                                         },
                                         "name": {
                                             "description": "Название валюты",
                                             "type": "string",
-                                            "example": "US Dollar"
+                                            "example": "Russian Ruble"
                                         },
                                         "code": {
                                             "description": "Код валюты",
                                             "type": "string",
-                                            "example": "USD"
+                                            "example": "RUB"
                                         },
                                         "symbol": {
                                             "description": "Символ валюты",
                                             "type": "string",
-                                            "example": "$"
+                                            "example": "₽"
                                         }
                                     },
                                     "type": "object",
@@ -5615,6 +7867,10 @@
             },
             "TopicResource": {
                 "title": "Topic Resource (ресурс топика)",
+                "required": [
+                    "id",
+                    "name"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -5631,6 +7887,12 @@
                 "title": "User Test Answer Resource (ресурс пользовательских ответов на вопросы к тесту)",
                 "properties": {
                     "question": {
+                        "description": "Вопрос теста",
+                        "required": [
+                            "id",
+                            "text",
+                            "type"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -5638,13 +7900,18 @@
                             },
                             "text": {
                                 "type": "string",
-                                "example": "What is the capital of France?"
+                                "example": "Как переводится слово 'apple'?"
                             },
                             "type": {
                                 "type": "string",
-                                "example": "multiple_choice"
+                                "example": "translate"
                             },
                             "card": {
+                                "description": "Карточка с изображением и словом",
+                                "required": [
+                                    "id",
+                                    "image_url"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -5653,13 +7920,17 @@
                                     "image_url": {
                                         "type": "string",
                                         "format": "uri",
-                                        "example": "https://example.com/images/card1.png"
+                                        "example": "https://example.com/image.jpg"
                                     }
                                 },
-                                "type": "object",
-                                "nullable": true
+                                "type": "object"
                             },
                             "correct_answer": {
+                                "description": "Правильный ответ на вопрос",
+                                "required": [
+                                    "id",
+                                    "text_answer"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -5667,13 +7938,18 @@
                                     },
                                     "text_answer": {
                                         "type": "string",
-                                        "example": "Paris"
+                                        "example": "яблоко"
                                     }
                                 },
-                                "type": "object",
-                                "nullable": true
+                                "type": "object"
                             },
                             "user_answer": {
+                                "description": "Ответ пользователя",
+                                "required": [
+                                    "id",
+                                    "text_answer",
+                                    "is_correct"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -5681,7 +7957,7 @@
                                     },
                                     "text_answer": {
                                         "type": "string",
-                                        "example": "Paris"
+                                        "example": "яблоко"
                                     },
                                     "is_correct": {
                                         "type": "boolean",
@@ -5692,21 +7968,27 @@
                                 "nullable": true
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     }
                 },
-                "type": "object",
-                "nullable": true
+                "type": "object"
             },
             "UserTestResultResource": {
                 "title": "User Test Result (Ресурс для результатов пользователя для попытки прохождения теста)",
+                "required": [
+                    "id",
+                    "score",
+                    "start_time",
+                    "finish_time",
+                    "number_attempt"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "example": 1
+                        "example": 101
                     },
                     "score": {
+                        "description": "Баллы пользователя за тест",
                         "type": "number",
                         "format": "float",
                         "example": 85.5
@@ -5714,19 +7996,26 @@
                     "start_time": {
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-08-06T12:00:00Z"
+                        "example": "2025-08-11T14:00:00Z"
                     },
                     "finish_time": {
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-08-06T12:30:00Z",
-                        "nullable": true
+                        "example": "2025-08-11T14:30:00Z"
                     },
                     "number_attempt": {
+                        "description": "Номер попытки прохождения теста",
                         "type": "integer",
-                        "example": 2
+                        "example": 1
                     },
                     "test": {
+                        "description": "Данные теста",
+                        "required": [
+                            "id",
+                            "name",
+                            "time_seconds",
+                            "count_attempts"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -5734,25 +8023,33 @@
                             },
                             "name": {
                                 "type": "string",
-                                "example": "Math Test"
+                                "example": "Тест по английскому"
                             },
                             "time_seconds": {
+                                "description": "Время на тест в секундах",
                                 "type": "integer",
                                 "example": 1800
                             },
                             "count_attempts": {
+                                "description": "Максимальное количество попыток",
                                 "type": "integer",
                                 "example": 3
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     }
                 },
                 "type": "object"
             },
             "VoiceResource": {
                 "title": "Voice Resource (ресурс для информации о голосе с помощью которого можно озвучить текст)",
+                "required": [
+                    "id",
+                    "voice_id",
+                    "voice_name",
+                    "sex",
+                    "is_active"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -5764,7 +8061,7 @@
                     },
                     "voice_name": {
                         "type": "string",
-                        "example": "John"
+                        "example": "Alex"
                     },
                     "sex": {
                         "type": "string",
@@ -5780,6 +8077,15 @@
                         "example": true
                     },
                     "language": {
+                        "description": "Язык голоса",
+                        "required": [
+                            "id",
+                            "name",
+                            "native_name",
+                            "code",
+                            "flag_url",
+                            "locale"
+                        ],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -5799,7 +8105,7 @@
                             },
                             "flag_url": {
                                 "type": "string",
-                                "format": "url",
+                                "format": "uri",
                                 "example": "https://example.com/flags/en.png"
                             },
                             "locale": {
@@ -5807,8 +8113,7 @@
                                 "example": "en_US"
                             }
                         },
-                        "type": "object",
-                        "nullable": true
+                        "type": "object"
                     }
                 },
                 "type": "object"
@@ -5820,6 +8125,11 @@
                 "content": {
                     "application/json": {
                         "schema": {
+                            "required": [
+                                "status",
+                                "message",
+                                "errors"
+                            ],
                             "properties": {
                                 "status": {
                                     "type": "string",
@@ -5845,6 +8155,11 @@
                 "content": {
                     "application/json": {
                         "schema": {
+                            "required": [
+                                "status",
+                                "message",
+                                "errors"
+                            ],
                             "properties": {
                                 "status": {
                                     "type": "string",
@@ -5870,6 +8185,11 @@
                 "content": {
                     "application/json": {
                         "schema": {
+                            "required": [
+                                "status",
+                                "message",
+                                "errors"
+                            ],
                             "properties": {
                                 "status": {
                                     "type": "string",
@@ -5917,6 +8237,10 @@
     },
     "tags": [
         {
+            "name": "Ответы",
+            "description": "Ответы"
+        },
+        {
             "name": "Аутентификация",
             "description": "Аутентификация"
         },
@@ -5957,12 +8281,40 @@
             "description": "Верификация электронного адреса"
         },
         {
+            "name": "История попыток прохождения тестов",
+            "description": "История попыток прохождения тестов"
+        },
+        {
+            "name": "История покупок",
+            "description": "История покупок"
+        },
+        {
             "name": "Привязка к пользователю, который пригласил в систему",
             "description": "Привязка к пользователю, который пригласил в систему"
         },
         {
+            "name": "Языки",
+            "description": "Языки"
+        },
+        {
             "name": "Профиль",
             "description": "Профиль"
+        },
+        {
+            "name": "Промокоды",
+            "description": "Промокоды"
+        },
+        {
+            "name": "Проверка правописания",
+            "description": "Проверка правописания"
+        },
+        {
+            "name": "Статистика",
+            "description": "Статистика"
+        },
+        {
+            "name": "Тарифы",
+            "description": "Тарифы"
         },
         {
             "name": "Временные зоны",
@@ -5977,8 +8329,16 @@
             "description": "Двухфакторная аутентификация"
         },
         {
+            "name": "Upload",
+            "description": "Upload"
+        },
+        {
             "name": "Тестирование (прохождение тестов на сайте)",
             "description": "Тестирование (прохождение тестов на сайте)"
+        },
+        {
+            "name": "Голоса",
+            "description": "Голоса"
         }
     ]
 }

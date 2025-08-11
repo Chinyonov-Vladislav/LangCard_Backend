@@ -9,72 +9,37 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @OA\Schema(
  *     schema="QuestionResource",
+ *     title="Question Resource (ресурс вопроса)",
  *     type="object",
- *     title="Question Resource",
- *     description="Ресурс вопроса с опциональными вложенными данными",
  *     required={"id", "type", "text"},
- *     @OA\Property(
- *         property="id",
- *         type="integer",
- *         example=101,
- *         description="Уникальный идентификатор вопроса"
- *     ),
- *     @OA\Property(
- *         property="type",
- *         type="string",
- *         example="translate",
- *         description="Тип вопроса"
- *     ),
- *     @OA\Property(
- *         property="text",
- *         type="string",
- *         example="Переведите слово",
- *         description="Текст вопроса"
- *     ),
+ *     @OA\Property(property="id", type="integer", example=123, description="ID вопроса"),
+ *     @OA\Property(property="type", type="string", example="translate", description="Тип вопроса"),
+ *     @OA\Property(property="text", type="string", example="Переведите слово", description="Текст вопроса"),
+ *
  *     @OA\Property(
  *         property="card",
  *         type="object",
- *         nullable=true,
- *         description="Карточка, связанная с вопросом",
- *         @OA\Property(
- *             property="word",
- *             type="string",
- *             nullable=true,
- *             example="apple",
- *             description="Слово из карточки (только если type = 'translate')"
- *         ),
- *         @OA\Property(
- *             property="image_url",
- *             type="string",
- *             format="uri",
- *             example="https://example.com/images/apple.png",
- *             description="URL изображения карточки"
- *         )
+ *         description="Карточка, связанная с вопросом (опционально, если загружена)",
+ *         @OA\Property(property="word", type="string", nullable=true, example="cat", description="Слово (только для типа 'translate', иначе null)"),
+ *         @OA\Property(property="image_url", type="string", format="uri", nullable=true, example="https://example.com/image.jpg", description="URL изображения карточки")
  *     ),
+ *
  *     @OA\Property(
  *         property="answers",
  *         type="array",
- *         nullable=true,
- *         description="Список вариантов ответов",
+ *         description="Варианты ответов (опционально, если загружены)",
  *         @OA\Items(
  *             type="object",
  *             required={"id", "text"},
- *             @OA\Property(
- *                 property="id",
- *                 type="integer",
- *                 example=201,
- *                 description="Идентификатор ответа"
- *             ),
- *             @OA\Property(
- *                 property="text",
- *                 type="string",
- *                 example="яблоко",
- *                 description="Текст ответа"
- *             )
+ *             @OA\Property(property="id", type="integer", example=10, description="ID варианта ответа"),
+ *             @OA\Property(property="text", type="string", example="Кошка", description="Текст варианта ответа")
  *         )
  *     )
  * )
  */
+
+
+
 class QuestionResource extends JsonResource
 {
     /**
@@ -88,16 +53,20 @@ class QuestionResource extends JsonResource
             'id' => $this->id,
             'type'=>$this->type,
             'text'=>$this->text,
-            'card'=>$this->relationLoaded('card') && $this->card ?
-                [
-                    'word'=>$this->type === TypeQuestionInTest::translate->value ? $this->card->word : null,
-                    'image_url'=>$this->card->image_url,
-                ]: null,
-            'answers'=>$this->relationLoaded('answers') && $this->answers ?
-                $this->answers->map(fn($answer) => [
+            'card'=>$this->whenLoaded('card', function (){
+                $card = $this->card;
+                return [
+                    'word'=>$this->type === TypeQuestionInTest::translate->value ? $card->word : null,
+                    'image_url'=>$card->image_url,
+                ];
+            }),
+            'answers'=>$this->whenLoaded('answers', function () {
+                $answers = $this->answers;
+                return $answers->map(fn ($answer) => [
                     'id'=>$answer->id,
-                    'text'=>$answer->text_answer,
-                ]) : null
+                    'text'=>$answer->text_answer
+                ]);
+            }),
         ];
     }
 }

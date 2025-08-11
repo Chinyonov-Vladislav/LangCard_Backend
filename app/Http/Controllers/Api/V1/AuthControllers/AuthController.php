@@ -203,7 +203,7 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Провайдер 'facebook' не поддерживается."),
-     *             @OA\Property(property="data", type="null", example=null)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     )
      * )
@@ -275,18 +275,22 @@ class AuthController extends Controller
      *         response=404,
      *         description="Провайдер не поддерживается",
      *         @OA\JsonContent(
+     *             type="object",
+     *              required={"status", "message", "data"},
      *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
      *             @OA\Property(property="message", type="string", example="Провайдер 'facebook' не поддерживается."),
-     *             @OA\Property(property="data", type="null", example=null)
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
      *         description="Внутренняя ошибка при аутентификации",
      *         @OA\JsonContent(
+     *             type="object",
+     *              required={"status", "message", "errors"},
      *             @OA\Property(property="status", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Произошла ошибка при авторизации через yandex."),
-     *             @OA\Property(property="data", type="null", example=null)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     )
      * )

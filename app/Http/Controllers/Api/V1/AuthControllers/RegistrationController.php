@@ -70,7 +70,7 @@ class RegistrationController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", enum={"success", "error"}, example="error"),
      *             @OA\Property(property="message", type="string", example="Не удалось зарегистрировать пользователя."),
-     *             @OA\Property(property="data", type="object", nullable=true, example=null)
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     )
      * )

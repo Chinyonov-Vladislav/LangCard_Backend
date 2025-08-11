@@ -98,6 +98,7 @@ class DeckController extends Controller
      *         description="Успешный ответ с пагинированным списком колод",
      *         @OA\JsonContent(
      *             type="object",
+     *             required = {"status","message","data"},
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Данные колод на странице 1"),
      *             @OA\Property(
@@ -155,7 +156,7 @@ class DeckController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Колода 5 была удалена (мягко или физически)."),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -164,7 +165,7 @@ class DeckController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Колода с ID 5 не найдена"),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -173,7 +174,7 @@ class DeckController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Пользователь не является владельцем колоды."),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
@@ -379,7 +380,7 @@ class DeckController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Колода с ID 5 не найдена"),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(

@@ -66,17 +66,17 @@ Route::prefix('v1')->group(callback: function () {
                     Route::get('/{id}', [ProfileController::class, 'getProfile'])->where('id', '[0-9]+')->name('getProfile');
                 });
                 Route::prefix('dailyRewards')->group(function () {
-                    Route::get('', [DailyRewardController::class, 'getDailyRewardsForAuthUser'])->name('getDailyRewardsForAuthUser');
-                    Route::post('', [DailyRewardController::class, 'takeDailyReward'])->name('takeDailyReward');
+                    Route::get('/', [DailyRewardController::class, 'getDailyRewardsForAuthUser'])->name('getDailyRewardsForAuthUser');
+                    Route::post('/', [DailyRewardController::class, 'takeDailyReward'])->name('takeDailyReward');
                 });
                 Route::prefix('tests')->group(function () {
                     Route::post('/start', [UserTestResultController::class, 'start'])->name('startTest');
-                    Route::get('/questionsForTest/{attemptId}', [UserTestResultController::class, 'questionsForTest'])->name('questionsForTest');
+                    Route::get('/questionsForTest/{attemptId}', [UserTestResultController::class, 'questionsForTest'])->where('attemptId', '[0-9]+')->name('questionsForTest');
                     Route::post('/end', [UserTestResultController::class, 'end'])->name('endTest');
                 });
                 Route::prefix('decks')->group(function () {
-                    Route::get('', [DeckController::class, 'getDecks'])->name('getDecks');
-                    Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->name('getDeck');
+                    Route::get('/', [DeckController::class, 'getDecks'])->name('getDecks');
+                    Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->where('id', '[0-9]+')->name('getDeck');
                     Route::post('/', [DeckController::class, 'createDeck'])->name('createDeck');
                     Route::prefix('/{id}/topics')->group(function () {
                         Route::post('',[DeckController::class, 'addTopicsToDeck'] )->where('id', '[0-9]+')->name('addTopicsToDeck');
@@ -86,7 +86,7 @@ Route::prefix('v1')->group(callback: function () {
                 Route::prefix('topics')->group(function () {
                     Route::get('/', [TopicController::class, 'getTopics'])->name('getTopics');
                     Route::post('/', [TopicController::class, 'createTopic'])->name('createTopic')->middleware('isAdmin');
-                    Route::put('/{id}', [TopicController::class, 'updateTopic'])->name('updateTopic')->middleware('isAdmin');
+                    Route::put('/{id}', [TopicController::class, 'updateTopic'])->name('updateTopic')->where('id', '[0-9]+')->middleware('isAdmin');
                     Route::delete('/{id}', [TopicController::class, 'deleteTopic'])->where('id', '[0-9]+')->name('deleteTopic')->middleware('isAdmin');
                 });
                 Route::prefix('historyAttempts')->group(function () {
@@ -94,7 +94,7 @@ Route::prefix('v1')->group(callback: function () {
                 });
                 Route::prefix('answers')->group(function () {
                     Route::get('/{attemptId}', [AnswerController::class, 'getAnswersInAttempt'])
-                        ->where('id', '[0-9]+')->name('getAnswersInAttempt');
+                        ->where('attemptId', '[0-9]+')->name('getAnswersInAttempt');
                 });
                 Route::prefix('historyPurchases')->group(function () {
                     Route::get('/', [HistoryPurchaseController::class, 'getHistoryPurchasesOfAuthUser'])->name('getHistoryPurchasesOfAuthUser');
@@ -111,16 +111,17 @@ Route::prefix('v1')->group(callback: function () {
                 });
                 Route::prefix('stats')->group(function () {
                     Route::get('/countUsersByMonths', [StatsController::class, 'getCountUsersByMonths'])->name('getCountUsersByMonths')->middleware('isAdmin');
-                    Route::get('/countDecksByTopic', [StatsController::class, 'getTopicsWithCountDecksAndPercentage'])->name('getTopicsWithCountDecksAndPercentage');
+                    Route::get('/countDecksByTopic', [StatsController::class, 'getTopicsWithCountDecksAndPercentage'])->name('getTopicsWithCountDecksAndPercentage')->middleware('isAdmin');
                 });
                 Route::prefix('promocodes')->group(function () {
                     Route::post('/', [PromocodeController::class, 'createPromocodes'])->name('createPromocodes')->middleware('isAdmin');
                     Route::post('/activate', [PromocodeController::class, 'activatePromocode'])->name('activatePromocode');
-                    Route::get('/download/{type}/{tariff_id?}', [PromocodeController::class, 'downloadPromocodes'])
-                        ->whereIn('type', ['table', 'card'])->whereNumber('tariff_id')->name('downloadPromocodes');
-                });
-                Route::prefix('cards')->group(function () {
-                    Route::post('/', [CardController::class, 'createCardForDeck'])->name('createCardForDeck');
+
+                    Route::get('/download/{type}', [PromocodeController::class, 'downloadPromocodesAllTariffs'])
+                        ->whereIn('type', ['table', 'card'])->name('downloadPromocodesAllTariffs')->middleware('isAdmin');
+
+                    Route::get('/download/{type}/{tariffId}', [PromocodeController::class, 'downloadPromocodesCertainTariff'])
+                        ->whereIn('type', ['table', 'card'])->whereNumber('tariffId')->name('downloadPromocodesCertainTariff')->middleware('isAdmin');
                 });
                 Route::prefix('voices')->group(function () {
                     Route::get('/', [VoiceController::class, 'getVoices'])->name('getVoices');
@@ -128,7 +129,12 @@ Route::prefix('v1')->group(callback: function () {
                     Route::patch('/', [VoiceController::class, 'updateStatusOfVoices'])->name('updateStatusOfVoices')->middleware('isAdmin');
                 });
                 Route::post('/upload', [UploadController::class, 'uploadFile'])->name('uploadFile');
-                Route::post('checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
+                Route::post('/checkSpelling', [SpellingController::class, 'checkSpelling'])->name('checkSpelling');
+
+
+                Route::prefix('cards')->group(function () {
+                    Route::post('/', [CardController::class, 'createCardForDeck'])->name('createCardForDeck');
+                });
             });
         });
     });

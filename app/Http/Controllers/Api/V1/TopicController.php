@@ -140,7 +140,7 @@ class TopicController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Топик с id = 1 не найден"),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(
@@ -198,7 +198,7 @@ class TopicController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Топик c id = 1 не найден"),
-     *             @OA\Property(property="data", type="null")
+     *             @OA\Property(property="data", type="object", nullable=true, example=null)
      *         )
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),

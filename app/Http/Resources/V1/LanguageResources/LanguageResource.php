@@ -8,8 +8,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @OA\Schema(
  *     schema="LanguageResource",
+ *     title="Language Resource (ресурс языка)",
  *     type="object",
- *     title="Language Resource",
  *     description="Ресурс языка с основными свойствами",
  *     required={"id", "name", "native_name", "code", "flag_url", "locale"},
  *     @OA\Property(

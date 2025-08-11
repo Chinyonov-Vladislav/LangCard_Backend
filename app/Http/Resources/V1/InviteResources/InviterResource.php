@@ -8,9 +8,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @OA\Schema(
  *     schema="InviterResource",
- *     title="Inviter Resource",
+ *     title="Inviter Resource (Ресурс для данных о пригласившем пользователе",
  *     description="Информация о пригласившем пользователе",
  *     type="object",
+ *     required = {"id", "name", "avatar"},
  *     @OA\Property(
  *         property="id",
  *         type="integer",

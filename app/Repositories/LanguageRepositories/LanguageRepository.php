@@ -15,7 +15,7 @@ class LanguageRepository implements LanguageRepositoryInterface
 
     public function getAllLanguagesName()
     {
-        return $this->model->select('name')->get()->toArray();
+        return $this->model->select(['id','name'])->get()->toArray();
     }
 
     public function isExistLanguageByLocale(string $languageLocale)
