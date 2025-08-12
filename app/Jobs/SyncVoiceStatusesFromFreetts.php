@@ -2,28 +2,23 @@
 
 namespace App\Jobs;
 
+use App\Enums\JobStatuses;
 use App\Enums\TypeStatus;
 use App\Http\Resources\V1\VoiceResources\VoiceResource;
 use App\Repositories\VoiceRepositories\VoiceRepository;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
 
-class SyncVoiceStatusesFromFreetts implements ShouldQueue
+class SyncVoiceStatusesFromFreetts extends BaseJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    public function __construct()
+    public function __construct(?string $job_id)
     {
-        //
+        parent::__construct($job_id);
     }
 
     /**
@@ -31,6 +26,7 @@ class SyncVoiceStatusesFromFreetts implements ShouldQueue
      */
     public function handle(VoiceRepository $voiceRepository): void
     {
+        $this->updateJobStatus(JobStatuses::processing->value);
         try {
             $voiceIdUpdated = [];
 
@@ -41,7 +37,7 @@ class SyncVoiceStatusesFromFreetts implements ShouldQueue
             $response = Http::get('https://freetts.ru/api/list')->json();
 
             if ($response['status'] !== TypeStatus::success->value) {
-                Log::error('SyncVoiceStatusesFromFreetts: ошибка при получении данных с freetts.ru');
+                $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'Ошибка при получении данных с freetts.ru']);
                 return;
             }
 
@@ -70,7 +66,6 @@ class SyncVoiceStatusesFromFreetts implements ShouldQueue
                     }
                 }
             }
-
             // 4. Логируем изменения
             if (!empty($voiceIdUpdated)) {
                 $updatedVoices = $voiceRepository->getVoicesByVoiceId($voiceIdUpdated);
@@ -80,16 +75,12 @@ class SyncVoiceStatusesFromFreetts implements ShouldQueue
             } else {
                 Log::info('SyncVoiceStatusesFromFreetts: изменений нет');
             }
+            $this->updateJobStatus(JobStatuses::finished->value);
 
         } catch (ConnectionException $e) {
-            Log::error('SyncVoiceStatusesFromFreetts: ошибка соединения с freetts.ru', [
-                'error' => $e->getMessage(),
-            ]);
+            $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'Ошибка соединения с freetts.ru: '.$e->getMessage()]);
         } catch (\Throwable $e) {
-            Log::error('SyncVoiceStatusesFromFreetts: непредвиденная ошибка', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'Непредвиденная ошибка: '.$e->getMessage()]);
         }
     }
 }

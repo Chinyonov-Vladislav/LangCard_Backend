@@ -49,10 +49,23 @@ class UserTestResultRepository implements UserTestResultRepositoryInterface
         })->exists();
     }
 
+    public function existStartedTestForCard(int $cardId): bool
+    {
+        return $this->model
+            ->whereHas('test', function ($query) use ($cardId) {
+                $query->whereHas('questions', function ($q) use ($cardId) {
+                    $q->where('card_id', $cardId);
+                });
+            })
+            ->exists();
+    }
+
     public function getResultAttemptsOfCurrentUserWithPagination(PaginatorService $paginatorService,int $userId, int $page, int $countOnPage): array
     {
         $query = $this->model->with(['test'])->where('user_id', '=', $userId)->orderBy('created_at', 'desc');
         $data = $paginatorService->paginate($query, $countOnPage, $page);
         return ['items' => collect($data->items()), "pagination" => $paginatorService->getMetadataForPagination($data)];
     }
+
+
 }

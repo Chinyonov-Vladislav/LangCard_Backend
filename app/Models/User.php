@@ -155,6 +155,11 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->hasMany(User::class, 'inviter_id');
     }
 
+    public function jobStatuses(): HasMany
+    {
+        return $this->hasMany(JobStatus::class, 'user_id');
+    }
+
     public function getParentKeyName(): string
     {
         return 'inviter_id';

@@ -28,6 +28,8 @@ use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepository;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepositoryInterface;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepository;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
+use App\Repositories\JobStatusRepositories\JobStatusRepository;
+use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepository;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\LoginRepositories\LoginRepository;
@@ -119,6 +121,7 @@ class AppServiceProvider extends ServiceProvider
             DailyRewardRepositoryInterface::class => DailyRewardRepository::class,
             TwoFactorAuthorizationRepositoryInterface::class=>TwoFactorAuthorizationRepository::class,
             RecoveryCodeRepositoryInterface::class => RecoveryCodeRepository::class,
+            JobStatusRepositoryInterface::class => JobStatusRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

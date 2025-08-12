@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\FilterDataController;
 use App\Http\Controllers\Api\V1\HistoryAttemptsTestController;
 use App\Http\Controllers\Api\V1\HistoryPurchaseController;
 use App\Http\Controllers\Api\V1\InviteController;
+use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LanguageController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PromocodeController;
@@ -134,14 +135,20 @@ Route::prefix('v1')->group(callback: function () {
 
                 Route::prefix('cards')->group(function () {
                     Route::post('/', [CardController::class, 'createCardForDeck'])->name('createCardForDeck');
+                    Route::post("/{id}/addVoices", [CardController::class, 'addVoicesForCard'])->name('addVoiceForCard');
+                    Route::post('/{id}/singleAddingExample', [CardController::class, 'addExampleToCard'])->name('addExampleToCard');
+                    Route::post('/{id}/multipleAddingExample', [CardController::class, 'addMultipleExamplesToCard'])->name('addMultipleExamplesToCard');
+                    Route::delete("/{id}", [CardController::class, 'deleteCard'])->name('deleteCard');
                 });
 
                 Route::prefix('examples')->group(function () {
-                    Route::post('/singleAdding', [ExampleController::class, 'addExampleToCard'])->name('addExampleToCard');
-                    Route::post('/multipleAdding', [ExampleController::class, 'addMultipleExamplesToCard'])->name('addMultipleExamplesToCard');
                     Route::put('/singleUpdate', [ExampleController::class, 'updateSingleExample'])->name('updateSingleExample');
                     Route::put('/multipleUpdate', [ExampleController::class, 'updateMultipleExample'])->name('updateMultipleExample');
                     Route::delete("/{id}", [ExampleController::class, 'deleteExample'])->name('deleteExample');
+                });
+
+                Route::prefix('jobs')->group(function () {
+                    Route::get("/", [JobController::class, 'getJobsOfAuthUser'])->name('getJobsOfAuthUser');
                 });
             });
         });

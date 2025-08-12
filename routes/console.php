@@ -12,5 +12,5 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('limits:reset')->dailyAt('00:00');
-Schedule::job(new FetchVoicesFromFreetts)->dailyAt('00:00');
-Schedule::job(new SyncVoiceStatusesFromFreetts)->dailyAt('00:00');
+Schedule::job(new FetchVoicesFromFreetts(null))->dailyAt('00:00');
+Schedule::job(new SyncVoiceStatusesFromFreetts(null))->dailyAt('00:00');

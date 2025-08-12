@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Helpers\ColumnLabel;
 use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -27,17 +30,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read int|null $examples_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question> $questions
  * @property-read int|null $questions_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereDeckId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereImageUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card wherePronunciationUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereTranslate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Card whereWord($value)
+ * @method static Builder<static>|Card newModelQuery()
+ * @method static Builder<static>|Card newQuery()
+ * @method static Builder<static>|Card query()
+ * @method static Builder<static>|Card whereCreatedAt($value)
+ * @method static Builder<static>|Card whereDeckId($value)
+ * @method static Builder<static>|Card whereId($value)
+ * @method static Builder<static>|Card whereImageUrl($value)
+ * @method static Builder<static>|Card wherePronunciationUrl($value)
+ * @method static Builder<static>|Card whereTranslate($value)
+ * @method static Builder<static>|Card whereUpdatedAt($value)
+ * @method static Builder<static>|Card whereWord($value)
  * @mixin \Eloquent
  */
 class Card extends Model implements  ColumnLabelsableInterface
@@ -77,6 +80,20 @@ class Card extends Model implements  ColumnLabelsableInterface
         return $this->hasMany(Audiofile::class, 'card_id')->where('destination','=','target');
     }
 
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function (Card $card) {
+            if ($card->image_url) {
+                $relativePath = Str::replaceFirst('storage/', '', $card->image_url);
+                if (Storage::disk('public')->exists($relativePath)) {
+                    Storage::disk('public')->delete($relativePath);
+                }
+            }
+        });
+    }
 
     protected function casts(): array
     {

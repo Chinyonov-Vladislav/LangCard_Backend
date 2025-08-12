@@ -13,6 +13,7 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Illuminate\Support\Facades\Process;
+use Log;
 
 class TextToSpeechService
 {
@@ -56,34 +57,48 @@ class TextToSpeechService
     /**
      * Получает ссылку на сгенерированный аудиофайл
      */
-    public function getUrlForGeneratedAudio(string $text, string $lang, string $voiceId): object
+    public function getUrlsForGeneratedAudio(array $data): array
     {
-        $this->initializeDriver();
+        $result = [];
         try {
+            $this->initializeDriver();
             $this->loadWebsite();
             $this->waitForPageElements();
-            $previousCountGeneratedAudio = $this->getCountGeneratedAudio();
-            $this->inputText($text);
-            $this->selectLanguage($lang);
-            $this->selectVoice($voiceId);
-            $this->synthesizeText();
-            if ($this->waitForProcessingCompletion() === false) {
-                throw new Exception('Обработка текста завершилась неудачно');
+            foreach ($data as $item) {
+                $previousCountGeneratedAudio = $this->getCountGeneratedAudio();
+                $this->inputText($item->text);
+                $this->selectLanguage($item->lang);
+                $this->selectVoice($item->voiceId);
+                $this->synthesizeText();
+                if ($this->waitForProcessingCompletion() === false) {
+                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                    continue;
+                }
+                $this->waitForAudioGeneration();
+                $countAttempts = 10;
+                $currentAttempt = 1;
+                while ($currentAttempt < $countAttempts) {
+                    $currentCountGeneratedAudio = $this->getCountGeneratedAudio();
+                    if ($currentCountGeneratedAudio - $previousCountGeneratedAudio === 1) {
+                        $download_url = $this->getDownloadUrl();
+                        $result[] = (object)['status' => TypeStatus::success->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'url_download' => $download_url, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                        break;
+                    }
+                    $currentAttempt++;
+                    sleep(1);
+                }
+                if($currentAttempt === $countAttempts) {
+                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                }
             }
-            $this->waitForAudioGeneration();
-            $currentCountGeneratedAudio = $this->getCountGeneratedAudio();
-            if ($currentCountGeneratedAudio - $previousCountGeneratedAudio === 1) {
-                $download_url = $this->getDownloadUrl();
-                return (object)['status' => TypeStatus::success->value, 'url_download' => $download_url];
-            }
-            return (object)['status' => TypeStatus::error->value, 'message' => "Количество новых сгенерированных аудиозаписей больше, чем 1"];
-        } catch (Exception $e) {
-            return (object)['status' => TypeStatus::error->value, 'message' => $e->getMessage()];
-        } finally {
             $this->closeDriver();
+            return $result;
+        } catch (Exception $e) {
+            Log::error("Произошла ошибка при генерации озвучки: " . $e->getMessage());
+            $this->closeDriver();
+            return $result;
         }
     }
-
 
 
     /**
@@ -93,6 +108,17 @@ class TextToSpeechService
     {
         $capabilities = DesiredCapabilities::chrome();
         $this->driver = RemoteWebDriver::create($this->serverUrl, $capabilities);
+    }
+
+
+    /**
+     * Закрытие драйвера
+     */
+    private function closeDriver(): void
+    {
+        if (isset($this->driver)) {
+            $this->driver->close();
+        }
     }
 
     /**
@@ -342,14 +368,5 @@ class TextToSpeechService
         ));
     }
 
-    /**
-     * Закрытие драйвера
-     */
-    private function closeDriver(): void
-    {
-        if (isset($this->driver)) {
-            $this->driver->close();
-        }
-    }
 
 }

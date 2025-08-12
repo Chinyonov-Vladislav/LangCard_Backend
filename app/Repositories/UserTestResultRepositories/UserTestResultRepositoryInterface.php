@@ -7,6 +7,8 @@ use App\Services\PaginatorService;
 
 interface UserTestResultRepositoryInterface
 {
+    public function existStartedTestForCard(int $cardId):bool;
+
 
     public function existStartedTestForDeck(int $deckId): bool;
 

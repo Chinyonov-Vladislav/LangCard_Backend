@@ -1129,8 +1129,19 @@
                                             "example": "Пользователь успешно зарегистрирован"
                                         },
                                         "data": {
+                                            "properties": {
+                                                "timezone_job_id": {
+                                                    "description": "Идентификатор фоновой задачи на определение часового пояса (если не удалось получить сразу)",
+                                                    "type": "string",
+                                                    "example": "job_12345"
+                                                },
+                                                "currency_job_id": {
+                                                    "description": "Идентификатор фоновой задачи на определение валюты (если не удалось получить сразу)",
+                                                    "type": "string",
+                                                    "example": "job_67890"
+                                                }
+                                            },
                                             "type": "object",
-                                            "example": null,
                                             "nullable": true
                                         }
                                     },

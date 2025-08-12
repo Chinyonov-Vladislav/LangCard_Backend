@@ -22,7 +22,6 @@ class AddingMultipleExamplesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_id'=>['required', 'integer', 'exists:cards,id'],
             'examples' => ['required','array'],
             'examples.*.example' => ['required', 'string', 'max:255'],
             'examples.*.source' => ['required', 'string', 'in:original,target'],
@@ -31,9 +30,6 @@ class AddingMultipleExamplesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'card_id.required' => 'Идентификатор карточки обязателен.',
-            'card_id.integer' => 'Идентификатор карточки должен быть числом.',
-            'card_id.exists' => 'Указанная карточка не найдена.',
 
             'examples.required' => 'Массив примеров обязателен.',
             'examples.array' => 'Поле примеров должно быть массивом.',

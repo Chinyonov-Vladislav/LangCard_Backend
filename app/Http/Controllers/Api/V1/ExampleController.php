@@ -26,34 +26,6 @@ class ExampleController extends Controller
         $this->cardRepository = $cardRepository;
     }
 
-    public function addExampleToCard(AddingExampleRequest $request)
-    {
-        $card = $this->cardRepository->getCardById($request->card_id, ['deck']);
-        if($card->deck->user_id !== auth()->user()->id) {
-            return ApiResponse::error("Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример",null, 409);
-        }
-        $newExample = $this->exampleRepository->saveNewExample($request->example, $request->card_id, $request->source);
-        $message = $request->source === "original" ? "Пример использования слова на оригинальном языке успешно добавлен" : "Пример использования слова на целевом языке успешно добавлен";
-        $resultInfo = ['text_example' => $request->example, "message" => $message];
-        return ApiResponse::success($message, (object)['info'=>new InfoSavingExampleUsingWordInCardResource($resultInfo)],201);
-    }
-
-    public function addMultipleExamplesToCard(AddingMultipleExamplesRequest $request)
-    {
-        $card = $this->cardRepository->getCardById($request->card_id, ['deck']);
-        if($card->deck->user_id !== auth()->user()->id) {
-            return ApiResponse::error("Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример",null, 409);
-        }
-        $messages = [];
-        for($number = 0; $number < count($request->examples); $number++) {
-            $this->exampleRepository->saveNewExample($request->examples[$number]['example'], $request->card_id, $request->examples[$number]['source']);
-            $message = $request->examples[$number]['source'] === "original" ? "Пример использования слова на оригинальном языке успешно добавлен" : "Пример использования слова на целевом языке успешно добавлен";
-            $infoMessage = ['number' => $number, 'text_example' => $request->examples[$number]['example'], "message" => $message];
-            $messages[] = $infoMessage;
-        }
-        return ApiResponse::success("Результат сохранения записей", (object)['info'=>InfoSavingExampleUsingWordInCardResource::collection($messages)],201);
-    }
-
     public function updateSingleExample(UpdateSingleExampleRequest $request)
     {
         $exampleById = $this->exampleRepository->getExampleById($request->example_id);

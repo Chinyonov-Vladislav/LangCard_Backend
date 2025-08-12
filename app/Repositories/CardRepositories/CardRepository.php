@@ -49,4 +49,13 @@ class CardRepository implements CardRepositoryInterface
     {
         $this->model->where('id', '=', $idCard)->update(['pronunciation_url' => $pronunciationUrl]);
     }
+
+    public function delete(int|Card $card): void
+    {
+        if(is_int($card)){
+            $this->model->where('id', '=', $card)->delete();
+            return;
+        }
+        $card->delete();
+    }
 }

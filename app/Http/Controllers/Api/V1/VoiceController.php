@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\JobStatuses;
 use App\Enums\TypeStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\VoiceFilter;
@@ -11,22 +12,28 @@ use App\Http\Resources\v1\VoiceResources\VoiceResource;
 use App\Http\Responses\ApiResponse;
 use App\Jobs\FetchVoicesFromFreetts;
 use App\Jobs\SyncVoiceStatusesFromFreetts;
+use App\Models\JobStatus;
+use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use App\Services\PaginatorService;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Str;
 
 class VoiceController extends Controller
 {
     protected VoiceRepositoryInterface $voiceRepository;
     protected LanguageRepositoryInterface $languageRepository;
 
-    public function __construct(VoiceRepositoryInterface $voiceRepository, LanguageRepositoryInterface $languageRepository)
+    protected JobStatusRepositoryInterface $jobStatusRepository;
+
+    public function __construct(VoiceRepositoryInterface $voiceRepository, LanguageRepositoryInterface $languageRepository, JobStatusRepositoryInterface $jobStatusRepository)
     {
         $this->voiceRepository = $voiceRepository;
         $this->languageRepository = $languageRepository;
+        $this->jobStatusRepository = $jobStatusRepository;
     }
 
     /**
@@ -132,8 +139,10 @@ class VoiceController extends Controller
      */
     public function createVoice()
     {
-        FetchVoicesFromFreetts::dispatch();
-        return ApiResponse::success('Задача на обновление голосов поставлена в очередь');
+        $jobId = (string) Str::uuid();
+        $this->jobStatusRepository->saveNewJobStatus($jobId, "FetchVoicesFromFreetts", JobStatuses::queued->value, auth()->id());
+        FetchVoicesFromFreetts::dispatch($jobId);
+        return ApiResponse::success('Задача на получение голосов поставлена в очередь',(object)["job_id" => $jobId]);
     }
 
     /**
@@ -163,7 +172,9 @@ class VoiceController extends Controller
      */
     public function updateStatusOfVoices()
     {
-        SyncVoiceStatusesFromFreetts::dispatch();
-        return ApiResponse::success('Синхронизация статусов голосов запущена');
+        $jobId = (string) Str::uuid();
+        $this->jobStatusRepository->saveNewJobStatus($jobId, "SyncVoiceStatusesFromFreetts", JobStatuses::queued->value, auth()->id());
+        SyncVoiceStatusesFromFreetts::dispatch($jobId);
+        return ApiResponse::success('Синхронизация статусов голосов запущена', (object)["job_id" => $jobId]);
     }
 }

@@ -15,4 +15,6 @@ interface CardRepositoryInterface
     public function addImageToCard(int $idCard, string $imageUrl);
 
     public function addPronunciationToCard(int $idCard, string $pronunciationUrl);
+
+    public function delete(int|Card $card);
 }

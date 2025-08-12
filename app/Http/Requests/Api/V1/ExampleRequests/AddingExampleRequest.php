@@ -23,7 +23,6 @@ class AddingExampleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_id'=>['required', 'integer', 'exists:cards,id'],
             'example' => ['required', 'string', 'max:255'],
             'source'=>['required', 'string', 'in:original,target']
         ];
@@ -32,9 +31,6 @@ class AddingExampleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'card_id.required' => 'Поле card_id обязательно для заполнения.',
-            'card_id.integer' => 'Поле card_id должно быть целым числом.',
-            'card_id.exists' => 'Указанная карточка не существует.',
 
             'example.required' => 'Поле example обязательно для заполнения.',
             'example.string' => 'Поле example должно быть строкой.',

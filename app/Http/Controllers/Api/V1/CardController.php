@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\TypeFolderForFiles;
+use App\Enums\JobStatuses;
 use App\Enums\TypeInfoAboutDeck;
-use App\Enums\TypeStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\CardRequests\AddingVoiceForCardRequest;
 use App\Http\Requests\Api\V1\CardRequests\CreatingCardForDeckRequest;
+use App\Http\Requests\Api\V1\ExampleRequests\AddingExampleRequest;
+use App\Http\Requests\Api\V1\ExampleRequests\AddingMultipleExamplesRequest;
+use App\Http\Resources\V1\ExampleResources\InfoSavingExampleUsingWordInCardResource;
 use App\Http\Responses\ApiResponse;
-use App\Models\Deck;
+use App\Jobs\GeneratingVoiceJob;
 use App\Repositories\AudiofileRepositories\AudiofileRepositoryInterface;
 use App\Repositories\CardRepositories\CardRepositoryInterface;
 use App\Repositories\DeckRepositories\DeckRepositoryInterface;
 use App\Repositories\ExampleRepositories\ExampleRepositoryInterface;
+use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
+use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
 use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
-use App\Services\FileServices\AudioProcessingService;
-use App\Services\FileServices\DownloadFileService;
-use App\Services\FileServices\SaveFileService;
-use App\Services\TextToSpeechService;
-use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
+use Str;
 use Throwable;
 
 class CardController extends Controller
@@ -36,26 +34,29 @@ class CardController extends Controller
 
     protected ExampleRepositoryInterface $exampleRepository;
 
-    protected DownloadFileService $downloadFileService;
-    protected SaveFileService $saveFileService;
+    protected JobStatusRepositoryInterface $jobStatusRepository;
 
-    protected AudioProcessingService  $audioProcessingService;
 
-    public function __construct(DeckRepositoryInterface $deckRepository,
-                                CardRepositoryInterface $cardRepository,
-                                VoiceRepositoryInterface $voiceRepository,
-                                AudiofileRepositoryInterface $audiofileRepository,
-                                ExampleRepositoryInterface $exampleRepository)
+
+    protected UserTestResultRepositoryInterface $userTestResultRepository;
+
+    public function __construct(DeckRepositoryInterface           $deckRepository,
+                                CardRepositoryInterface           $cardRepository,
+                                VoiceRepositoryInterface          $voiceRepository,
+                                AudiofileRepositoryInterface      $audiofileRepository,
+                                ExampleRepositoryInterface        $exampleRepository,
+                                UserTestResultRepositoryInterface $userTestResultRepository,
+                                JobStatusRepositoryInterface $jobStatusRepository)
     {
         $this->deckRepository = $deckRepository;
         $this->cardRepository = $cardRepository;
         $this->voiceRepository = $voiceRepository;
         $this->audiofileRepository = $audiofileRepository;
         $this->exampleRepository = $exampleRepository;
-        $this->downloadFileService = new DownloadFileService();
-        $this->saveFileService = new SaveFileService();
-        $this->audioProcessingService = new AudioProcessingService();
+        $this->userTestResultRepository = $userTestResultRepository;
+        $this->jobStatusRepository = $jobStatusRepository;
     }
+
     public function createCardForDeck(CreatingCardForDeckRequest $request)
     {
         try {
@@ -73,38 +74,70 @@ class CardController extends Controller
         }
     }
 
-    private function generatePronunciationFiles(Collection $voices, Deck $deckInfo, string $wordForInsonation, string $type, bool $isConvertTo2Channel = false)
+    public function deleteCard(int $id)
     {
-        $pathsToFiles = [];
-        $textToSpeechService = new TextToSpeechService();
-        foreach ($voices as $voice) {
-            if($type === 'original' and $voice->language->code !== $deckInfo->originalLanguage->code){
-                continue;
-            }
-            if($type === 'target' and $voice->language->code !== $deckInfo->targetLanguage->code){
-                continue;
-            }
-            $result = $textToSpeechService->getUrlForGeneratedAudio($wordForInsonation, $voice->language->code,$voice->voice_id);
-            if($result->status === TypeStatus::success->value)
-            {
-                try {
-                    $file = $this->downloadFileService->downloadFile($result->url_download);
-                    if($isConvertTo2Channel) {
-                        $temporaryFilePath = $this->saveFileService->saveFile($file);
-                        $convertedAudio = $this->audioProcessingService->convertToStereo($temporaryFilePath);
-                        if ($convertedAudio !== false) {
-                            $pathsToFiles[] = $this->saveFileService->saveFile($convertedAudio);
-                        }
-                    }
-                    else
-                    {
-                        $pathsToFiles[] = $this->saveFileService->saveFile($file);
-                    }
-                } catch (Exception $e) {
-                    logger("Произошла ошибка при скачивании файла по ссылке $result->url_download. Текст ошибки: {$e->getMessage()}");
-                }
-            }
+        $card = $this->cardRepository->getCardById($id, ['deck']);
+        if ($card === null) {
+            return ApiResponse::error("Карточка с id = $id не найдена", null, 404);
         }
-        return $pathsToFiles;
+        if ($card->deck->user_id !== auth()->id()) {
+            return ApiResponse::error("Текущий пользователь не является автором колоды, к которой принадлежит удаляемая карточка, поэтому её удаление невозможно.", null, 409);
+        }
+        if ($this->userTestResultRepository->existStartedTestForCard($id)) {
+            return ApiResponse::error("Карточка не может быть удалена, так как пользователями уже были начаты тесты, в которых она используется", null, 409);
+        }
+        $this->cardRepository->delete($card);
+        return ApiResponse::success("Карточка с id = $id была успешно удалена");
     }
+
+    public function addVoicesForCard(int $id, AddingVoiceForCardRequest $request)
+    {
+        $card = $this->cardRepository->getCardById($id, ['deck']);
+        if ($card === null) {
+            return ApiResponse::error("Карточка с id = $id не найдена", null, 404);
+        }
+        if ($card->deck->user_id !== auth()->id()) {
+            return ApiResponse::error("Текущий пользователь не является автором колоды, к которой принадлежит удаляемая карточка, поэтому её удаление невозможно.", null, 409);
+        }
+        $jobId = (string)Str::uuid();
+        $this->jobStatusRepository->saveNewJobStatus($jobId, "GeneratingVoiceJob", JobStatuses::queued->value, auth()->id());
+        GeneratingVoiceJob::dispatch($jobId, $request->originalVoices, $request->targetVoices, $id);
+        return ApiResponse::success("Генерация произношения слов для карточки начата", (object)["job_id" => $jobId]);
+    }
+
+    public function addExampleToCard(int $id, AddingExampleRequest $request)
+    {
+        $card = $this->cardRepository->getCardById($id, ['deck']);
+        if($card === null) {
+            return ApiResponse::error("Карточка с id = $id не найдена", null, 404);
+        }
+        if($card->deck->user_id !== auth()->user()->id) {
+            return ApiResponse::error("Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример",null, 409);
+        }
+        $newExample = $this->exampleRepository->saveNewExample($request->example,$id, $request->source);
+        $message = $request->source === "original" ? "Пример использования слова на оригинальном языке успешно добавлен" : "Пример использования слова на целевом языке успешно добавлен";
+        $resultInfo = ['text_example' => $request->example, "message" => $message];
+        return ApiResponse::success($message, (object)['info'=>new InfoSavingExampleUsingWordInCardResource($resultInfo)],201);
+    }
+
+    public function addMultipleExamplesToCard(int $id, AddingMultipleExamplesRequest $request)
+    {
+        $card = $this->cardRepository->getCardById($id, ['deck']);
+        if($card === null) {
+            return ApiResponse::error("Карточка с id = $id не найдена", null, 404);
+        }
+        if($card->deck->user_id !== auth()->user()->id) {
+            return ApiResponse::error("Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример",null, 409);
+        }
+        $messages = [];
+        for($number = 0; $number < count($request->examples); $number++) {
+            $this->exampleRepository->saveNewExample($request->examples[$number]['example'], $id, $request->examples[$number]['source']);
+            $message = $request->examples[$number]['source'] === "original" ? "Пример использования слова на оригинальном языке успешно добавлен" : "Пример использования слова на целевом языке успешно добавлен";
+            $infoMessage = ['number' => $number, 'text_example' => $request->examples[$number]['example'], "message" => $message];
+            $messages[] = $infoMessage;
+        }
+        return ApiResponse::success("Результат сохранения записей", (object)['info'=>InfoSavingExampleUsingWordInCardResource::collection($messages)],201);
+    }
+
+
 }
