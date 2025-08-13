@@ -4,6 +4,40 @@ namespace App\Http\Requests\Api\V1\ExampleRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingMultipleExamplesRequest",
+ *     title="Adding Multiple Examples Request (Добавление нескольких примеров)",
+ *     description="Данные для добавления нескольких примеров в карточку",
+ *     required={"examples"},
+ *
+ *     @OA\Property(
+ *         property="examples",
+ *         type="array",
+ *         description="Массив примеров для добавления",
+ *         @OA\Items(
+ *             type="object",
+ *             required={"example","source"},
+ *
+ *             @OA\Property(
+ *                 property="example",
+ *                 type="string",
+ *                 maxLength=255,
+ *                 example="I like to eat apples",
+ *                 description="Текст примера (не более 255 символов)"
+ *             ),
+ *
+ *             @OA\Property(
+ *                 property="source",
+ *                 type="string",
+ *                 enum={"original","target"},
+ *                 example="original",
+ *                 description="Источник примера: original — для оригинального слова, target — для перевода"
+ *             )
+ *         )
+ *     )
+ * )
+ */
 class AddingMultipleExamplesRequest extends FormRequest
 {
     /**

@@ -6,5 +6,5 @@ use App\Models\Audiofile;
 
 interface AudiofileRepositoryInterface
 {
-    public function saveNewAudiofile(string $path, string $destination, int $cardId);
+    public function saveNewAudiofile(string $path, string $destination, int $cardId, int $voiceId);
 }

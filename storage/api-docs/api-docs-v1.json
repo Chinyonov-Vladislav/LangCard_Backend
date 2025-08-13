@@ -1210,6 +1210,844 @@
                 }
             }
         },
+        "/cards": {
+            "post": {
+                "tags": [
+                    "Карточки"
+                ],
+                "summary": "Создание карточки для колоды",
+                "operationId": "createCardForDeck",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatingCardForDeckRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Карточка успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка для колоды с id = 12 была успешно создана"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Колода не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Колода не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является создателем колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизованный пользователь не является создателем колоды"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации входных данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "deck_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Выбранная колода не существует."
+                                                    }
+                                                },
+                                                "word": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Word' обязательно для заполнения."
+                                                    }
+                                                },
+                                                "translate": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'Translate' обязательно для заполнения."
+                                                    }
+                                                },
+                                                "imagePath": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'imagePath' должно быть строкой."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Текст ошибки"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/cards/{id}": {
+            "delete": {
+                "tags": [
+                    "Карточки"
+                ],
+                "summary": "Удаление карточки",
+                "description": "Позволяет автору колоды удалить карточку, если она не используется в начатых тестах",
+                "operationId": "deleteCard",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID карточки для удаления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Карточка успешно удалена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка с id = 123 была успешно удалена"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Карточка не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка с id = 123 не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Невозможно удалить карточку | Карточка используется в начатых тестах",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Текущий пользователь не является автором колоды, к которой принадлежит удаляемая карточка, поэтому её удаление невозможно."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/cards/{id}/addVoices": {
+            "post": {
+                "tags": [
+                    "Карточки"
+                ],
+                "summary": "Добавление голосов для карточки",
+                "description": "Запускает фоновую задачу на генерацию произношения слов для указанной карточки.",
+                "operationId": "addVoicesForCard",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID карточки, для которой будут добавлены голоса",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingVoiceForCardRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Генерация голосов успешно запущена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Генерация произношения слов для карточки начата"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "job_id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Карточка не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка с id = 15 не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является владельцем колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Текущий пользователь не является автором колоды, к которой принадлежит удаляемая карточка, поэтому её удаление невозможно."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации входных данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "originalVoices": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'originalVoices' должно быть массивом"
+                                                    }
+                                                },
+                                                "originalVoices.*": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Выбранный оригинальный голос не существует."
+                                                    }
+                                                },
+                                                "targetVoices": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'targetVoices' должно быть массивом"
+                                                    }
+                                                },
+                                                "targetVoices.*": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Выбранный целевой голос не существует."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/cards/{id}/singleAddingExample": {
+            "post": {
+                "tags": [
+                    "Карточки"
+                ],
+                "summary": "Добавление примера использования слова в карточку",
+                "description": "Позволяет авторизованному пользователю добавить пример использования слова (оригинальный или перевод) в конкретную карточку.",
+                "operationId": "addExampleToCard",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID карточки, к которой добавляется пример",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 123
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingExampleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Пример успешно добавлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пример использования слова на оригинальном языке успешно добавлен"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "info": {
+                                                    "$ref": "#/components/schemas/InfoSavingExampleUsingWordInCardResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Карточка не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка с id = 123 не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не автор карточки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации входных данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "example": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'example' является обязательным"
+                                                    }
+                                                },
+                                                "source": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'source' является обязательным"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/cards/{id}/multipleAddingExample": {
+            "post": {
+                "tags": [
+                    "Карточки"
+                ],
+                "summary": "Добавление нескольких примеров к карточке",
+                "description": "Позволяет автору колоды добавить несколько примеров использования слова в карточку",
+                "operationId": "addMultipleExamplesToCard",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID карточки, к которой добавляются примеры",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddingMultipleExamplesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Успешное добавление примеров",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Результат сохранения записей"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "info": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/InfoSavingExampleUsingWordInCardResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Карточка не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Карточка с id = 123 не найдена"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является автором колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может добавить пример"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации входных данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "examples": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'examples' должно быть массивом"
+                                                    }
+                                                },
+                                                "examples.*.example": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'example' не должно превышать 255 символов."
+                                                    }
+                                                },
+                                                "examples.*.source": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'source' является обязательным."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/dailyRewards": {
             "get": {
                 "tags": [
@@ -2258,6 +3096,395 @@
                 ]
             }
         },
+        "/examples/singleUpdate": {
+            "put": {
+                "tags": [
+                    "Пример употребления слова"
+                ],
+                "summary": "Обновление одного примера использования слова в карточке",
+                "description": "Позволяет авторизованному пользователю обновить один пример использования слова в карточке, если он является автором колоды.",
+                "operationId": "updateSingleExample",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateSingleExampleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Пример успешно обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пример употребления с id = 123 был успешно обновлен"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является автором колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может удалить пример"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации запроса",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "errors"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "example_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'example_id' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "example": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'example' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "source": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'source' обязательно для заполнения"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/examples/multipleUpdate": {
+            "put": {
+                "tags": [
+                    "Пример употребления слова"
+                ],
+                "summary": "Массовое обновление примеров употребления",
+                "description": "Обновляет несколько примеров употребления слов в карточках. Возвращает результат по каждому примеру.",
+                "operationId": "updateMultipleExample",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMultipleExamplesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Результат массового обновления примеров",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Результат обновления примеров употребления"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "result_info": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ResultUpdateMultipleExamplesResource"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации запроса",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка валидации"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "examples": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'examples' должно быть массивом"
+                                                    }
+                                                },
+                                                "examples.*.id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'id' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "examples.*.example": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'example' обязательно для заполнения"
+                                                    }
+                                                },
+                                                "examples.*.source": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле 'source' обязательно для заполнения"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/examples/{id}": {
+            "delete": {
+                "tags": [
+                    "Пример употребления слова"
+                ],
+                "summary": "Удаление примера употребления",
+                "description": "Удаляет пример употребления по его ID. Только автор колоды может удалить пример.",
+                "operationId": "deleteExample",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID примера, который нужно удалить",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 123
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пример успешно удален",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Запись примера употребления с id = 123 была успешно удалена"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Пример не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пример употребления с id = 123 не найден"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь не является автором колоды",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может удалить пример"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/historyAttempts": {
             "get": {
                 "tags": [
@@ -2569,6 +3796,95 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/jobs": {
+            "get": {
+                "tags": [
+                    "Jobs"
+                ],
+                "summary": "Получить список задач (Jobs) авторизованного пользователя",
+                "description": "Возвращает список записей о задачах (Jobs), инициированных авторизованным пользователем, с возможностью пагинации.",
+                "operationId": "getJobsOfAuthUser",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы (необязательный параметр, по умолчанию 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице (необязательный параметр, по умолчанию 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список задач пользователя с пагинацией",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Jobs для авторизованного пользователя"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/JobResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
                     }
                 },
                 "security": [
@@ -5398,9 +6714,6 @@
                     },
                     "420": {
                         "$ref": "#/components/responses/NotVerifiedEmail"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/NotAdmin"
                     }
                 },
                 "security": [
@@ -6152,6 +7465,29 @@
                 },
                 "type": "object"
             },
+            "AddingVoiceForCardRequest": {
+                "title": "Adding Voice For Card Request (Добавление голосов для карточки)",
+                "description": "Данные для добавления голосов произношения к существующей карточке",
+                "properties": {
+                    "originalVoices": {
+                        "description": "Массив ID голосов для оригинального слова. Каждый ID должен существовать в таблице voices (поле voice_id).",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "en_male_1"
+                        }
+                    },
+                    "targetVoices": {
+                        "description": "Массив ID голосов для перевода слова. Каждый ID должен существовать в таблице voices (поле voice_id).",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "ru_female_2"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "CreatingCardForDeckRequest": {
                 "title": "Creating Card For Deck Request (Создание карточки в колоде)",
                 "description": "Данные, небходимые для создания новой карточки для колоды",
@@ -6182,33 +7518,6 @@
                         "description": "Путь к изображению (если передаётся)",
                         "type": "string",
                         "example": "/images/cards/apple.jpg",
-                        "nullable": true
-                    },
-                    "originalVoices": {
-                        "description": "Массив ID оригинальных голосов",
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "example": "abc123-voice-id"
-                        },
-                        "nullable": true
-                    },
-                    "targetVoices": {
-                        "description": "Массив ID целевых голосов",
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "example": "xyz789-voice-id"
-                        },
-                        "nullable": true
-                    },
-                    "examples": {
-                        "description": "Примеры употребления слова",
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "example": "I eat an apple every day."
-                        },
                         "nullable": true
                     }
                 },
@@ -6341,6 +7650,141 @@
                 },
                 "type": "object"
             },
+            "AddingExampleRequest": {
+                "title": "Adding Example Request (Добавление примера)",
+                "description": "Данные для добавления примера в карточку",
+                "required": [
+                    "example",
+                    "source"
+                ],
+                "properties": {
+                    "example": {
+                        "description": "Текст примера (не более 255 символов)",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "I like to eat apples"
+                    },
+                    "source": {
+                        "description": "Источник примера: original — для оригинального слова, target — для перевода",
+                        "type": "string",
+                        "enum": [
+                            "original",
+                            "target"
+                        ],
+                        "example": "original"
+                    }
+                },
+                "type": "object"
+            },
+            "AddingMultipleExamplesRequest": {
+                "title": "Adding Multiple Examples Request (Добавление нескольких примеров)",
+                "description": "Данные для добавления нескольких примеров в карточку",
+                "required": [
+                    "examples"
+                ],
+                "properties": {
+                    "examples": {
+                        "description": "Массив примеров для добавления",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "example",
+                                "source"
+                            ],
+                            "properties": {
+                                "example": {
+                                    "description": "Текст примера (не более 255 символов)",
+                                    "type": "string",
+                                    "maxLength": 255,
+                                    "example": "I like to eat apples"
+                                },
+                                "source": {
+                                    "description": "Источник примера: original — для оригинального слова, target — для перевода",
+                                    "type": "string",
+                                    "enum": [
+                                        "original",
+                                        "target"
+                                    ],
+                                    "example": "original"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateMultipleExamplesRequest": {
+                "title": "Update Multiple Examples Request (Массовое обновление примеров)",
+                "description": "Данные для массового обновления примеров использования слова в карточке",
+                "required": [
+                    "examples"
+                ],
+                "properties": {
+                    "examples": {
+                        "description": "Массив примеров для обновления",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "description": "ID примера, который нужно обновить",
+                                    "type": "integer",
+                                    "example": 123
+                                },
+                                "example": {
+                                    "description": "Текст примера (не более 255 символов)",
+                                    "type": "string",
+                                    "maxLength": 255,
+                                    "example": "I like to eat apples"
+                                },
+                                "source": {
+                                    "description": "Источник примера: original — для оригинального слова, target — для перевода",
+                                    "type": "string",
+                                    "enum": [
+                                        "original",
+                                        "target"
+                                    ],
+                                    "example": "original"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateSingleExampleRequest": {
+                "title": "Update Single Example Request (Обновление одного примера)",
+                "description": "Данные для обновления одного примера использования слова в карточке",
+                "required": [
+                    "example_id",
+                    "example",
+                    "source"
+                ],
+                "properties": {
+                    "example_id": {
+                        "description": "ID примера, который нужно обновить",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "example": {
+                        "description": "Текст примера (не более 255 символов)",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "I like to eat apples"
+                    },
+                    "source": {
+                        "description": "Источник примера: original — для оригинального слова, target — для перевода",
+                        "type": "string",
+                        "enum": [
+                            "original",
+                            "target"
+                        ],
+                        "example": "original"
+                    }
+                },
+                "type": "object"
+            },
             "GetHistoryAttemptsRequestQueryParams": {
                 "title": "Get History Attempts Request Query Params (Параметры запроса истории попыток прохождения тестов)",
                 "description": "Query-параметры для получения истории попыток. Оба параметра являются необязательными и используются для пагинации.",
@@ -6393,6 +7837,25 @@
                         "minLength": 16,
                         "pattern": "^[A-Z0-9]{16}$",
                         "example": "AB12CD34EF56GH78"
+                    }
+                },
+                "type": "object"
+            },
+            "JobFilterRequest": {
+                "title": "Job Filter Request (Параметры для пагинации и фильтрации записей job)",
+                "description": "Query-параметры для получения записей о статусе выполненения запущенных job. Оба параметра являются необязательными и используются для пагинации.",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
                     }
                 },
                 "type": "object"
@@ -7095,6 +8558,59 @@
                 },
                 "type": "object"
             },
+            "InfoSavingExampleUsingWordInCardResource": {
+                "title": "Info Saving Example Using Word In Card Resource",
+                "description": "Информация о сохранённом примере использования слова в карточке",
+                "required": [
+                    "text_example",
+                    "message"
+                ],
+                "properties": {
+                    "number": {
+                        "description": "Порядковый номер примера (если возвращается)",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "text_example": {
+                        "description": "Текст примера",
+                        "type": "string",
+                        "example": "I like to eat apples"
+                    },
+                    "message": {
+                        "description": "Служебное сообщение",
+                        "type": "string",
+                        "example": "Пример успешно сохранён"
+                    }
+                },
+                "type": "object"
+            },
+            "ResultUpdateMultipleExamplesResource": {
+                "title": "Result Update Multiple Examples Resource",
+                "description": "Результат обновления одного примера в массиве примеров после массового обновления",
+                "properties": {
+                    "number": {
+                        "description": "Порядковый номер примера в запросе",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "text": {
+                        "description": "Текст примера, который был обновлен",
+                        "type": "string",
+                        "example": "I like to eat apples"
+                    },
+                    "success": {
+                        "description": "Флаг успешного обновления примера",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "description": "Сообщение о результате обновления конкретного примера",
+                        "type": "string",
+                        "example": "Пример успешно обновлен"
+                    }
+                },
+                "type": "object"
+            },
             "ApiLimitFilterParametersResource": {
                 "title": "API Limit Filter Parameters Resource (Ресурс для фильтров модели ApiLimit)",
                 "description": "Доступные фильтры для модели API Limit: количество дней и запросов.",
@@ -7350,6 +8866,57 @@
                         "description": "URL аватара пользователя, может отсутствовать",
                         "type": "string",
                         "example": "https://example.com/avatars/123.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "JobResource": {
+                "title": "Job Resource (ресурс для информации статусе Job, инициируемой пользователем",
+                "description": "Ресурс задания с основной информацией о задаче и её результате",
+                "properties": {
+                    "id": {
+                        "description": "Внутренний идентификатор записи в базе",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "job_id": {
+                        "description": "Идентификатор задачи в очереди или системе выполнения",
+                        "type": "string",
+                        "example": "job_123456"
+                    },
+                    "initial_data": {
+                        "description": "Начальные данные задачи",
+                        "type": "object",
+                        "example": {
+                            "param1": "value1",
+                            "param2": 2
+                        },
+                        "nullable": true
+                    },
+                    "name_job": {
+                        "description": "Название или тип задачи",
+                        "type": "string",
+                        "example": "ProcessUserData"
+                    },
+                    "status": {
+                        "description": "Текущий статус задачи (например, queued, processing, finished, failed)",
+                        "type": "string",
+                        "enum": [
+                            "queued",
+                            "processing",
+                            "finished",
+                            "failed"
+                        ],
+                        "example": "queued"
+                    },
+                    "result": {
+                        "description": "Результат выполнения задачи",
+                        "type": "object",
+                        "example": {
+                            "success": true,
+                            "processed_records": 100
+                        },
                         "nullable": true
                     }
                 },
@@ -8280,6 +9847,10 @@
             "description": "Регистрация"
         },
         {
+            "name": "Карточки",
+            "description": "Карточки"
+        },
+        {
             "name": "Ежедневная награда",
             "description": "Ежедневная награда"
         },
@@ -8292,6 +9863,10 @@
             "description": "Верификация электронного адреса"
         },
         {
+            "name": "Пример употребления слова",
+            "description": "Пример употребления слова"
+        },
+        {
             "name": "История попыток прохождения тестов",
             "description": "История попыток прохождения тестов"
         },
@@ -8302,6 +9877,10 @@
         {
             "name": "Привязка к пользователю, который пригласил в систему",
             "description": "Привязка к пользователю, который пригласил в систему"
+        },
+        {
+            "name": "Jobs",
+            "description": "Jobs"
         },
         {
             "name": "Языки",

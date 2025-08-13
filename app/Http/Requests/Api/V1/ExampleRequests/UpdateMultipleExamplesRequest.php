@@ -4,6 +4,43 @@ namespace App\Http\Requests\Api\V1\ExampleRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
+/**
+ * @OA\Schema(
+ *     schema="UpdateMultipleExamplesRequest",
+ *     title="Update Multiple Examples Request (Массовое обновление примеров)",
+ *     description="Данные для массового обновления примеров использования слова в карточке",
+ *     required={"examples"},
+ *
+ *     @OA\Property(
+ *         property="examples",
+ *         type="array",
+ *         description="Массив примеров для обновления",
+ *         @OA\Items(
+ *             @OA\Property(
+ *                 property="id",
+ *                 type="integer",
+ *                 description="ID примера, который нужно обновить",
+ *                 example=123
+ *             ),
+ *             @OA\Property(
+ *                 property="example",
+ *                 type="string",
+ *                 maxLength=255,
+ *                 description="Текст примера (не более 255 символов)",
+ *                 example="I like to eat apples"
+ *             ),
+ *             @OA\Property(
+ *                 property="source",
+ *                 type="string",
+ *                 enum={"original","target"},
+ *                 description="Источник примера: original — для оригинального слова, target — для перевода",
+ *                 example="original"
+ *             )
+ *         )
+ *     )
+ * )
+ */
 class UpdateMultipleExamplesRequest extends FormRequest
 {
     /**

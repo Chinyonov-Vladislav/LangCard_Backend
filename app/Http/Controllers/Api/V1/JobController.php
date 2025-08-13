@@ -20,6 +20,56 @@ class JobController extends Controller
         $this->jobStatusRepository = $jobStatusRepository;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/jobs",
+     *     operationId="getJobsOfAuthUser",
+     *     tags={"Jobs"},
+     *     summary="Получить список задач (Jobs) авторизованного пользователя",
+     *     description="Возвращает список записей о задачах (Jobs), инициированных авторизованным пользователем, с возможностью пагинации.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Номер страницы (необязательный параметр, по умолчанию 1)",
+     *         required=false,
+     *         @OA\Schema(type="integer", minimum=1, example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="countOnPage",
+     *         in="query",
+     *         description="Количество элементов на странице (необязательный параметр, по умолчанию 10)",
+     *         required=false,
+     *         @OA\Schema(type="integer", minimum=1, example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список задач пользователя с пагинацией",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required = {"status", "message", "data"},
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Jobs для авторизованного пользователя"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/JobResource")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="pagination",
+     *                     ref="#/components/schemas/PaginationResource"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=420, ref="#/components/responses/NotVerifiedEmail"),
+     * )
+     */
     public function getJobsOfAuthUser(JobFilterRequest $request, PaginatorService $paginator)
     {
         $countOnPage = (int)$request->input('countOnPage', config('app.default_count_on_page'));

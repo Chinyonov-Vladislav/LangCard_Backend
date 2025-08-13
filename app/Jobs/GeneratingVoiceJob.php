@@ -56,15 +56,17 @@ class GeneratingVoiceJob extends BaseJob
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>"Карточка с id = $this->cardId не найдена"]);
                 return;
             }
-            $originalVoices = $voiceRepository->getVoicesByVoiceId($this->originalVoices);
-            $targetVoices = $voiceRepository->getVoicesByVoiceId($this->targetVoices);
+            $originalVoices = $voiceRepository->getUnusedVoicesForCardFromArrayVoiceId($this->originalVoices, $card->id, "original");
+            $targetVoices = $voiceRepository->getUnusedVoicesForCardFromArrayVoiceId($this->targetVoices, $card->id, "target");
             $voicesInfo = [];
             foreach ($originalVoices as $voice)
             {
                 if ($voice->language->code !== $card->deck->originalLanguage->code || $voice->is_active === false) {
                     continue;
                 }
-                $voicesInfo[] = (object)['text'=>$card->word,
+                $voicesInfo[] = (object)[
+                    'voiceIdDatabase' => $voice->id,
+                    'text'=>$card->word,
                     'lang'=>$voice->language->code,
                     'voiceId'=>$voice->voice_id,
                     'destination'=>"original",
@@ -75,11 +77,18 @@ class GeneratingVoiceJob extends BaseJob
                 if ($voice->language->code !== $card->deck->targetLanguage->code || $voice->is_active === false) {
                     continue;
                 }
-                $voicesInfo[] = (object)['text'=>$card->translate,
+                $voicesInfo[] = (object)[
+                    'voiceIdDatabase' => $voice->id,
+                    'text'=>$card->translate,
                     'lang'=>$voice->language->code,
                     'voiceId'=>$voice->voice_id,
                     'destination'=>"target",
                     'voice_name'=>$voice->voice_name];
+            }
+            if(count($voicesInfo) === 0)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>"Все указанные голоса уже были использованы для генерации озвучки слов в карточке с id = $this->cardId"]);
+                return;
             }
             $textToSpeechService = new TextToSpeechService();
             $result = $textToSpeechService->getUrlsForGeneratedAudio($voicesInfo);
@@ -103,7 +112,7 @@ class GeneratingVoiceJob extends BaseJob
                     } else {
                         $path = $this->saveFileService->saveFile($file);
                     }
-                    $audiofileRepository->saveNewAudiofile($path, $item->destination, $this->cardId);
+                    $audiofileRepository->saveNewAudiofile($path, $item->destination, $this->cardId, $item->voiceIdDatabase);
                     $successGeneratingFiles[] = "Генерация озвучки для текста \"$item->text\" с использованием голоса $item->voice_name прошла успешно";
                 }
                 else

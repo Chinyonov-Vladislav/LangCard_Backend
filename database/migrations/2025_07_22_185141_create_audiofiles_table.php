@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('path');
             $table->enum('destination', ['original', 'target']);
+            $table->foreignId('voice_id')->references('id')->on('voices')
+                ->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('card_id')->references('id')->on('cards')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();

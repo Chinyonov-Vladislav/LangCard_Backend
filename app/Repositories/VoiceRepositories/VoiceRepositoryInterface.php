@@ -8,6 +8,8 @@ use App\Services\PaginatorService;
 
 interface VoiceRepositoryInterface
 {
+    public function getUnusedVoicesForCardFromArrayVoiceId(array $voiceIds, int $cardId, string $destination);
+
     public function getVoicesByVoiceId(array $voiceIds);
 
     public function isExistVoice(string $voiceId): bool;

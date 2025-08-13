@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Helpers\ColumnLabel;
 use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -15,15 +17,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Card $card
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile whereCardId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile whereDestination($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile wherePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Audiofile whereUpdatedAt($value)
+ * @method static Builder<static>|Audiofile newModelQuery()
+ * @method static Builder<static>|Audiofile newQuery()
+ * @method static Builder<static>|Audiofile query()
+ * @method static Builder<static>|Audiofile whereCardId($value)
+ * @method static Builder<static>|Audiofile whereCreatedAt($value)
+ * @method static Builder<static>|Audiofile whereDestination($value)
+ * @method static Builder<static>|Audiofile whereId($value)
+ * @method static Builder<static>|Audiofile wherePath($value)
+ * @method static Builder<static>|Audiofile whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class Audiofile extends Model implements ColumnLabelsableInterface
@@ -32,9 +34,14 @@ class Audiofile extends Model implements ColumnLabelsableInterface
     protected $table = 'audiofiles';
     protected $guarded = [];
 
-    public function card()
+    public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class, 'card_id');
+    }
+
+    public function voice(): BelongsTo
+    {
+        return $this->belongsTo(Voice::class, 'voice_id');
     }
 
     protected function casts(): array

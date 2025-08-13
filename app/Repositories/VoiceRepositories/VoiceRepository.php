@@ -61,4 +61,11 @@ class VoiceRepository implements VoiceRepositoryInterface
     {
         return $this->model->with(['language'])->whereIn('voice_id', $voiceIds)->get();
     }
+
+    public function getUnusedVoicesForCardFromArrayVoiceId(array $voiceIds, int $cardId, string $destination): Collection
+    {
+        return $this->model->whereIn('voice_id', $voiceIds)->where("is_active", '=', true)->whereDoesntHave('audiofiles', function ($query) use ($cardId, $destination) {
+            $query->where('card_id', '=', $cardId)->where('destination', '=', $destination);
+        })->get();
+    }
 }

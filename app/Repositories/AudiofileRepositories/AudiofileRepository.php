@@ -13,12 +13,13 @@ class AudiofileRepository implements AudiofileRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewAudiofile(string $path, string $destination, int $cardId): void
+    public function saveNewAudiofile(string $path, string $destination, int $cardId, int $voiceId): void
     {
         $newAudiofile = new Audiofile();
         $newAudiofile->path = $path;
         $newAudiofile->destination = $destination;
         $newAudiofile->card_id = $cardId;
+        $newAudiofile->voice_id = $voiceId;
         $newAudiofile->save();
     }
 }

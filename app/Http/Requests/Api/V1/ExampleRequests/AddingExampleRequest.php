@@ -5,6 +5,30 @@ namespace App\Http\Requests\Api\V1\ExampleRequests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingExampleRequest",
+ *     title="Adding Example Request (Добавление примера)",
+ *     description="Данные для добавления примера в карточку",
+ *     required={"example", "source"},
+ *
+ *     @OA\Property(
+ *         property="example",
+ *         type="string",
+ *         maxLength=255,
+ *         example="I like to eat apples",
+ *         description="Текст примера (не более 255 символов)"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="source",
+ *         type="string",
+ *         enum={"original", "target"},
+ *         example="original",
+ *         description="Источник примера: original — для оригинального слова, target — для перевода"
+ *     )
+ * )
+ */
 class AddingExampleRequest extends FormRequest
 {
     /**

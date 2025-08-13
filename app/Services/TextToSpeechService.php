@@ -71,7 +71,7 @@ class TextToSpeechService
                 $this->selectVoice($item->voiceId);
                 $this->synthesizeText();
                 if ($this->waitForProcessingCompletion() === false) {
-                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name, 'voiceIdDatabase'=>$item->voiceIdDatabase];
                     continue;
                 }
                 $this->waitForAudioGeneration();
@@ -81,14 +81,14 @@ class TextToSpeechService
                     $currentCountGeneratedAudio = $this->getCountGeneratedAudio();
                     if ($currentCountGeneratedAudio - $previousCountGeneratedAudio === 1) {
                         $download_url = $this->getDownloadUrl();
-                        $result[] = (object)['status' => TypeStatus::success->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'url_download' => $download_url, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                        $result[] = (object)['status' => TypeStatus::success->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'url_download' => $download_url, 'destination' => $item->destination, 'voice_name' => $item->voice_name, 'voiceIdDatabase'=>$item->voiceIdDatabase];
                         break;
                     }
                     $currentAttempt++;
                     sleep(1);
                 }
                 if($currentAttempt === $countAttempts) {
-                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name];
+                    $result[] = (object)['status' => TypeStatus::error->value, 'text' => $item->text, 'lang' => $item->lang, "voiceId" => $item->voiceId, 'destination' => $item->destination, 'voice_name' => $item->voice_name, 'voiceIdDatabase'=>$item->voiceIdDatabase];
                 }
             }
             $this->closeDriver();

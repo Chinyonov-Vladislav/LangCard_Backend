@@ -4,6 +4,29 @@ namespace App\Http\Requests\Api\V1\JobRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
+/**
+ * @OA\Schema(
+ *     schema="JobFilterRequest",
+ *     title="Job Filter Request (Параметры для пагинации и фильтрации записей job)",
+ *     description="Query-параметры для получения записей о статусе выполненения запущенных job. Оба параметра являются необязательными и используются для пагинации.",
+ *     type="object",
+ *     @OA\Property(
+ *         property="page",
+ *         type="integer",
+ *         minimum=1,
+ *         example=1,
+ *         description="Номер страницы"
+ *     ),
+ *     @OA\Property(
+ *         property="countOnPage",
+ *         type="integer",
+ *         minimum=1,
+ *         example=10,
+ *         description="Количество элементов на странице"
+ *     )
+ * )
+ */
 class JobFilterRequest extends FormRequest
 {
     /**

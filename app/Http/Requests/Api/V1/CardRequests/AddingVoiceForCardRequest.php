@@ -4,6 +4,31 @@ namespace App\Http\Requests\Api\V1\CardRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="AddingVoiceForCardRequest",
+ *     title="Adding Voice For Card Request (Добавление голосов для карточки)",
+ *     description="Данные для добавления голосов произношения к существующей карточке",
+ *     @OA\Property(
+ *         property="originalVoices",
+ *         type="array",
+ *         description="Массив ID голосов для оригинального слова. Каждый ID должен существовать в таблице voices (поле voice_id).",
+ *         @OA\Items(
+ *             type="string",
+ *             example="en_male_1"
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="targetVoices",
+ *         type="array",
+ *         description="Массив ID голосов для перевода слова. Каждый ID должен существовать в таблице voices (поле voice_id).",
+ *         @OA\Items(
+ *             type="string",
+ *             example="ru_female_2"
+ *         )
+ *     )
+ * )
+ */
 class AddingVoiceForCardRequest extends FormRequest
 {
     /**
@@ -41,10 +66,6 @@ class AddingVoiceForCardRequest extends FormRequest
             'targetVoices.*.required' => 'Каждый элемент в "Целевые голоса" обязателен.',
             'targetVoices.*.string' => 'Каждый элемент в "Целевые голоса" должен быть строкой.',
             'targetVoices.*.exists' => 'Выбранный целевой голос не существует.',
-
-            'examples.array' => 'Поле "Примеры" должно быть массивом.',
-            'examples.*.required' => 'Каждый пример обязателен для заполнения.',
-            'examples.*.string' => 'Каждый пример должен быть строкой.',
         ];
     }
 }

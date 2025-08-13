@@ -8,6 +8,7 @@ use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -38,6 +39,12 @@ class Voice extends Model implements ColumnLabelsableInterface
     use HasTableColumns, Filterable;
     protected $table = 'voices';
     protected $guarded = [];
+
+    public function audiofiles(): HasMany
+    {
+        return $this->hasMany(Audiofile::class, 'voice_id');
+    }
+
     protected function casts(): array
     {
         return [
