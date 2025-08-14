@@ -2,22 +2,27 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\AchievementsEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\InviteRequests\SetInviterRequest;
 use App\Http\Resources\v1\InviteResources\InviterResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
+use App\Services\AchievementService;
 use Carbon\Carbon;
 
 class InviteController extends Controller
 {
     protected InviteCodeRepositoryInterface $inviteCodeRepository;
     protected UserRepositoryInterface $userRepository;
+    protected AchievementService $achievementService;
+
     public function __construct(InviteCodeRepositoryInterface $inviteCodeRepository, UserRepositoryInterface $userRepository)
     {
         $this->inviteCodeRepository = $inviteCodeRepository;
         $this->userRepository = $userRepository;
+        $this->achievementService = new AchievementService();
     }
 
 
@@ -116,7 +121,9 @@ class InviteController extends Controller
             $currentEndDate = $ancestor->vip_status_time_end ? Carbon::parse($ancestor->vip_status_time_end) : Carbon::now();
             $dateEndOfVipStatus = $currentEndDate->max(Carbon::now())->addDays($ancestor->depth * -1);
             $this->userRepository->updateEndDateOfVipStatusByIdUser($ancestor->id, $dateEndOfVipStatus);
+            $this->achievementService->addProgress($ancestor->id, AchievementsEnum::VIP_CLUB->value);
         }
+        $this->achievementService->addProgress($inviter->id, AchievementsEnum::InviteFriend->value); // обновление достижения пригласи одного друга
         return ApiResponse::success('Благодарим! Вы указали пригласившего пользователя.', (object)['inviter' => new InviterResource($inviter)]);
     }
 }

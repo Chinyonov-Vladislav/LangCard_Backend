@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\AuthRequests\RegistrationRequest;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
+use App\Services\AchievementService;
 use App\Services\ApiServices\ApiService;
 use Illuminate\Http\JsonResponse;
 
@@ -18,12 +19,14 @@ class RegistrationController extends Controller
     protected UserRepositoryInterface $userRepository;
     protected ApiService $apiService;
 
+    protected AchievementService $achievementService;
 
     public function __construct(RegistrationRepositoryInterface $registrationRepository, UserRepositoryInterface $userRepository)
     {
         $this->registrationRepository = $registrationRepository;
         $this->userRepository = $userRepository;
         $this->apiService = app(ApiService::class);
+        $this->achievementService = new AchievementService();
     }
 
     /**
@@ -120,6 +123,7 @@ class RegistrationController extends Controller
         {
             $data = ["currency_job_id"=>$currencyInfo['job_id']];
         }
+        $this->achievementService->startAchievementsForNewUser($user->id);
         return ApiResponse::success(__('api.user_registered_successfully'), $data === null ? null : (object)$data, 201);
     }
 }

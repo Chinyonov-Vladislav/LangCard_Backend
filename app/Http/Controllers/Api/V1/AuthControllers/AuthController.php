@@ -13,6 +13,7 @@ use App\Repositories\LoginRepositories\LoginRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
 use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
+use App\Services\AchievementService;
 use App\Services\ApiServices\ApiService;
 use App\Services\CookieService;
 use App\Services\FileServices\DownloadFileService;
@@ -52,6 +53,8 @@ class AuthController extends Controller
 
     protected CookieService $cookieService;
 
+    protected AchievementService $achievementService;
+
     private array $acceptedProviders = ['google', 'yandex', 'microsoft'];
 
     private array $acceptedCallbackProviders = ['google', 'yandex', 'microsoft'];
@@ -80,6 +83,7 @@ class AuthController extends Controller
         $this->generationInviteCodeService = new GenerationInviteCodeService();
         $this->cookieService = new CookieService();
         $this->generationTwoFactorAuthorizationToken = new GenerationTwoFactorAuthorizationToken();
+        $this->achievementService = new AchievementService();
     }
 
     /**
@@ -359,6 +363,7 @@ class AuthController extends Controller
 
                 }
             }
+            $this->achievementService->startAchievementsForNewUser($user->id);
             if ($user->email_verified_at === null) {
                 $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
             }

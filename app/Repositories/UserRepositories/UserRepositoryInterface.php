@@ -3,11 +3,14 @@
 namespace App\Repositories\UserRepositories;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 interface UserRepositoryInterface
 {
     public function isExistUserById(int $userId): bool;
     public function isExistPasswordAccount(string $email): bool;
+
+    public function getAllUsers(): Collection;
 
     public function getDateOfEndVipStatusByIdUser(int $idUser);
 

@@ -15,6 +15,99 @@
         }
     ],
     "paths": {
+        "/achievements": {
+            "get": {
+                "tags": [
+                    "Достижения"
+                ],
+                "summary": "Получение достижений пользователя с прогрессом",
+                "description": "Возвращает список достижений текущего авторизованного пользователя с указанием прогресса и датой разблокировки (если есть), а также информацию о пагинации.",
+                "operationId": "getAchievements",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы (минимум 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "countOnPage",
+                        "in": "query",
+                        "description": "Количество элементов на странице (минимум 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение достижений",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Данные о достижениях на странице №1"
+                                        },
+                                        "data": {
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ],
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/AchievementResource"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "$ref": "#/components/schemas/PaginationResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "420": {
+                        "$ref": "#/components/responses/NotVerifiedEmail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/answers/{attemptId}": {
             "get": {
                 "tags": [
@@ -7356,6 +7449,25 @@
     },
     "components": {
         "schemas": {
+            "AchievementFilterRequest": {
+                "title": "Achievement Filter Request (Фильтрация достижений)",
+                "description": "Параметры фильтрации достижений, передаются через query string",
+                "properties": {
+                    "page": {
+                        "description": "Номер страницы",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "countOnPage": {
+                        "description": "Количество элементов на странице",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
             "AuthRequest": {
                 "title": "Auth Request (Данные для авторизации)",
                 "description": "Данные, необходимые для авторизации пользователя",
@@ -8242,6 +8354,51 @@
                         "type": "integer",
                         "minimum": 1,
                         "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "AchievementResource": {
+                "title": "Achievement Resource (Ресурс достижения)",
+                "description": "Информация о достижении, включая прогресс и дату разблокировки для авторизованного пользователя",
+                "properties": {
+                    "id": {
+                        "description": "Внутренний идентификатор достижения",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "description": "Название достижения",
+                        "type": "string",
+                        "example": "Мастер карточек"
+                    },
+                    "description": {
+                        "description": "Подробное описание достижения",
+                        "type": "string",
+                        "example": "Разблокируется после создания 100 карточек"
+                    },
+                    "icon": {
+                        "description": "URL или путь до иконки достижения",
+                        "type": "string",
+                        "example": "https://example.com/icons/master.png",
+                        "nullable": true
+                    },
+                    "target": {
+                        "description": "Целевое значение для получения достижения",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "progress": {
+                        "description": "Текущее значение прогресса пользователя по достижению",
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "unlocked_at": {
+                        "description": "Дата и время, когда достижение было разблокировано пользователем (null, если ещё не достигнуто)",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-14T12:34:56Z",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -9814,6 +9971,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Достижения",
+            "description": "Достижения"
+        },
         {
             "name": "Ответы",
             "description": "Ответы"

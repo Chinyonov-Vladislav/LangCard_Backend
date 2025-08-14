@@ -160,6 +160,15 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->hasMany(JobStatus::class, 'user_id');
     }
 
+
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements','user_id', 'achievement_id')
+            ->withPivot('progress', 'unlocked_at')
+            ->withTimestamps();
+    }
+
+
     public function getParentKeyName(): string
     {
         return 'inviter_id';

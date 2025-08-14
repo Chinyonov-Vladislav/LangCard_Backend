@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\AchievementsEnum;
 use App\Enums\TypeInfoAboutDeck;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\DeckFilter;
@@ -16,6 +17,7 @@ use App\Repositories\DeckTopicRepositories\DeckTopicRepositoryInterface;
 use App\Repositories\TopicRepositories\TopicRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
+use App\Services\AchievementService;
 use App\Services\PaginatorService;
 use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\QueryParameter;
@@ -34,6 +36,8 @@ class DeckController extends Controller
 
     protected TopicRepositoryInterface $topicRepository;
 
+    protected AchievementService $achievementService;
+
     public function __construct(DeckRepositoryInterface           $deckRepository,
                                 UserTestResultRepositoryInterface $userTestResultRepository,
                                 UserRepositoryInterface           $userRepository,
@@ -45,6 +49,7 @@ class DeckController extends Controller
         $this->userRepository = $userRepository;
         $this->deckTopicRepository = $deckTopicRepository;
         $this->topicRepository = $topicRepository;
+        $this->achievementService = new AchievementService();
     }
 
 
@@ -336,6 +341,7 @@ class DeckController extends Controller
             $newDeck = $this->deckRepository->saveNewDeck($request->name, $request->original_language_id, $request->target_language_id, auth()->id(), $request->is_premium);
             $newDeck = $this->deckRepository->getDeckById($newDeck->id, TypeInfoAboutDeck::maximum);
             DB::commit();
+            $this->achievementService->addProgress(auth()->id(), AchievementsEnum::FirstDeck->value);
             return ApiResponse::success('Новая колода была успешно создана', (object)['newDeck' => new DeckResource($newDeck)], 201);
         } catch (Exception|Throwable $exception) {
             DB::rollBack();

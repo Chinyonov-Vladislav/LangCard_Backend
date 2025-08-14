@@ -35,6 +35,8 @@ class DatabaseSeeder extends Seeder
             PromocodeSeeder::class,
             VoiceSeeder::class,
             DailyRewardSeeder::class,
+            AchievementSeeder::class,
+            UserAchievementSeeder::class
             ];
         foreach ($seeders as $seeder) {
             $this->call($seeder);

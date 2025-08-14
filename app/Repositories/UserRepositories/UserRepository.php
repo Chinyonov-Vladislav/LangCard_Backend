@@ -4,6 +4,7 @@ namespace App\Repositories\UserRepositories;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -110,5 +111,10 @@ class UserRepository implements UserRepositoryInterface
     public function getAncestorsInviterOfUser($userId)
     {
         return User::find($userId)->ancestors;
+    }
+
+    public function getAllUsers(): Collection
+    {
+        return $this->model->all();
     }
 }

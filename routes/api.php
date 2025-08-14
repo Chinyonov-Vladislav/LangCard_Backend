@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Api\V1\AchievementController;
 use App\Http\Controllers\Api\V1\AnswerController;
 use App\Http\Controllers\Api\V1\AuthControllers\AuthController;
 use App\Http\Controllers\Api\V1\AuthControllers\ForgotPasswordController;
@@ -149,6 +150,10 @@ Route::prefix('v1')->group(callback: function () {
 
                 Route::prefix('jobs')->group(function () {
                     Route::get("/", [JobController::class, 'getJobsOfAuthUser'])->name('getJobsOfAuthUser');
+                });
+
+                Route::prefix('achievements')->group(function () {
+                    Route::get("/", [AchievementController::class, 'getAchievements'])->name('getAchievements');
                 });
             });
         });

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\AchievementRepositories\AchievementRepository;
+use App\Repositories\AchievementRepositories\AchievementRepositoryInterface;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepository;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepositoryInterface;
 use App\Repositories\AudiofileRepositories\AudiofileRepository;
@@ -58,6 +60,8 @@ use App\Repositories\TopicRepositories\TopicRepository;
 use App\Repositories\TopicRepositories\TopicRepositoryInterface;
 use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepository;
 use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
+use App\Repositories\UserAchievementRepositories\UserAchievementRepository;
+use App\Repositories\UserAchievementRepositories\UserAchievementRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepository;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestAnswerRepositories\UserTestAnswerRepository;
@@ -122,6 +126,8 @@ class AppServiceProvider extends ServiceProvider
             TwoFactorAuthorizationRepositoryInterface::class=>TwoFactorAuthorizationRepository::class,
             RecoveryCodeRepositoryInterface::class => RecoveryCodeRepository::class,
             JobStatusRepositoryInterface::class => JobStatusRepository::class,
+            AchievementRepositoryInterface::class => AchievementRepository::class,
+            UserAchievementRepositoryInterface::class => UserAchievementRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);
