@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\UploadController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
 use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\VoiceController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -154,6 +155,27 @@ Route::prefix('v1')->group(callback: function () {
 
                 Route::prefix('achievements')->group(function () {
                     Route::get("/", [AchievementController::class, 'getAchievements'])->name('getAchievements');
+                });
+
+                Route::prefix("chats")->group(function () {
+                    Route::get('/', [ChatController::class, 'getChats'])->name('getChats');
+                    Route::post("/createGroupChat", [ChatController::class, "createGroupChat"])->name('createGroupChat');
+                    Route::post("/createDirectChat", [ChatController::class, "createDirectChat"])->name('createDirectChat');
+                    Route::post("{chatId}/blockUserInChat", [ChatController::class, "blockUserInChat"])->whereNumber("chatId")->name('blockUserInChat')->middleware("checkExistRoom");
+
+                    Route::prefix("{chatId}/messages")->middleware("checkExistRoom")->group(function () {
+                        Route::post("/", [ChatController::class, "sendMessage"])->name('sendMessage');
+                        Route::put("/{id}", [ChatController::class, "updateMessage"])->whereNumber("id")->name('updateMessage');
+                        Route::delete("/{id}", [ChatController::class, "deleteMessage"])->whereNumber("id")->name('deleteMessage');
+                    });
+                    Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom");
+                    Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom");
+
+                });
+                Route::prefix("invites")->group(function () {
+                    Route::get("/", [ChatController::class, "getInvites"])->name('getInvites');
+                    Route::delete("/{id}", [ChatController::class, "deleteInvite"])->whereNumber("id")->name('deleteInvite');
+                    Route::post("/{id}", [ChatController::class, "responseToChatInvitationFromUser"])->whereNumber("id")->name('responseToChatInvitationFromUser');
                 });
             });
         });

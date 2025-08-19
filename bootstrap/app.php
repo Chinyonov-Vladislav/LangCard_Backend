@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckExistRoom;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\SetApiLocale;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => IsAdmin::class,
             'setApiLocale'=>SetApiLocale::class,
             'verifiedEmail' => EnsureEmailIsVerified::class,
+            'checkExistRoom'=> CheckExistRoom::class
         ]);
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('api', HandleCors::class);

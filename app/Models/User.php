@@ -168,6 +168,16 @@ class User extends Authenticatable implements ColumnLabelsableInterface
             ->withTimestamps();
     }
 
+    public function groupChatInvitesSender(): Builder|HasMany
+    {
+        return $this->hasMany(GroupChatInvite::class, 'sender_user_id');
+    }
+
+    public function groupChatInvitesRecipient(): Builder|HasMany
+    {
+        return $this->hasMany(GroupChatInvite::class, 'recipient_user_id');
+    }
+
 
     public function getParentKeyName(): string
     {

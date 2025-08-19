@@ -30,6 +30,8 @@ use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepository;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepositoryInterface;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepository;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
+use App\Repositories\InviteToChatRepositories\InviteToChatRepository;
+use App\Repositories\InviteToChatRepositories\InviteToChatRepositoryInterface;
 use App\Repositories\JobStatusRepositories\JobStatusRepository;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepository;
@@ -38,6 +40,8 @@ use App\Repositories\LoginRepositories\LoginRepository;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
 use App\Repositories\ForgotPasswordRepositories\ForgotForgotPasswordRepository;
 use App\Repositories\ForgotPasswordRepositories\ForgotPasswordRepositoryInterface;
+use App\Repositories\MessageRepositories\MessageRepository;
+use App\Repositories\MessageRepositories\MessageRepositoryInterface;
 use App\Repositories\PromocodeRepositories\PromocodeRepository;
 use App\Repositories\PromocodeRepositories\PromocodeRepositoryInterface;
 use App\Repositories\QuestionAnswerRepository\QuestionAnswerRepository;
@@ -48,6 +52,10 @@ use App\Repositories\RecoveryCodeRepositories\RecoveryCodeRepository;
 use App\Repositories\RecoveryCodeRepositories\RecoveryCodeRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepository;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
+use App\Repositories\RoomRepositories\RoomRepository;
+use App\Repositories\RoomRepositories\RoomRepositoryInterface;
+use App\Repositories\RoomUserRepositories\RoomUserRepository;
+use App\Repositories\RoomUserRepositories\RoomUserRepositoryInterface;
 use App\Repositories\StatsRepositories\StatsRepository;
 use App\Repositories\StatsRepositories\StatsRepositoryInterface;
 use App\Repositories\TariffRepositories\TariffRepository;
@@ -128,6 +136,10 @@ class AppServiceProvider extends ServiceProvider
             JobStatusRepositoryInterface::class => JobStatusRepository::class,
             AchievementRepositoryInterface::class => AchievementRepository::class,
             UserAchievementRepositoryInterface::class => UserAchievementRepository::class,
+            RoomRepositoryInterface::class => RoomRepository::class,
+            RoomUserRepositoryInterface::class => RoomUserRepository::class,
+            MessageRepositoryInterface::class => MessageRepository::class,
+            InviteToChatRepositoryInterface::class => InviteToChatRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);
