@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
@@ -134,6 +135,11 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->hasOne(TwoFactorAuthorizationToken::class, 'user_id');
     }
 
+    public function language(): BelongsTo
+    {
+        return $this->belongsTo(Language::class, 'language_id');
+    }
+
     public function recoveryCodes(): HasMany
     {
         return $this->hasMany(RecoveryCode::class, 'user_id');
@@ -178,6 +184,37 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         return $this->hasMany(GroupChatInvite::class, 'recipient_user_id');
     }
 
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->oldest();
+    }
+
+    public function news(): Builder|HasMany
+    {
+        return $this->hasMany(News::class, 'user_id');
+    }
+
+    public function scopeNearby($query, float $latitude, float $longitude, int $radius)
+    {
+        $haversine = "
+            (6371000 * acos(
+                cos(radians(?)) *
+                cos(radians(latitude)) *
+                cos(radians(longitude) - radians(?)) +
+                sin(radians(?)) *
+                sin(radians(latitude))
+            ))
+        ";
+
+        return $query
+            ->where("hideMyCoordinates", '=', false)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->select(["id", "name", "avatar_url"])
+            ->selectRaw("$haversine AS distance", [$latitude, $longitude, $latitude])
+            ->having('distance', '<', $radius)
+            ->orderBy('distance');
+    }
 
     public function getParentKeyName(): string
     {
@@ -198,7 +235,8 @@ class User extends Authenticatable implements ColumnLabelsableInterface
             'vip_status_time_end' => 'datetime',
             'last_date_daily_reward'=>'date',
             'two_factor_email_enabled'=>'boolean',
-            'google2fa_enable'=>'boolean'
+            'google2fa_enable'=>'boolean',
+            'hideMyCoordinates'=>'boolean'
         ];
     }
 

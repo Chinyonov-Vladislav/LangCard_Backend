@@ -42,6 +42,10 @@ use App\Repositories\ForgotPasswordRepositories\ForgotForgotPasswordRepository;
 use App\Repositories\ForgotPasswordRepositories\ForgotPasswordRepositoryInterface;
 use App\Repositories\MessageRepositories\MessageRepository;
 use App\Repositories\MessageRepositories\MessageRepositoryInterface;
+use App\Repositories\NewsRepositories\NewsRepository;
+use App\Repositories\NewsRepositories\NewsRepositoryInterface;
+use App\Repositories\NotificationRepositories\NotificationRepository;
+use App\Repositories\NotificationRepositories\NotificationRepositoryInterface;
 use App\Repositories\PromocodeRepositories\PromocodeRepository;
 use App\Repositories\PromocodeRepositories\PromocodeRepositoryInterface;
 use App\Repositories\QuestionAnswerRepository\QuestionAnswerRepository;
@@ -140,6 +144,8 @@ class AppServiceProvider extends ServiceProvider
             RoomUserRepositoryInterface::class => RoomUserRepository::class,
             MessageRepositoryInterface::class => MessageRepository::class,
             InviteToChatRepositoryInterface::class => InviteToChatRepository::class,
+            NotificationRepositoryInterface::class => NotificationRepository::class,
+            NewsRepositoryInterface::class => NewsRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

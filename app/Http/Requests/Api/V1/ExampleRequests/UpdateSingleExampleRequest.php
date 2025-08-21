@@ -54,7 +54,6 @@ class UpdateSingleExampleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'example_id'=>['required', 'integer', 'exists:examples,id'],
             'example' => ['required', 'string', 'max:255'],
             'source'=>['required', 'string', 'in:original,target']
         ];
@@ -63,10 +62,6 @@ class UpdateSingleExampleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'example_id.required' => 'Идентификатор примера обязателен.',
-            'example_id.integer' => 'Идентификатор примера должен быть числом.',
-            'example_id.exists' => 'Указанный пример не найден.',
-
             'example.required' => 'Поле "example" обязательно для заполнения.',
             'example.string' => 'Поле "example" должно быть строкой.',
             'example.max' => 'Поле "example" не должно превышать 255 символов.',

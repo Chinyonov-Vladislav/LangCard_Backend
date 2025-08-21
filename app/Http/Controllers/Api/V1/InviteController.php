@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\AchievementsEnum;
+use App\Enums\TypesNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\InviteRequests\SetInviterRequest;
 use App\Http\Resources\v1\InviteResources\InviterResource;
@@ -10,10 +11,12 @@ use App\Http\Responses\ApiResponse;
 use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\AchievementService;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 
 class InviteController extends Controller
 {
+    protected NotificationService $notificationService;
     protected InviteCodeRepositoryInterface $inviteCodeRepository;
     protected UserRepositoryInterface $userRepository;
     protected AchievementService $achievementService;
@@ -23,6 +26,7 @@ class InviteController extends Controller
         $this->inviteCodeRepository = $inviteCodeRepository;
         $this->userRepository = $userRepository;
         $this->achievementService = new AchievementService();
+        $this->notificationService = new NotificationService();
     }
 
 
@@ -119,9 +123,18 @@ class InviteController extends Controller
         foreach ($ancestorsOfUser as $ancestor) {
             // TODO добавить уведомление о продлении vip - статуса
             $currentEndDate = $ancestor->vip_status_time_end ? Carbon::parse($ancestor->vip_status_time_end) : Carbon::now();
-            $dateEndOfVipStatus = $currentEndDate->max(Carbon::now())->addDays($ancestor->depth * -1);
+            $countDays = $ancestor->depth * -1;
+            $dateEndOfVipStatus = $currentEndDate->max(Carbon::now())->addDays($countDays);
+
+
             $this->userRepository->updateEndDateOfVipStatusByIdUser($ancestor->id, $dateEndOfVipStatus);
             $this->achievementService->addProgress($ancestor->id, AchievementsEnum::VIP_CLUB->value);
+            // отправка уведомления
+            $data = [
+                'title'=>"Обновление VIP - статуса",
+                'message'=>"Ваш VIP-статус продлён на $countDays дней благодаря активности вашего приглашённого пользователя.\nДата окончания VIP - статуса: {$dateEndOfVipStatus->format('d-m-Y H:i:s')}"
+            ];
+            $this->notificationService->broadcast($ancestor, $data, TypesNotification::DefaultNotification);
         }
         $this->achievementService->addProgress($inviter->id, AchievementsEnum::InviteFriend->value); // обновление достижения пригласи одного друга
         return ApiResponse::success('Благодарим! Вы указали пригласившего пользователя.', (object)['inviter' => new InviterResource($inviter)]);

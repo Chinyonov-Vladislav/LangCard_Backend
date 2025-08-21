@@ -9,15 +9,18 @@ use App\Jobs\ProcessDelayedApiRequest;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepositoryInterface;
 use App\Repositories\CurrencyRepositories\CurrencyRepositoryInterface;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
+use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\TimezoneRepositories\TimezoneRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class ApiService
 {
     protected CurrencyRepositoryInterface $currencyRepository;
     protected TimezoneRepositoryInterface $timezoneRepository;
+
+    protected LanguageRepositoryInterface $languageRepository;
+
     private ApiLimitRepositoryInterface $apiLimitRepository;
 
     private JobStatusRepositoryInterface $jobStatusRepository;
@@ -27,79 +30,46 @@ class ApiService
     public function __construct(ApiLimitRepositoryInterface $apiLimitRepository,
                                 CurrencyRepositoryInterface $currencyRepository,
                                 TimezoneRepositoryInterface $timezoneRepository,
-                                JobStatusRepositoryInterface $jobStatusRepository)
+                                JobStatusRepositoryInterface $jobStatusRepository,
+                                LanguageRepositoryInterface $languageRepository,)
     {
         $this->apiLimitRepository = $apiLimitRepository;
         $this->currencyRepository = $currencyRepository;
         $this->timezoneRepository = $timezoneRepository;
         $this->jobStatusRepository = $jobStatusRepository;
+        $this->languageRepository = $languageRepository;
         $this->ipAddressService = new IpAddressService();
     }
 
-    public function makeRequest(string $ipAddress,int $userId, TypeRequestApi $type): array
+    public function makeRequest(string $ipAddress,int $userId, TypeRequestApi $type): string
     {
+        $jobId = (string)Str::uuid();
         $ipAddress = $this->ipAddressService->getIpAddress($ipAddress);
-        $today = Carbon::today()->toDateString();
-        $limit = $this->apiLimitRepository->findOrCreateByDate($today);
-        if ($limit->request_count >= $this->maxRequestsPerDay) {
-            // Лимит исчерпан – ставим в очередь на завтра
-            $jobId = (string)Str::uuid();
-            $this->jobStatusRepository->saveNewJobStatus($jobId, "ProcessDelayedApiRequest", JobStatuses::queued->value, $userId);
-            ProcessDelayedApiRequest::dispatch($jobId, $ipAddress,$userId, $type)
-                ->delay(now()->addDay()->startOfDay());
-            return ['status'=>TypeStatus::error->value, "job_id" => $jobId];
-        }
-        if($type === TypeRequestApi::currencyRequest)
+        $today = Carbon::today();
+        $limit = $this->apiLimitRepository->findOrCreateByDate($today->toDateString());
+        if ($limit->request_count >= $this->maxRequestsPerDay)
         {
-            $currencyId = $this->getCurrencyByIpAddress($ipAddress);
-            if($currencyId !== null)
+            $countNewDays = 1;
+            // Лимит исчерпан – ставим в очередь на подходящий день
+            while(true)
             {
-                $this->apiLimitRepository->incrementRequestCount($limit);
-            }
-            return ['status'=>TypeStatus::success->value, "id" => $currencyId];
-        }
-        $timezoneId = $this->getTimezoneByIpAddress($ipAddress);
-        if($timezoneId !== null)
-        {
-            $this->apiLimitRepository->incrementRequestCount($limit);
-        }
-        return ['status'=>TypeStatus::success->value, "id" => $timezoneId];
-    }
-    private function getCurrencyByIpAddress(string $ipAddress)
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
-            'apiKey' => $apiKey,
-            'ip' => $ipAddress,
-            'fields'=>'currency'
-        ]);
-        $data = $response->json();
-        $currencyId = null;
-        if (isset($data['currency'])) {
-            if(!$this->currencyRepository->isExistByCode($data['currency']['code'])) {
-                $this->currencyRepository->saveNewCurrency($data['currency']['name'], $data['currency']['code'], $data['currency']['symbol']);
-            }
-            $currencyInfoFromDatabase = $this->currencyRepository->getByCode($data['currency']['code']);
-            $currencyId = $currencyInfoFromDatabase->id;
-        }
-        return $currencyId;
-    }
-    private function getTimezoneByIpAddress(string $ipAddress)
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        $response = Http::get("https://api.ipgeolocation.io/v2/timezone", [
-            'apiKey' => $apiKey,
-            'ip' => $ipAddress,
-        ]);
-        $data = $response->json();
-        $timezoneId = null;
-        $nameRegion = data_get($data, 'time_zone.name');
-        if (isset($nameRegion)) {
-            if ($this->timezoneRepository->isExistTimezoneByNameRegion($nameRegion)) {
-                $timezoneDB = $this->timezoneRepository->getTimezoneByNameRegion($nameRegion);
-                $timezoneId = $timezoneDB->id;
+                $futureDate = Carbon::today()->addDays($countNewDays);
+                $limitInFutureDate = $this->apiLimitRepository->findOrCreateByDate($futureDate->toDateString());
+                if($limitInFutureDate->request_count >= $this->maxRequestsPerDay)
+                {
+                    $countNewDays++;
+                    continue;
+                }
+                $this->jobStatusRepository->saveNewJobStatus($jobId, "ProcessDelayedApiRequest", JobStatuses::queued->value, $userId, ['type'=>$type, 'execution_date'=>$futureDate]);
+                $this->apiLimitRepository->incrementRequestCount($limitInFutureDate);
+                ProcessDelayedApiRequest::dispatch($jobId, $ipAddress,$userId, $type)
+                    ->delay($futureDate->startOfDay());
+                return $jobId;
             }
         }
-        return $timezoneId;
+        $this->jobStatusRepository->saveNewJobStatus($jobId, "ProcessDelayedApiRequest", JobStatuses::queued->value, $userId, ['type'=>$type, 'execution_date'=>$today]);
+        ProcessDelayedApiRequest::dispatch($jobId, $ipAddress,$userId, $type);
+        $this->apiLimitRepository->incrementRequestCount($limit);
+        return $jobId;
     }
 }

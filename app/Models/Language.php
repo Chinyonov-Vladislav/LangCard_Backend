@@ -42,6 +42,11 @@ class Language extends Model implements ColumnLabelsableInterface
     protected $table = 'languages';
     protected $guarded = [];
 
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, "language_id");
+    }
+
     public function originalLanguageDecks(): HasMany
     {
         return $this->hasMany(Deck::class, 'original_language_id');

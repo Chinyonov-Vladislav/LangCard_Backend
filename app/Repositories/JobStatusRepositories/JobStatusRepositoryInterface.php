@@ -2,11 +2,14 @@
 
 namespace App\Repositories\JobStatusRepositories;
 
+use App\Enums\TypeRequestApi;
 use App\Models\JobStatus;
 use App\Services\PaginatorService;
 
 interface JobStatusRepositoryInterface
 {
+    public function isExistJobWithStatusQueuedOrProcessingForAutomaticDefineUserData(int $userId, TypeRequestApi $type):bool;
+
     public function getJobsOfUserWithPagination(PaginatorService $paginator, int $userId, int $countOnPage, int $numberCurrentPage);
 
     public function getJobStatusById(int $id): ?JobStatus;

@@ -26,11 +26,16 @@ return new class extends Migration
             $table->unique(['provider_id', 'provider']);
             $table->enum('type_user', ['admin', 'user'])->default('user');
             $table->foreignId('currency_id')->nullable()->default(null)->references('id')->on('currencies')
-                ->onUpdate('cascade')->onDelete('cascade');
+                ->onUpdate('cascade')->nullOnDelete();
+            $table->dateTime('last_time_update_currency')->nullable()->default(null);
             $table->foreignId('timezone_id')->nullable()->default(null)->references('id')->on('timezones')
-                ->onUpdate('cascade')->onDelete('cascade');
+                ->onUpdate('cascade')->nullOnDelete();
+            $table->dateTime('last_time_update_timezone')->nullable()->default(null);
             $table->foreignId('inviter_id')->nullable()->default(null)->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('cascade');
+                ->onUpdate('cascade')->nullOnDelete();
+            $table->foreignId("language_id")->nullable()->default(null)->references('id')->on('languages')
+                ->onUpdate('cascade')->nullOnDelete();
+            $table->dateTime('last_time_update_language')->nullable()->default(null);
             $table->dateTime('vip_status_time_end')->nullable()->default(null);
             $table->integer('point_count')->default(0);
             $table->date('last_date_daily_reward')->nullable()->default(null);
@@ -40,7 +45,11 @@ return new class extends Migration
             $table->dateTime('two_factor_code_email_expiration_date')->nullable()->default(null);
             $table->boolean('google2fa_enable')->default(false);
             $table->string('google2fa_secret')->nullable()->default(null);
-
+            $table->boolean('mailing_enabled')->default(false);
+            $table->decimal('latitude', 8, 5)->nullable()->default(null);
+            $table->decimal('longitude', 8, 5)->nullable()->default(null);
+            $table->boolean("hideMyCoordinates")->default(true);
+            $table->dateTime('last_time_update_coordinates')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
         });

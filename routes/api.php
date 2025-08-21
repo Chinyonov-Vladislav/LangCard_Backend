@@ -26,10 +26,13 @@ use App\Http\Controllers\Api\V1\TariffController;
 use App\Http\Controllers\Api\V1\TopicController;
 use App\Http\Controllers\Api\V1\TwoFactorAuthorizationController;
 use App\Http\Controllers\Api\V1\UploadController;
+use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
 use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\VoiceController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -60,14 +63,27 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
             Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
             Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-            Route::post('setInviter',[InviteController::class, 'setInviter'])->name('setInviter');
+            Route::post('setInviter', [InviteController::class, 'setInviter'])->name('setInviter');
             Route::middleware('verifiedEmail')->group(callback: function () {
-                Route::get('timezones', [TimezoneController::class, 'getTimezones'])->name('getTimezones');
+                Route::prefix("users")->group(function () {
+                   Route::get("/nearBy", [UserController::class, 'nearBy'])->name('nearBy');
+                });
+
+                Route::prefix('timezones')->group(function () {
+                    Route::get('timezones', [TimezoneController::class, 'getTimezones'])->name('getTimezones');
+                });
+
                 Route::get('columns/{nameTable}', [ColumnsController::class, 'getColumns'])->name('getColumns');
                 Route::get('filtersData/{nameTable}', [FilterDataController::class, 'getFilterData'])->name('getFilterData');
                 Route::prefix('profile')->group(function () {
                     Route::get('/', [ProfileController::class, 'getProfileAuthUser'])->name('getProfileAuthUser');
                     Route::get('/{id}', [ProfileController::class, 'getProfile'])->where('id', '[0-9]+')->name('getProfile');
+                    Route::patch("/updateFieldsByIp", [ProfileController::class, 'updateFieldsByIp'])->name('updateFieldsByIp');
+                    Route::patch('/updateTimezone', [ProfileController::class, 'updateTimezone'])->name('updateTimezone');
+                    Route::patch('/updateCurrency', [ProfileController::class, 'updateCurrency'])->name('updateCurrency');
+                    Route::patch('/updateLanguage', [ProfileController::class, 'updateLanguage'])->name('updateLanguage');
+                    Route::patch('/updateCoordinates', [ProfileController::class, 'updateCoordinates'])->name('updateCoordinates');
+                    Route::patch('/changeMyVisibility', [ProfileController::class, 'changeMyVisibility'])->name('changeMyVisibility');
                 });
                 Route::prefix('dailyRewards')->group(function () {
                     Route::get('/', [DailyRewardController::class, 'getDailyRewardsForAuthUser'])->name('getDailyRewardsForAuthUser');
@@ -83,7 +99,7 @@ Route::prefix('v1')->group(callback: function () {
                     Route::get('/{id}', [DeckController::class, 'getDeck'])->where('id', '[0-9]+')->where('id', '[0-9]+')->name('getDeck');
                     Route::post('/', [DeckController::class, 'createDeck'])->name('createDeck');
                     Route::prefix('/{id}/topics')->group(function () {
-                        Route::post('',[DeckController::class, 'addTopicsToDeck'] )->where('id', '[0-9]+')->name('addTopicsToDeck');
+                        Route::post('', [DeckController::class, 'addTopicsToDeck'])->where('id', '[0-9]+')->name('addTopicsToDeck');
                     });
                     Route::delete('/{id}', [DeckController::class, 'deleteDeck'])->where('id', '[0-9]+')->name('deleteDeck');
                 });
@@ -144,7 +160,7 @@ Route::prefix('v1')->group(callback: function () {
                 });
 
                 Route::prefix('examples')->group(function () {
-                    Route::put('/singleUpdate', [ExampleController::class, 'updateSingleExample'])->name('updateSingleExample');
+                    Route::put('/{id}', [ExampleController::class, 'updateSingleExample'])->name('updateSingleExample');
                     Route::put('/multipleUpdate', [ExampleController::class, 'updateMultipleExample'])->name('updateMultipleExample');
                     Route::delete("/{id}", [ExampleController::class, 'deleteExample'])->name('deleteExample');
                 });
@@ -177,6 +193,19 @@ Route::prefix('v1')->group(callback: function () {
                     Route::delete("/{id}", [ChatController::class, "deleteInvite"])->whereNumber("id")->name('deleteInvite');
                     Route::post("/{id}", [ChatController::class, "responseToChatInvitationFromUser"])->whereNumber("id")->name('responseToChatInvitationFromUser');
                 });
+                Route::prefix("notifications")->group(function () {
+                    Route::get("/", [NotificationController::class, "getNotifications"])->name('getNotifications');
+                    Route::post('/', [NotificationController::class, 'createNotification'])->name('createNotification');
+                    Route::patch("/{id}", [NotificationController::class, "markingNotificationAsRead"])->name("markingNotificationAsRead");
+                });
+                Route::prefix("news")->group(function () {
+                    Route::get("/", [NewsController::class, 'getNews'])->name('getNews');
+                    Route::get("/{id}", [NewsController::class, 'getNewsById'])->name('getNewsById');
+                    Route::post("/", [NewsController::class, 'addNews'])->name('addNews');
+                    Route::put("/{id}", [NewsController::class, 'updateNews'])->whereNumber("id")->name('updateNews');
+                    Route::delete("/{id}", [NewsController::class, 'deleteNews'])->whereNumber("id")->name('deleteNews');
+                });
+
             });
         });
     });

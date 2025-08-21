@@ -58,6 +58,6 @@ class LanguageRepository implements LanguageRepositoryInterface
 
     public function getLanguageByLocale(string $locale): ?Language
     {
-        return $this->model->where('locale', '=', $locale)->first();
+        return $this->model->where('locale', '=', $locale)->orWhere("code", "=", $locale)->first();
     }
 }

@@ -51,19 +51,12 @@ class RegistrationController extends Controller
      *              @OA\Property(
      *                  property="data",
      *                  type="object",
-     *                  nullable=true,
      *                  @OA\Property(
-     *                      property="timezone_job_id",
-     *                      type="string",
-     *                      description="Идентификатор фоновой задачи на определение часового пояса (если не удалось получить сразу)",
-     *                      example="job_12345"
-     *                  ),
-     *                  @OA\Property(
-     *                      property="currency_job_id",
-     *                      type="string",
-     *                      description="Идентификатор фоновой задачи на определение валюты (если не удалось получить сразу)",
-     *                      example="job_67890"
-     *                  )
+     *                       property="job_id",
+     *                       type="string",
+     *                       description="Идентификатор фоновой задачи на определение валюты, часового пояса и языка пользователя",
+     *                       example="job_67890"
+     *                   )
      *              )
      *          )
      *      ),
@@ -80,50 +73,32 @@ class RegistrationController extends Controller
      *                     property="email",
      *                     type="array",
      *                     @OA\Items(type="string", example="Поле email уже используется.")
-     *                 )
+     *                 ),
+     *                 @OA\Property(
+     *                      property="name",
+     *                      type="array",
+     *                      @OA\Items(type="string", example="Поле name обязательно для заполнения.")
+     *                  ),
+     *                @OA\Property(
+     *                       property="password",
+     *                       type="array",
+     *                       @OA\Items(type="string", example="Поле password обязательно для заполнения.")
+     *                   ),
+     *                @OA\Property(
+     *                        property="mailing_enabled",
+     *                        type="array",
+     *                        @OA\Items(type="string", example="Поле mailing_enabled обязательно для заполнения.")
+     *                    ),
      *             )
      *         )
      *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Ошибка при регистрации пользователя",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", enum={"success", "error"}, example="error"),
-     *             @OA\Property(property="message", type="string", example="Не удалось зарегистрировать пользователя."),
-     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
-     *         )
-     *     )
      * )
      */
     public function registration(RegistrationRequest $request): JsonResponse
     {
-        $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, null);
-        $user = $this->userRepository->getInfoUserAccountByEmail($request->email);
-        if ($user === null) {
-            return ApiResponse::error(__('api.user_not_registered'), null, 500);
-        }
-        $timezoneInfo = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
-        $currencyInfo = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
-        if ($timezoneInfo['status'] === TypeStatus::success->value) {
-            $this->userRepository->updateTimezoneId($user, $timezoneInfo['id']);
-        }
-        if ($currencyInfo['status'] === TypeStatus::success->value) {
-            $this->userRepository->updateCurrencyId($user, $currencyInfo['id']);
-        }
-        $data = null;
-        if ($timezoneInfo['status'] === TypeStatus::error->value && $currencyInfo['status'] === TypeStatus::error->value) {
-            $data = ["timezone_job_id"=>$timezoneInfo['job_id'], "currency_job_id"=>$currencyInfo['job_id']];
-        }
-        else if ($timezoneInfo['status'] === TypeStatus::error->value && $currencyInfo['status'] !== TypeStatus::error->value)
-        {
-            $data = ["timezone_job_id"=>$timezoneInfo['job_id']];
-        }
-        else if($timezoneInfo['status'] !== TypeStatus::error->value && $currencyInfo['status'] === TypeStatus::error->value)
-        {
-            $data = ["currency_job_id"=>$currencyInfo['job_id']];
-        }
+        $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, null, mailing_enabled: $request->mailing_enabled);
+        $allJobId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
         $this->achievementService->startAchievementsForNewUser($user->id);
-        return ApiResponse::success(__('api.user_registered_successfully'), $data === null ? null : (object)$data, 201);
+        return ApiResponse::success(__('api.user_registered_successfully'), (object)["job_id"=>$allJobId], 201);
     }
 }

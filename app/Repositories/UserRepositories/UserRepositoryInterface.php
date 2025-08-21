@@ -4,6 +4,7 @@ namespace App\Repositories\UserRepositories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use PhpParser\Node\Expr\Cast\Double;
 
 interface UserRepositoryInterface
 {
@@ -24,9 +25,17 @@ interface UserRepositoryInterface
 
     public function updateTimezoneId(User $user, ?int $timezoneId);
 
+    public function updateLanguageId(User $user, ?int $languageId);
+
+    public function updateCoordinates(User $user, ?float $latitude, ?float $longitude);
+
     public function updateCurrencyIdByIdUser(int $userId, ?int $currencyId);
 
     public function updateTimezoneIdByIdUser(int $userId, ?int $timezoneId);
+
+    public function updateLanguageIdByIdUser(int $userId, ?int $languageId);
+
+    public function updateCoordinatesByIdUser(int $userId, ?float $latitude, ?float $longitude);
 
     public function getInfoAboutUsersForHistoryPurchaseSeeder();
 
@@ -39,4 +48,10 @@ interface UserRepositoryInterface
     public function hasUserInviteCode(int $userId): bool;
 
     public function getAncestorsInviterOfUser($userId);
+
+    public function getAllUsersWithConfirmedEmailForMailingNews();
+
+    public function getUsersNearBy(float $latitude,float $longitude, int $radius);
+
+    public function changeMyVisibility(User $user);
 }

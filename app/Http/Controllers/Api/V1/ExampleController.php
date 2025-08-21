@@ -96,9 +96,13 @@ class ExampleController extends Controller
      *     @OA\Response(response=420, ref="#/components/responses/NotVerifiedEmail"),
      * )
      */
-    public function updateSingleExample(UpdateSingleExampleRequest $request)
+    public function updateSingleExample(int $id, UpdateSingleExampleRequest $request)
     {
-        $exampleById = $this->exampleRepository->getExampleById($request->example_id);
+        $exampleById = $this->exampleRepository->getExampleById($id);
+        if($exampleById === null)
+        {
+            return ApiResponse::error("Пример употребления с id = $id не найден", null, 404);
+        }
         $ownerUserId = $exampleById->card->deck->user_id;
         if($ownerUserId !== auth()->user()->id) {
             return ApiResponse::error("Авторизованный пользователь не является автором колоды, которой принадлежит карточка, поэтому он не может удалить пример",null, 409);

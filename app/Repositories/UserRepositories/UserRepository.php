@@ -2,6 +2,7 @@
 
 namespace App\Repositories\UserRepositories;
 
+use App\Models\Card;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,26 +23,30 @@ class UserRepository implements UserRepositoryInterface
     public function updateCurrencyId(User $user, ?int $currencyId): void
     {
         $user->currency_id = $currencyId;
+        $user->last_time_update_timezone = Carbon::now();
         $user->save();
     }
 
     public function updateTimezoneId(User $user, ?int $timezoneId): void
     {
         $user->timezone_id = $timezoneId;
+        $user->last_time_update_timezone = Carbon::now();
         $user->save();
     }
 
-    public function updateCurrencyIdByIdUser(int $userId, ?int $currencyId)
+    public function updateCurrencyIdByIdUser(int $userId, ?int $currencyId): void
     {
         $this->model->where('id', $userId)->update([
-            'currency_id' => $currencyId
+            'currency_id' => $currencyId,
+            'last_time_update_currency'=>Carbon::now()
         ]);
     }
 
-    public function updateTimezoneIdByIdUser(int $userId, ?int $timezoneId)
+    public function updateTimezoneIdByIdUser(int $userId, ?int $timezoneId): void
     {
         $this->model->where('id', $userId)->update([
-            'timezone_id' => $timezoneId
+            'timezone_id' => $timezoneId,
+            'last_time_update_timezone'=>Carbon::now()
         ]);
     }
 
@@ -89,8 +94,9 @@ class UserRepository implements UserRepositoryInterface
 
     public function getInfoUserById(int $userId)
     {
-        return $this->model->with(['currency', 'timezone', 'inviter'])->where('id','=', $userId)
-            ->select(['id', 'name', 'email', 'type_user','invite_code', 'currency_id', 'timezone_id','inviter_id','vip_status_time_end', 'created_at'])->first();
+        return $this->model->with(['currency', 'timezone','language', 'inviter'])->where('id','=', $userId)
+            ->select(['id', 'name', 'email', 'type_user','invite_code', 'currency_id', 'timezone_id','inviter_id','language_id',
+            'vip_status_time_end','latitude','longitude','hideMyCoordinates', 'created_at'])->first();
     }
 
     public function getInfoUserAccountByProviderAndProviderId(string $providerId, string $provider)
@@ -116,5 +122,61 @@ class UserRepository implements UserRepositoryInterface
     public function getAllUsers(): Collection
     {
         return $this->model->all();
+    }
+
+    public function getAllUsersWithConfirmedEmailForMailingNews(): Collection
+    {
+        return $this->model->with(['language'])->whereNotNull("email")
+            ->whereNotNull("email_verified_at")
+            ->where("mailing_enabled", '=', true)
+            ->select(["email", "language_id"])->get();
+    }
+
+    public function updateLanguageIdByIdUser(int $userId, ?int $languageId): void
+    {
+        $this->model->where('id',"=", $userId)
+            ->update([
+                "language_id"=>$languageId,
+                "last_time_update_language"=>Carbon::now()
+            ]);
+    }
+
+    public function updateLanguageId(User $user, ?int $languageId): void
+    {
+        $user->language_id = $languageId;
+        $user->last_time_update_language = Carbon::now();
+        $user->save();
+    }
+
+    public function updateCoordinates(User $user, ?float $latitude, ?float $longitude): void
+    {
+        $user->latitude =$latitude;
+        $user->longitude = $longitude;
+        $user->last_time_update_coordinates = Carbon::now();
+        $user->save();
+    }
+
+    public function updateCoordinatesByIdUser(int $userId, ?float $latitude, ?float $longitude): void
+    {
+        $this->model->where("id","=",$userId)->update([
+            "latitude"=>$latitude,
+            "longitude"=>$longitude,
+            "last_time_update_coordinates"=>Carbon::now()
+        ]);
+    }
+
+    public function getUsersNearBy(float $latitude, float $longitude, int $radius)
+    {
+        return User::nearby(
+            $latitude,
+            $longitude,
+            $radius
+        )->get();
+    }
+
+    public function changeMyVisibility(User $user): void
+    {
+        $user->hideMyCoordinates = !$user->hideMyCoordinates;
+        $user->save();
     }
 }

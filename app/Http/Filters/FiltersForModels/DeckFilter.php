@@ -10,7 +10,6 @@ class DeckFilter extends QueryFilter
     public function originalLanguages($originalLanguages): void
     {
         $array_params = array_filter(explode(',', $originalLanguages));
-        logger($array_params);
         $this->builder->whereHas('originalLanguage', function ($query) use ($array_params) {
             $query->whereIn('locale', $array_params);
         });
@@ -26,7 +25,6 @@ class DeckFilter extends QueryFilter
 
     public function showPremium($typePremium): void
     {
-        logger($typePremium);
         switch ($typePremium) {
             case TypeShowingDeck::onlyPremium->value:
                 $this->builder->where('is_premium', '=',true);

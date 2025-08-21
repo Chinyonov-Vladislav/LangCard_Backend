@@ -42,6 +42,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     ),
  *
  *     @OA\Property(
+ *          property="language",
+ *          type="object",
+ *          nullable=true,
+ *          description="Язык пользователя",
+ *          required={"id", "name", "native_name", "code", "flag_url","locale"},
+ *          @OA\Property(property="id", type="integer", example=5),
+ *          @OA\Property(property="name", type="string", example="Russian"),
+ *          @OA\Property(property="native_name", type="string", example="Русский"),
+ *          @OA\Property(property="code", type="string", example="ru"),
+ *          @OA\Property(property="flag_url", type="string", example="storage/image/8e7ba038-1059-4f53-a3ca-9e1413f84507.png"),
+ *          @OA\Property(property="locale", type="string", example="ru_RU"),
+ *      ),
+ *
+ *     @OA\Property(
  *         property="inviter",
  *         type="object",
  *         nullable=true,
@@ -51,6 +65,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *         @OA\Property(property="name", type="string", example="Иван Иванов"),
  *         @OA\Property(property="avatar", type="string", format="uri", example="https://example.com/avatar.jpg")
  *     ),
+ *
+ *     @OA\Property(
+ *           property="coordinates",
+ *           type="object",
+ *           description="Координаты пользователя",
+ *           required={"latitude", "longitude"},
+ *           @OA\Property(property="latitude", type="decimal", example=71.53441),
+ *           @OA\Property(property="longitude", type="decimal", example=124.443)
+ *       ),
  * )
  */
 class ProfileUserResource extends JsonResource
@@ -96,6 +119,21 @@ class ProfileUserResource extends JsonResource
                     'offset_utc' => $timezone->offset_utc,
                 ];
             }),
+            'language' => $this->whenLoaded('language', function (){
+                $language = $this->language;
+                if($language === null)
+                {
+                    return null;
+                }
+                return [
+                    'id' => $language->id,
+                    'name' => $language->name,
+                    'native_name' => $language->native_name,
+                    'code'=>$language->code,
+                    'flag_url'=>$language->flag_url,
+                    'locale'=>$language->locale,
+                ];
+            }),
             'inviter'=>$this->whenLoaded('inviter', function (){
                 $inviter =$this->inviter;
                 if($inviter === null)
@@ -108,6 +146,13 @@ class ProfileUserResource extends JsonResource
                     'avatar'=>$inviter->avatar_url
                 ];
             }),
+            'coordinates'=>$this->when($this->hideMyCoordinates === false, function(){
+                return [
+                    'latitude'=>$this->latitude,
+                    'longitude'=>$this->longitude,
+                ];
+            })
+
         ];
     }
 }

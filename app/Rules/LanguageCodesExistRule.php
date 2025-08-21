@@ -56,7 +56,7 @@ class LanguageCodesExistRule implements ValidationRule
     private function buildErrorMessage(array $missingCodes): string
     {
         if (count($missingCodes) === 1) {
-            return "Код языка '{$missingCodes[0]}' не найден в базе данных.";
+            return "Код языка '$missingCodes[0]' не найден в базе данных.";
         }
 
         return 'Коды языков не найдены в базе данных: ' . implode(', ', $missingCodes) . '.';

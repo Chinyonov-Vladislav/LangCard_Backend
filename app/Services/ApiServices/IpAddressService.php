@@ -19,6 +19,9 @@ class IpAddressService
                 '8.8.8.8',
                 '66.249.66.1',
             ];
+            $fakeIps = [
+                "151.0.22.12"
+            ];
             return $fakeIps[array_rand($fakeIps)];
         }
         return $realIp;

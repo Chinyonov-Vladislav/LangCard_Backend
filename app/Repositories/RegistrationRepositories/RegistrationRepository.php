@@ -22,7 +22,8 @@ class RegistrationRepository implements RegistrationRepositoryInterface
                                  string $type_user = 'user',
                                  ?string $vip_status_time_end = null,
                                  ?string $providerId = null,
-                                 ?string $providerName = null): User
+                                 ?string $providerName = null,
+                                 bool $mailing_enabled = false ): User
     {
         $user = new User();
         $user->name = $name;
@@ -35,6 +36,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         $user->vip_status_time_end = $vip_status_time_end;
         $user->provider_id = $providerId;
         $user->provider = $providerName;
+        $user->mailing_enabled = $mailing_enabled;
         $user->save();
         return $user;
     }

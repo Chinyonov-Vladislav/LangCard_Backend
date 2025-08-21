@@ -2,6 +2,8 @@
 
 namespace App\Repositories\RegistrationRepositories;
 
+use App\Models\User;
+
 interface RegistrationRepositoryInterface
 {
     public function isExistUserByEmail($email);
@@ -15,5 +17,6 @@ interface RegistrationRepositoryInterface
                                  ?string $vip_status_time_end = null,
                                  ?string $providerId = null,
                                  ?string $providerName = null,
-    );
+                                 bool $mailing_enabled = false,
+    ): User;
 }

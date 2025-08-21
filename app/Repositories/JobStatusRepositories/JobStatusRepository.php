@@ -2,6 +2,7 @@
 
 namespace App\Repositories\JobStatusRepositories;
 
+use App\Enums\TypeRequestApi;
 use App\Models\JobStatus;
 use App\Services\PaginatorService;
 
@@ -53,5 +54,14 @@ class JobStatusRepository implements JobStatusRepositoryInterface
         $data = $paginator->paginate($query, $countOnPage, $numberCurrentPage);
         $metadataPagination = $paginator->getMetadataForPagination($data);
         return ['items' => collect($data->items()), "pagination" => $metadataPagination];
+    }
+
+    public function isExistJobWithStatusQueuedOrProcessingForAutomaticDefineUserData(int $userId, TypeRequestApi $type): bool
+    {
+        return $this->model->where("user_id", "=",$userId)
+            ->where("name_job","=","ProcessDelayedApiRequest")
+            ->where("initial_data->type", "=", $type)
+            ->whereIn("status", ["queued","processing"])
+            ->exists();
     }
 }

@@ -22,13 +22,14 @@ class CurrencyRepository implements CurrencyRepositoryInterface
         return $this->model->where('code', $code)->first();
     }
 
-    public function saveNewCurrency(string $name, string $code, string $symbol): void
+    public function saveNewCurrency(string $name, string $code, string $symbol): Currency
     {
         $newCurrency = new Currency();
         $newCurrency->name = $name;
         $newCurrency->code = $code;
         $newCurrency->symbol = $symbol;
         $newCurrency->save();
+        return $newCurrency;
     }
 
     public function getAllIdCurrencies()

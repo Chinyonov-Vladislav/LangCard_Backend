@@ -55,7 +55,6 @@ class FetchVoicesFromFreetts extends BaseJob
                     if (!$voiceRepository->isExistVoice($voice['id'])) {
                         $convertedLang = str_replace('-', '_', $voice['lang']);
                         $languageByLocale = $languageRepository->getLanguageByLocale($convertedLang);
-
                         if ($languageByLocale === null) {
                             continue;
                         }
