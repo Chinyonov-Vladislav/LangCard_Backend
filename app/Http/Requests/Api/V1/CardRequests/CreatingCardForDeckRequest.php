@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\CardRequests;
 
-use App\Rules\ImagePathExistsRule;
+use App\Rules\FilePathExistsRule;
 use App\Rules\IsFileBelongsToImagesRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -68,7 +68,7 @@ class CreatingCardForDeckRequest extends FormRequest
             'imagePath' => [
                 'nullable',
                 'string',
-                new ImagePathExistsRule(),
+                new FilePathExistsRule(),
                 new IsFileBelongsToImagesRule()
             ],
 

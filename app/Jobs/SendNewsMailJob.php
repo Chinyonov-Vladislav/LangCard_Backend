@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\JobStatuses;
 use App\Mail\NewsPublishedMail;
+use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\NewsRepositories\NewsRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Mail;
@@ -20,11 +21,10 @@ class SendNewsMailJob extends BaseJob
         $this->newsId = $newsId;
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(UserRepositoryInterface $userRepository, NewsRepositoryInterface $newsRepository): void
+    protected function execute(...$args): void
     {
+        $userRepository = app(UserRepositoryInterface::class);
+        $newsRepository = app(NewsRepositoryInterface::class);
         $this->updateJobStatus(JobStatuses::processing->value);
         $emailsForSending = [];
         $newsForMailing = $newsRepository->getNewsById($this->newsId);

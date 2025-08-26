@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\LanguageRequests;
 
-use App\Rules\ImagePathExistsRule;
+use App\Rules\FilePathExistsRule;
 use App\Rules\IsFileBelongsToImagesRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -77,7 +77,7 @@ class AddingLanguageRequest extends FormRequest
             'code' => ['required', 'string', 'size:2'],
             'flag' => ['required',
                 'string',
-                new ImagePathExistsRule(),
+                new FilePathExistsRule(),
                 new IsFileBelongsToImagesRule()],
             'locale_lang'=> ['required', 'string', 'unique:languages,locale']
         ];

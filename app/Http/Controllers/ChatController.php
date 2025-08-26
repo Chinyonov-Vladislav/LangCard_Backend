@@ -12,13 +12,18 @@ use App\Http\Requests\Api\V1\ChatRequests\CreatingGroupChatRequest;
 use App\Http\Requests\Api\V1\ChatRequests\InvitesInChatsRequests\RequestOrInviteFilterRequest;
 use App\Http\Requests\Api\V1\ChatRequests\InvitesInChatsRequests\ResponseUserToRequestOrInvitationToGroupChatRequest;
 use App\Http\Requests\Api\V1\ChatRequests\InvitesInChatsRequests\SendInviteToChatRequest;
-use App\Http\Requests\Api\V1\ChatRequests\SendingMessageRequest;
-use App\Http\Requests\Api\V1\ChatRequests\UpdatingMessageRequest;
+use App\Http\Requests\Api\V1\ChatRequests\MessagesRequests\MessageChatFilterRequest;
+use App\Http\Requests\Api\V1\ChatRequests\MessagesRequests\SendingMessageRequest;
+use App\Http\Requests\Api\V1\ChatRequests\MessagesRequests\UpdatingMessageRequest;
 use App\Http\Resources\V1\ChatResources\ChatResource;
 use App\Http\Resources\V1\ChatResources\RequestOrInvitationResource;
+use App\Http\Resources\V1\MessageResources\MessageResource;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Responses\ApiResponse;
+use App\Repositories\EmotionRepositories\EmotionRepositoryInterface;
 use App\Repositories\InviteToChatRepositories\InviteToChatRepositoryInterface;
+use App\Repositories\MessageEmotionRepositories\MessageEmotionRepositoryInterface;
+use App\Repositories\MessageEmotionUserRepositories\MessageEmotionUserRepository;
 use App\Repositories\MessageRepositories\MessageRepositoryInterface;
 use App\Repositories\RoomRepositories\RoomRepositoryInterface;
 use App\Repositories\RoomUserRepositories\RoomUserRepositoryInterface;
@@ -36,17 +41,29 @@ class ChatController extends Controller
 
     protected InviteToChatRepositoryInterface $inviteToChatRepository;
 
+    protected EmotionRepositoryInterface $emotionRepository;
+
+    protected MessageEmotionRepositoryInterface $messageEmotionRepository;
+
+    protected MessageEmotionUserRepository $messageEmotionUserRepository;
+
     public function __construct(RoomRepositoryInterface $roomRepository,
                                 RoomUserRepositoryInterface $roomUserRepository,
                                 MessageRepositoryInterface $messageRepository,
                                 UserRepositoryInterface $userRepository,
-                                InviteToChatRepositoryInterface $inviteToChatRepository)
+                                InviteToChatRepositoryInterface $inviteToChatRepository,
+                                EmotionRepositoryInterface $emotionRepository,
+                                MessageEmotionRepositoryInterface $messageEmotionRepository,
+                                MessageEmotionUserRepository $messageEmotionUserRepository)
     {
         $this->roomRepository = $roomRepository;
         $this->roomUserRepository = $roomUserRepository;
         $this->messageRepository = $messageRepository;
         $this->userRepository = $userRepository;
         $this->inviteToChatRepository = $inviteToChatRepository;
+        $this->emotionRepository = $emotionRepository;
+        $this->messageEmotionRepository = $messageEmotionRepository;
+        $this->messageEmotionUserRepository = $messageEmotionUserRepository;
     }
 
     public function getChats()
@@ -115,16 +132,21 @@ class ChatController extends Controller
         {
             return ApiResponse::error("В данном чате пользователь заблокирован и не может отправлять сообщения", null, 409);
         }
-        $this->messageRepository->saveNewMessage(auth()->id(), $chatId, $request->message, TypesMessage::MessageFromUser->value);
+        $newMessage = $this->messageRepository->saveNewMessage(auth()->id(), $chatId, $request->message, TypesMessage::MessageFromUser->value);
+        foreach ($request->emotions as $emotionId)
+        {
+            $this->messageEmotionRepository->addEmotionToMessage($newMessage->id, $emotionId);
+        }
+        //TODO сделать отправку сообщения в чата с помощью WebSockets
         return ApiResponse::success("Сообщение успешно отправлено", null, 201);
     }
 
-    public function updateMessage(int $chatId,int $id, UpdatingMessageRequest $request)
+    public function updateMessage(int $chatId,int $messageId, UpdatingMessageRequest $request)
     {
-        $message = $this->messageRepository->getMessage($id);
+        $message = $this->messageRepository->getMessage($messageId);
         if($message === null)
         {
-            return ApiResponse::error("Сообщение с id = $request->message_id не найдено", null, 404);
+            return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
         }
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
         if($userInRoom === null)
@@ -143,16 +165,16 @@ class ChatController extends Controller
         {
             return ApiResponse::error("Редактируемое сообщение является информационным, из-за чего его нельзя редактировать", null, 409);
         }
-        $this->messageRepository->updateMessage($id, $request->message_text);
+        $this->messageRepository->updateMessage($messageId, $request->message_text);
         return ApiResponse::success("Сообщение было успешно отредактировано", null, 201);
     }
 
-    public function deleteMessage(int $chatId, int $id)
+    public function deleteMessage(int $chatId, int $messageId)
     {
-        $message = $this->messageRepository->getMessage($id);
+        $message = $this->messageRepository->getMessage($messageId);
         if($message === null)
         {
-            return ApiResponse::error("Сообщение с id = $id не найдено", null, 404);
+            return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
         }
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
         if($userInRoom === null)
@@ -171,8 +193,8 @@ class ChatController extends Controller
         {
             return ApiResponse::error("Удаляемое сообщение является информационным, из-за чего его нельзя удалять", null, 409);
         }
-        $this->messageRepository->deleteMessage($id);
-        return ApiResponse::success("Сообщение с id = $id было успешно удалено", null, 201);
+        $this->messageRepository->deleteMessage($messageId);
+        return ApiResponse::success("Сообщение с id = $messageId было успешно удалено", null, 201);
     }
     public function getInvites(PaginatorService $paginator, RequestOrInviteFilterRequest $request)
     {
@@ -295,5 +317,55 @@ class ChatController extends Controller
         $message = "В групповой чат был создан добавлен пользователь: $nicknameUser";
         $this->messageRepository->saveNewMessage($adminGroupId, $request_invite_info->room_id, $message, TypesMessage::Info->value);
         return ApiResponse::success("Пользователь принял заявку на вступление/приглашение в группу");
+    }
+
+    public function addOrDeleteEmotion(int $chatId, int $messageId, int $emotionId)
+    {
+        $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
+        if($userInRoom === null)
+        {
+            return ApiResponse::error("Пользователь не является участником чата", null, 404);
+        }
+        if($userInRoom->is_blocked)
+        {
+            return ApiResponse::error("В данном чате пользователь заблокирован и не может оставлять реакции на сообщения", null, 409);
+        }
+        $message = $this->messageRepository->getMessage($messageId);
+        if($message === null)
+        {
+            return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
+        }
+        $emotion = $this->emotionRepository->getEmotion($emotionId);
+        if($emotion === null)
+        {
+            return ApiResponse::error("Эмоция с id = $emotionId не найдена", null, 404);
+        }
+        $newMessageEmotion = $this->messageEmotionRepository->getMessageEmotion($messageId, $emotionId); //разрешенная эмоция для сообщения (объект класса MessageEmotion)
+        if($newMessageEmotion === null)
+        {
+            return ApiResponse::error("Для сообщения с id = $messageId не разрешена эмоция с id = $emotionId", null, 409);
+        }
+        $emotionFromUserForMessage = $this->emotionRepository->getEmotionForMessageFromUser(auth()->id(), $messageId); // объект класса Emotion
+        if($emotionFromUserForMessage === null)
+        {
+            $this->messageEmotionUserRepository->addNewEmotionToMessageFromUser($newMessageEmotion->id, auth()->id());
+            return ApiResponse::success("Эмоция успешно оставлена к сообщению");
+        }
+        // пользователь оставлял эмоцию к сообщению
+        if($emotionFromUserForMessage->id === $emotionId) //удалить эмоцию, если новая эмоция совпадает с той, которую прислал пользователь в запросе
+        {
+            $this->messageEmotionUserRepository->removeEmotionForMessageFromUser($newMessageEmotion->id, auth()->id());
+            return ApiResponse::success("Оставленная эмоция успешно удалена из сообщения");
+        }
+        $currentMessageEmotion = $this->messageEmotionRepository->getMessageEmotion($messageId, $emotionFromUserForMessage->id);
+        $this->messageEmotionUserRepository->removeEmotionForMessageFromUser($currentMessageEmotion->id, auth()->id());
+        $this->messageEmotionUserRepository->addNewEmotionToMessageFromUser($newMessageEmotion->id, auth()->id());
+        return ApiResponse::success("Эмоция успешно изменена в сообщении");
+    }
+    public function getMessages(int $chatId, MessageChatFilterRequest $request)
+    {
+        $limit = $request->limit === null ? config("app.limit_count_messages_per_request"): $request->limit;
+        $data = $this->messageRepository->getMessagesOfChatWithPagination(auth()->id(),$chatId, $limit, $request->last_message_id);
+        return ApiResponse::success("Сообщения для чата с id = $chatId", (object)["messages"=>MessageResource::collection($data["messages"]), "hasMoreMessages"=>$data["hasMoreMessages"]]);
     }
 }

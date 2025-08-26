@@ -4,8 +4,8 @@ namespace App\Jobs;
 
 use App\Enums\JobStatuses;
 use App\Enums\TypeStatus;
-use App\Repositories\LanguageRepositories\LanguageRepository;
-use App\Repositories\VoiceRepositories\VoiceRepository;
+use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
+use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
@@ -38,12 +38,11 @@ class FetchVoicesFromFreetts extends BaseJob
         parent::__construct($jobId);
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(VoiceRepository $voiceRepository, LanguageRepository $languageRepository): void
+    protected function execute(...$args): void
     {
         try {
+            $voiceRepository = app(VoiceRepositoryInterface::class);
+            $languageRepository = app(LanguageRepositoryInterface::class);
             $this->updateJobStatus(JobStatuses::processing->value);
             $countNewVoices = 0;
             $request = Http::get('https://freetts.ru/api/list');

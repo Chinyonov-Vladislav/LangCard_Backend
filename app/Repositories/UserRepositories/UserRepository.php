@@ -179,4 +179,9 @@ class UserRepository implements UserRepositoryInterface
         $user->hideMyCoordinates = !$user->hideMyCoordinates;
         $user->save();
     }
+
+    public function updateNameAndAvatar(int $userId, string $name, string $avatar): void
+    {
+        $this->model->where('id', '=', $userId)->update(['name'=>$name,'avatar_url'=>$avatar]);
+    }
 }

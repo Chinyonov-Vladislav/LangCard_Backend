@@ -2,6 +2,7 @@
 
 namespace App\Repositories\JobStatusRepositories;
 
+use App\Enums\NameJobsEnum;
 use App\Enums\TypeRequestApi;
 use App\Models\JobStatus;
 use App\Services\PaginatorService;
@@ -63,5 +64,10 @@ class JobStatusRepository implements JobStatusRepositoryInterface
             ->where("initial_data->type", "=", $type)
             ->whereIn("status", ["queued","processing"])
             ->exists();
+    }
+
+    public function getJobForNews(int $newsId): ?JobStatus
+    {
+        return $this->model->where("name_job", "=", NameJobsEnum::SendNewsMailJob->value)->where("initial_data->news_id","=",$newsId)->first();
     }
 }

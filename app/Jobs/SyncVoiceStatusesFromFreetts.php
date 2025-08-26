@@ -5,10 +5,11 @@ namespace App\Jobs;
 use App\Enums\JobStatuses;
 use App\Enums\TypeStatus;
 use App\Http\Resources\V1\VoiceResources\VoiceResource;
-use App\Repositories\VoiceRepositories\VoiceRepository;
+use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SyncVoiceStatusesFromFreetts extends BaseJob
 {
@@ -21,11 +22,10 @@ class SyncVoiceStatusesFromFreetts extends BaseJob
         parent::__construct($job_id);
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(VoiceRepository $voiceRepository): void
+
+    protected function execute(...$args): void
     {
+        $voiceRepository = app(VoiceRepositoryInterface::class);
         $this->updateJobStatus(JobStatuses::processing->value);
         try {
             $voiceIdUpdated = [];
@@ -79,7 +79,7 @@ class SyncVoiceStatusesFromFreetts extends BaseJob
 
         } catch (ConnectionException $e) {
             $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'Ошибка соединения с freetts.ru: '.$e->getMessage()]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'Непредвиденная ошибка: '.$e->getMessage()]);
         }
     }

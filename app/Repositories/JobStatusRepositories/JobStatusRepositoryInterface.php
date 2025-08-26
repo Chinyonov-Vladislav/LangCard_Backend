@@ -4,6 +4,7 @@ namespace App\Repositories\JobStatusRepositories;
 
 use App\Enums\TypeRequestApi;
 use App\Models\JobStatus;
+use App\Models\News;
 use App\Services\PaginatorService;
 
 interface JobStatusRepositoryInterface
@@ -15,6 +16,8 @@ interface JobStatusRepositoryInterface
     public function getJobStatusById(int $id): ?JobStatus;
 
     public function getJobStatusByJobId(int $jobId): ?JobStatus;
+
+    public function getJobForNews(int $newsId): ?JobStatus;
 
     public function updateStatus(string $job_id, string $status, ?array $result = null);
     public function saveNewJobStatus(string $job_id, string $name_job, string $status,int $userId, ?array $initial_data = null, ?array $result = null);

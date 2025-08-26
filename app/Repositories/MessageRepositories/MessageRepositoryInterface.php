@@ -12,4 +12,7 @@ interface MessageRepositoryInterface
     public function saveNewMessage(int $userId, int $roomId, string $message, string $type): Message;
 
     public function deleteMessage(int $messageId);
+
+    public function getMessagesOfChatWithPagination(int $currentUserId, int $chatId, int $limit = 10, ?int $lastMessageId = null);
+
 }

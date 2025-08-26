@@ -41,12 +41,12 @@ class GeneratingVoiceJob extends BaseJob
         $this->audioProcessingService = new AudioProcessingService();
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(AudiofileRepositoryInterface $audiofileRepository, CardRepositoryInterface $cardRepository, VoiceRepositoryInterface $voiceRepository): void
+    protected function execute(...$args): void
     {
         try {
+            $audiofileRepository = app(AudiofileRepositoryInterface::class);
+            $cardRepository = app(CardRepositoryInterface::class);
+            $voiceRepository = app(VoiceRepositoryInterface::class);
             $this->updateJobStatus(JobStatuses::processing->value);
             $card = $cardRepository->getCardById($this->cardId, ['deck'=>function ($query) {
                 $query->with(['originalLanguage', 'targetLanguage']);

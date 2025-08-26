@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
-class ImagePathExistsRule implements ValidationRule
+class FilePathExistsRule implements ValidationRule
 {
     /**
      * Run the validation rule.
@@ -23,7 +23,7 @@ class ImagePathExistsRule implements ValidationRule
             ? substr($value, 8) // убираем 'storage/'
             : $value;
         if (!Storage::disk('public')->exists($cleanPath)) {
-            $fail('Изображение не найдено на сервере.');
+            $fail('Файл не найден на сервере.');
         }
     }
 }

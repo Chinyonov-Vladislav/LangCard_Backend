@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\JobStatuses;
 use App\Repositories\JobStatusRepositories\JobStatusRepository;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use Illuminate\Bus\Queueable;
@@ -31,4 +32,22 @@ abstract class BaseJob implements ShouldQueue
             $jobStatusRepository->updateStatus($this->jobId, $status, $result);
         }
     }
+
+    public function handle(...$args): void
+    {
+        $jobStatusRepository = app(JobStatusRepositoryInterface::class);
+        // Проверка отмены
+        $job = $jobStatusRepository->getJobStatusByJobId($this->jobId);
+        if($job->status === JobStatuses::cancelled->value)
+        {
+            return;
+        }
+        // Если всё нормально – вызвать реальную логику
+        $this->execute($jobStatusRepository);
+    }
+    /**
+     * Бизнес-логика конкретной задачи.
+     * Любые аргументы передаются через ...$args
+     */
+    abstract protected function execute(...$args): void;
 }

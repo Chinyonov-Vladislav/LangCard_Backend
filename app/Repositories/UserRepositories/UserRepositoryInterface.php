@@ -21,6 +21,8 @@ interface UserRepositoryInterface
 
     public function getInfoUserById(int $userId);
 
+    public function updateNameAndAvatar(int $userId, string $name, string $avatar);
+
     public function updateCurrencyId(User $user, ?int $currencyId);
 
     public function updateTimezoneId(User $user, ?int $timezoneId);

@@ -24,6 +24,8 @@ use App\Repositories\DeckTopicRepositories\DeckTopicRepository;
 use App\Repositories\DeckTopicRepositories\DeckTopicRepositoryInterface;
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepository;
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepositoryInterface;
+use App\Repositories\EmotionRepositories\EmotionRepository;
+use App\Repositories\EmotionRepositories\EmotionRepositoryInterface;
 use App\Repositories\ExampleRepositories\ExampleRepository;
 use App\Repositories\ExampleRepositories\ExampleRepositoryInterface;
 use App\Repositories\HistoryPurchasesRepository\HistoryPurchaseRepository;
@@ -40,6 +42,10 @@ use App\Repositories\LoginRepositories\LoginRepository;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
 use App\Repositories\ForgotPasswordRepositories\ForgotForgotPasswordRepository;
 use App\Repositories\ForgotPasswordRepositories\ForgotPasswordRepositoryInterface;
+use App\Repositories\MessageEmotionRepositories\MessageEmotionRepository;
+use App\Repositories\MessageEmotionRepositories\MessageEmotionRepositoryInterface;
+use App\Repositories\MessageEmotionUserRepositories\MessageEmotionUserRepository;
+use App\Repositories\MessageEmotionUserRepositories\MessageEmotionUserRepositoryInterface;
 use App\Repositories\MessageRepositories\MessageRepository;
 use App\Repositories\MessageRepositories\MessageRepositoryInterface;
 use App\Repositories\NewsRepositories\NewsRepository;
@@ -146,6 +152,9 @@ class AppServiceProvider extends ServiceProvider
             InviteToChatRepositoryInterface::class => InviteToChatRepository::class,
             NotificationRepositoryInterface::class => NotificationRepository::class,
             NewsRepositoryInterface::class => NewsRepository::class,
+            EmotionRepositoryInterface::class=>EmotionRepository::class,
+            MessageEmotionRepositoryInterface::class=>MessageEmotionRepository::class,
+            MessageEmotionUserRepositoryInterface::class=>MessageEmotionUserRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

@@ -6,6 +6,7 @@ use App\Enums\TypeRequestApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ProfileRequests\UpdateCurrencyRequest;
 use App\Http\Requests\Api\V1\ProfileRequests\UpdateLanguageRequest;
+use App\Http\Requests\Api\V1\ProfileRequests\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\ProfileRequests\UpdateTimezoneRequest;
 use App\Http\Resources\v1\ProfileUserResources\ProfileUserResource;
 use App\Http\Responses\ApiResponse;
@@ -273,5 +274,11 @@ class ProfileController extends Controller
     {
         $this->userRepository->changeMyVisibility(auth()->user());
         return ApiResponse::success("Видимость месторасположения успешно изменена");
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $this->userRepository->updateNameAndAvatar(auth()->id(), $request->name, $request->avatar_url);
+        return ApiResponse::success("Данные профиля успешно обновлены");
     }
 }

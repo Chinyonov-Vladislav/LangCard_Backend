@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests\Api\V1\NewsRequests;
 
-use App\Rules\FutureDatePublicationNews;
 use App\Rules\FilePathExistsRule;
+use App\Rules\FutureDatePublicationNews;
+use App\Rules\IsPathToImageRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateNewsRequest extends FormRequest
+class UpdateNewsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,12 +26,11 @@ class CreateNewsRequest extends FormRequest
     {
         return [
             'title' => ["required","string","max:255"],
-            'main_image' => ["nullable","string", new FilePathExistsRule()], // URL загруженной картинки
+            'main_image' => ["nullable","string", new FilePathExistsRule(), new IsPathToImageRule()], // URL загруженной картинки
             'content_news' => ["required", "array"],
             'published_at' => ['nullable', 'date', 'date_format:Y-m-d H:i:s', new FutureDatePublicationNews()],
         ];
     }
-
     public function messages(): array
     {
         return [

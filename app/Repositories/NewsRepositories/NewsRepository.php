@@ -52,4 +52,24 @@ class NewsRepository implements NewsRepositoryInterface
     {
         $this->model->where("id", "=",$id)->delete();
     }
+
+    public function updateNewsByIdNews(int $newsId, string $title, ?string $mainImage, array $content, ?string $publishedAt = null)
+    {
+        $this->model->where("id", '=',$newsId)->update([
+            "title"=>$title,
+            "main_image"=>$mainImage,
+            "content"=>$content,
+            "published_at"=>$publishedAt === null ? Carbon::now() : $publishedAt,
+        ]);
+    }
+
+    public function updateNewsByNewsObject(News $news, string $title, ?string $mainImage, array $content, ?string $publishedAt = null): News
+    {
+        $news->title = $title;
+        $news->main_image = $mainImage;
+        $news->content = $content;
+        $news->published_at = $publishedAt === null ? Carbon::now() : $publishedAt;
+        $news->save();
+        return $news;
+    }
 }

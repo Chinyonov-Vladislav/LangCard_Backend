@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\UserTestResultController;
 use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\VoiceController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\EmotionController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TestController;
@@ -78,6 +79,7 @@ Route::prefix('v1')->group(callback: function () {
                 Route::prefix('profile')->group(function () {
                     Route::get('/', [ProfileController::class, 'getProfileAuthUser'])->name('getProfileAuthUser');
                     Route::get('/{id}', [ProfileController::class, 'getProfile'])->where('id', '[0-9]+')->name('getProfile');
+                    Route::put("/", [ProfileController::class, "updateProfile"])->name('updateProfile');
                     Route::patch("/updateFieldsByIp", [ProfileController::class, 'updateFieldsByIp'])->name('updateFieldsByIp');
                     Route::patch('/updateTimezone', [ProfileController::class, 'updateTimezone'])->name('updateTimezone');
                     Route::patch('/updateCurrency', [ProfileController::class, 'updateCurrency'])->name('updateCurrency');
@@ -180,9 +182,11 @@ Route::prefix('v1')->group(callback: function () {
                     Route::post("{chatId}/blockUserInChat", [ChatController::class, "blockUserInChat"])->whereNumber("chatId")->name('blockUserInChat')->middleware("checkExistRoom");
 
                     Route::prefix("{chatId}/messages")->middleware("checkExistRoom")->group(function () {
+                        Route::get("/", [ChatController::class, 'getMessages'])->name('getMessages');
                         Route::post("/", [ChatController::class, "sendMessage"])->name('sendMessage');
-                        Route::put("/{id}", [ChatController::class, "updateMessage"])->whereNumber("id")->name('updateMessage');
-                        Route::delete("/{id}", [ChatController::class, "deleteMessage"])->whereNumber("id")->name('deleteMessage');
+                        Route::put("/{messageId}", [ChatController::class, "updateMessage"])->whereNumber("messageId")->name('updateMessage');
+                        Route::delete("/{messageId}", [ChatController::class, "deleteMessage"])->whereNumber("messageId")->name('deleteMessage');
+                        Route::post('/{messageId}/emotions/{emotionId}', [ChatController::class, 'addOrDeleteEmotion'])->whereNumber("messageId")->whereNumber("emotionId")->name('addOrDeleteEmotion');
                     });
                     Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom");
                     Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom");
@@ -205,7 +209,9 @@ Route::prefix('v1')->group(callback: function () {
                     Route::put("/{id}", [NewsController::class, 'updateNews'])->whereNumber("id")->name('updateNews');
                     Route::delete("/{id}", [NewsController::class, 'deleteNews'])->whereNumber("id")->name('deleteNews');
                 });
-
+                Route::prefix("emotions")->group(function () {
+                    Route::get("/", [EmotionController::class, "getEmotions"])->name('getEmotions');
+                });
             });
         });
     });

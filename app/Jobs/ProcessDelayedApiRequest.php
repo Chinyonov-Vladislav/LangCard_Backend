@@ -28,70 +28,6 @@ class ProcessDelayedApiRequest extends BaseJob
         $this->typeRequest = $typeRequest;
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(CurrencyRepositoryInterface $currencyRepository,
-                           TimezoneRepositoryInterface $timezoneRepository,
-                           LanguageRepositoryInterface $languageRepository,
-                           UserRepositoryInterface $userRepository): void
-    {
-        $this->updateJobStatus(JobStatuses::processing->value);
-        if($this->typeRequest === TypeRequestApi::allRequests)
-        {
-            $data = $this->getCurrencyTimezoneLanguageCoordinatesByOneRequest($currencyRepository, $timezoneRepository, $languageRepository);
-            if($data['status'] === TypeStatus::error)
-            {
-                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
-                return;
-            }
-            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id']);
-            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['timezone_id']);
-            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
-            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
-        }
-        else if($this->typeRequest === TypeRequestApi::currencyRequest)
-        {
-            $data = $this->getCurrencyByIpAddress($currencyRepository);
-            if($data['status'] === TypeStatus::error)
-            {
-                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
-                return;
-            }
-            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id'] );
-        }
-        else if($this->typeRequest === TypeRequestApi::timezoneRequest)
-        {
-            $data = $this->getTimezoneByIpAddress($timezoneRepository);
-            if($data['status'] === TypeStatus::error)
-            {
-                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
-                return;
-            }
-            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['currency_id']);
-        }
-        else if($this->typeRequest === TypeRequestApi::languageRequest)
-        {
-            $data = $this->getLanguageByIpAddress($languageRepository);
-            if($data['status'] === TypeStatus::error)
-            {
-                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
-                return;
-            }
-            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
-        }
-        else if($this->typeRequest === TypeRequestApi::coordinatesRequest)
-        {
-            $data = $this->getCoordinatesByIpAddress();
-            if($data['status'] === TypeStatus::error)
-            {
-                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
-                return;
-            }
-            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
-        }
-        $this->updateJobStatus(JobStatuses::finished->value);
-    }
 
     private function getCurrencyTimezoneLanguageCoordinatesByOneRequest(CurrencyRepositoryInterface $currencyRepository, TimezoneRepositoryInterface $timezoneRepository, LanguageRepositoryInterface $languageRepository): array
     {
@@ -225,5 +161,68 @@ class ProcessDelayedApiRequest extends BaseJob
         $latitude = data_get($data, 'location.latitude');
         $longitude = data_get($data, 'location.longitude');
         return ["status"=>TypeStatus::success, "latitude"=>$latitude,"longitude"=>$longitude];
+    }
+
+    protected function execute(...$args): void
+    {
+        $currencyRepository = app(CurrencyRepositoryInterface::class);
+        $timezoneRepository = app(TimezoneRepositoryInterface::class);
+        $languageRepository = app(LanguageRepositoryInterface::class);
+        $userRepository = app(UserRepositoryInterface::class);
+        $this->updateJobStatus(JobStatuses::processing->value);
+        if($this->typeRequest === TypeRequestApi::allRequests)
+        {
+            $data = $this->getCurrencyTimezoneLanguageCoordinatesByOneRequest($currencyRepository, $timezoneRepository, $languageRepository);
+            if($data['status'] === TypeStatus::error)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
+                return;
+            }
+            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id']);
+            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['timezone_id']);
+            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
+            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
+        }
+        else if($this->typeRequest === TypeRequestApi::currencyRequest)
+        {
+            $data = $this->getCurrencyByIpAddress($currencyRepository);
+            if($data['status'] === TypeStatus::error)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
+                return;
+            }
+            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id'] );
+        }
+        else if($this->typeRequest === TypeRequestApi::timezoneRequest)
+        {
+            $data = $this->getTimezoneByIpAddress($timezoneRepository);
+            if($data['status'] === TypeStatus::error)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
+                return;
+            }
+            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['currency_id']);
+        }
+        else if($this->typeRequest === TypeRequestApi::languageRequest)
+        {
+            $data = $this->getLanguageByIpAddress($languageRepository);
+            if($data['status'] === TypeStatus::error)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
+                return;
+            }
+            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
+        }
+        else if($this->typeRequest === TypeRequestApi::coordinatesRequest)
+        {
+            $data = $this->getCoordinatesByIpAddress();
+            if($data['status'] === TypeStatus::error)
+            {
+                $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
+                return;
+            }
+            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
+        }
+        $this->updateJobStatus(JobStatuses::finished->value);
     }
 }

@@ -98,6 +98,7 @@ return [
 
     'count_recovery_codes'=>(int)env('COUNT_RECOVERY_CODES',10),
 
+    'limit_count_messages_per_request'=>(int)env('LIMIT_COUNT_MESSAGES_PER_REQUEST',10),
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

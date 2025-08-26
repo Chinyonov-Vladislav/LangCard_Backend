@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('job_id')->unique();
             $table->json('initial_data')->nullable()->default(null);
             $table->enum('name_job', ['GeneratingVoiceJob', 'FetchVoicesFromFreetts', 'ProcessDelayedApiRequest', 'SyncVoiceStatusesFromFreetts', "SendNewsMailJob"]);
-            $table->enum('status',['queued', 'processing', 'finished', 'failed'])->default('queued');
+            $table->enum('status',['queued', 'processing', 'finished', 'failed', 'cancelled'])->default('queued');
             $table->json('result')->nullable()->default(null);
             $table->foreignId('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');
