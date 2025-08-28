@@ -2,6 +2,7 @@
 
 namespace App\Repositories\LanguageRepositories;
 
+use App\DTO\DataFromIpGeolocation\LanguageFromIpGeolocationDTO;
 use App\Models\Language;
 
 interface LanguageRepositoryInterface
@@ -19,6 +20,7 @@ interface LanguageRepositoryInterface
 
     public function isExistLanguageById(int $languageId);
 
-
     public function saveLanguage(string $languageName,string $native_name, string $languageCode,string $locale, string $urlToImage);
+
+    public function getLanguageIdByDataFromApi(LanguageFromIpGeolocationDTO $languageFromIpGeolocationDTO): ?int;
 }

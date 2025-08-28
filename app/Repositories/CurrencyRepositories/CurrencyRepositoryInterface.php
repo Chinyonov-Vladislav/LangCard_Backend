@@ -2,10 +2,12 @@
 
 namespace App\Repositories\CurrencyRepositories;
 
-use App\Models\Currency;
+use App\DTO\DataFromIpGeolocation\CurrencyFromIpGeolocationDTO;
 
 interface CurrencyRepositoryInterface
 {
+
+    public function getCurrencyIdByDataFromApi(?CurrencyFromIpGeolocationDTO $currencyDataDTO): ?int;
 
     public function getAllIdCurrencies();
 

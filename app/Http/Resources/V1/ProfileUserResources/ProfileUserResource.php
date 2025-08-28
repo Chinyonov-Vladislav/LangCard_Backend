@@ -2,80 +2,13 @@
 
 namespace App\Http\Resources\V1\ProfileUserResources;
 
+use App\Http\Resources\V1\CurrencyResources\CurrencyResource;
+use App\Http\Resources\V1\LanguageResources\LanguageResource;
+use App\Http\Resources\V1\TimezoneResources\TimezoneResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * @OA\Schema(
- *     schema="ProfileUserResource",
- *     title="Profile User Resource (ресурс профиля пользователя)",
- *     type="object",
- *     required={"id", "name", "email", "created_at", "vip_status_time_end", "invite_code"},
- *     @OA\Property(property="id", type="integer", example=101, description="ID пользователя"),
- *     @OA\Property(property="name", type="string", example="Владислав", description="Имя пользователя"),
- *     @OA\Property(property="email", type="string", format="email",nullable=true, example="user@example.com", description="Email пользователя"),
- *     @OA\Property(property="vip_status_time_end", type="string", format="date-time", nullable=true, example="2025-09-10 12:00:00", description="Дата окончания VIP-статуса или null"),
- *     @OA\Property(property="invite_code", type="string", nullable=true, example="ABCD1234", description="Код приглашения (доступен только аутентифицированному пользователю)"),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-01 10:30:00", description="Дата и время создания пользователя"),
- *
- *     @OA\Property(
- *         property="currency",
- *         type="object",
- *         nullable=true,
- *         description="Валюта пользователя",
- *         required={"id", "name", "code", "symbol"},
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Российский рубль"),
- *         @OA\Property(property="code", type="string", example="RUB"),
- *         @OA\Property(property="symbol", type="string", example="₽")
- *     ),
- *
- *     @OA\Property(
- *         property="timezone",
- *         type="object",
- *         nullable=true,
- *         description="Часовой пояс пользователя",
- *         required={"id", "name", "offset_utc"},
- *         @OA\Property(property="id", type="integer", example=5),
- *         @OA\Property(property="name", type="string", example="Europe/Moscow"),
- *         @OA\Property(property="offset_utc", type="string", example="+03:00")
- *     ),
- *
- *     @OA\Property(
- *          property="language",
- *          type="object",
- *          nullable=true,
- *          description="Язык пользователя",
- *          required={"id", "name", "native_name", "code", "flag_url","locale"},
- *          @OA\Property(property="id", type="integer", example=5),
- *          @OA\Property(property="name", type="string", example="Russian"),
- *          @OA\Property(property="native_name", type="string", example="Русский"),
- *          @OA\Property(property="code", type="string", example="ru"),
- *          @OA\Property(property="flag_url", type="string", example="storage/image/8e7ba038-1059-4f53-a3ca-9e1413f84507.png"),
- *          @OA\Property(property="locale", type="string", example="ru_RU"),
- *      ),
- *
- *     @OA\Property(
- *         property="inviter",
- *         type="object",
- *         nullable=true,
- *         description="Пользователь, который пригласил",
- *         required={"id", "name", "avatar"},
- *         @OA\Property(property="id", type="integer", example=45),
- *         @OA\Property(property="name", type="string", example="Иван Иванов"),
- *         @OA\Property(property="avatar", type="string", format="uri", example="https://example.com/avatar.jpg")
- *     ),
- *
- *     @OA\Property(
- *           property="coordinates",
- *           type="object",
- *           description="Координаты пользователя",
- *           required={"latitude", "longitude"},
- *           @OA\Property(property="latitude", type="decimal", example=71.53441),
- *           @OA\Property(property="longitude", type="decimal", example=124.443)
- *       ),
- * )
- */
 class ProfileUserResource extends JsonResource
 {
     /**
@@ -92,7 +25,9 @@ class ProfileUserResource extends JsonResource
             'vip_status_time_end' => $this->vip_status_time_end
                 ? $this->vip_status_time_end->format('Y-m-d H:i:s')
                 : null,
-            'invite_code'=> $this->isAuthUser ? $this->invite_code : null,
+            'invite_code'=> $this->when(auth()->id() === $this->id, function () {
+                return $this->invite_code;
+            }),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'currency' => $this->whenLoaded('currency', function (){
                 $currency = $this->currency;
@@ -100,12 +35,7 @@ class ProfileUserResource extends JsonResource
                 {
                     return null;
                 }
-                return [
-                    'id' => $currency->id,
-                    'name' => $currency->name,
-                    'code' => $currency->code,
-                    'symbol' => $currency->symbol
-                ];
+                return new CurrencyResource($currency);
             }),
             'timezone' => $this->whenLoaded('timezone', function (){
                 $timezone = $this->timezone;
@@ -113,11 +43,7 @@ class ProfileUserResource extends JsonResource
                 {
                     return null;
                 }
-                return [
-                    'id' => $timezone->id,
-                    'name' => $timezone->name,
-                    'offset_utc' => $timezone->offset_utc,
-                ];
+                return new TimezoneResource($timezone);
             }),
             'language' => $this->whenLoaded('language', function (){
                 $language = $this->language;
@@ -125,14 +51,7 @@ class ProfileUserResource extends JsonResource
                 {
                     return null;
                 }
-                return [
-                    'id' => $language->id,
-                    'name' => $language->name,
-                    'native_name' => $language->native_name,
-                    'code'=>$language->code,
-                    'flag_url'=>$language->flag_url,
-                    'locale'=>$language->locale,
-                ];
+                return new LanguageResource($language);
             }),
             'inviter'=>$this->whenLoaded('inviter', function (){
                 $inviter =$this->inviter;
@@ -146,13 +65,65 @@ class ProfileUserResource extends JsonResource
                     'avatar'=>$inviter->avatar_url
                 ];
             }),
-            'coordinates'=>$this->when($this->hideMyCoordinates === false, function(){
+            'coordinates'=>$this->when(auth()->id() === $this->id || $this->hideMyCoordinates === false, function(){
                 return [
                     'latitude'=>$this->latitude,
                     'longitude'=>$this->longitude,
                 ];
-            })
+            }),
+            "updating_parameters"=>$this->when(auth()->id() === $this->id, function () {
+                return [
+                    'exist_job_for_updating_all_parameters' => $this->jobForDefiningAllParameters === null ? null :
+                        [
+                            "job_id"=> $this->jobForDefiningAllParameters->job_id,
+                            "type"=>$this->jobForDefiningAllParameters->initial_data['type'],
+                            "execution_date"=>Carbon::parse($this->jobForDefiningAllParameters->initial_data['execution_date'])->format('Y-m-d H:i:s'),
+                            "status"=>$this->jobForDefiningAllParameters->status,
+                        ],
 
+                    'updating_timezone' => $this->buildUpdatingBlock(
+                        $this->last_time_update_timezone,
+                        $this->jobForDefiningTimezone
+                    ),
+
+                    'updating_language' => $this->buildUpdatingBlock(
+                        $this->last_time_update_language,
+                        $this->jobForDefiningLanguage
+                    ),
+
+                    'updating_currency' => $this->buildUpdatingBlock(
+                        $this->last_time_update_currency,
+                        $this->jobForDefiningCurrency
+                    ),
+
+                    'updating_coordinates' => $this->buildUpdatingBlock(
+                        $this->last_time_update_coordinates,
+                        $this->jobForDefiningCoordinates
+                    ),
+                ];
+            }),
+        ];
+    }
+
+    private function buildUpdatingBlock($lastUpdate, $jobInfo): array
+    {
+        $timeLastUpdate = $lastUpdate ? Carbon::parse($lastUpdate) : null;
+        $nextTimeUpdate = $lastUpdate
+            ? Carbon::parse($lastUpdate)->addMonths(config("app.limit_count_months_to_update_profile_data"))
+            : null;
+        $canUpdateByTime = $nextTimeUpdate === null || $nextTimeUpdate->isPast();
+
+        return [
+            "last_time_update" => $timeLastUpdate?->format('Y-m-d H:i:s'),
+            "next_time_update" => $nextTimeUpdate?->format('Y-m-d H:i:s'),
+            "can_update"       => $canUpdateByTime,
+            "job"        => $jobInfo === null ? null :
+                [
+                    "job_id"=> $jobInfo->job_id,
+                    "type"=>$jobInfo->initial_data['type'],
+                    "execution_date"=>Carbon::parse($jobInfo->initial_data['execution_date'])->format('Y-m-d H:i:s'),
+                    "status"=>$jobInfo->status,
+                ],
         ];
     }
 }

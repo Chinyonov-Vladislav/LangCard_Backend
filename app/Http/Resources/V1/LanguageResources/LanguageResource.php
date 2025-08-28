@@ -11,7 +11,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     title="Language Resource (ресурс языка)",
  *     type="object",
  *     description="Ресурс языка с основными свойствами",
- *     required={"id", "name", "native_name", "code", "flag_url", "locale"},
  *     @OA\Property(
  *         property="id",
  *         type="integer",
@@ -48,7 +47,22 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *         type="string",
  *         example="en_US",
  *         description="Локаль языка"
- *     )
+ *     ),
+ *     @OA\Property(
+ *         property="created_at",
+ *         type="string",
+ *         format="date-time",
+ *         example="2025-08-28T12:34:56Z",
+ *         description="Дата создания записи"
+ *     ),
+ *     @OA\Property(
+ *          property="updated_at",
+ *          type="string",
+ *          format="date-time",
+ *          example="2025-08-28T12:34:56Z",
+ *          description="Дата изменения записи"
+ *      ),
+ *
  * )
  */
 class LanguageResource extends JsonResource
@@ -61,12 +75,30 @@ class LanguageResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'=>$this->id,
-            'name'=>$this->name,
-            'native_name'=>$this->native_name,
-            'code'=>$this->code,
-            'flag_url'=>$this->flag_url,
-            'locale'=>$this->locale,
+            'id' => $this->when(array_key_exists('id', $this->resource->getAttributes()), function () {
+                return $this->id;
+            }),
+            'name'=>$this->when(array_key_exists('name', $this->resource->getAttributes()), function () {
+                return $this->name;
+            }),
+            'native_name'=>$this->when(array_key_exists('native_name', $this->resource->getAttributes()), function (){
+                return $this->native_name;
+            }),
+            'code'=>$this->when(array_key_exists('code', $this->resource->getAttributes()), function () {
+                return $this->code;
+            }),
+            'flag_url'=>$this->when(array_key_exists('flag_url', $this->resource->getAttributes()), function (){
+                return $this->flag_url;
+            }),
+            'locale'=>$this->when(array_key_exists('locale', $this->resource->getAttributes()), function (){
+                return $this->locale;
+            }),
+            'created_at'=>$this->when(array_key_exists('created_at', $this->resource->getAttributes()), function (){
+                return $this->created_at;
+            }),
+            'updated_at'=>$this->when(array_key_exists('updated_at', $this->resource->getAttributes()), function (){
+                return $this->updated_at;
+            }),
         ];
     }
 }

@@ -14,9 +14,9 @@ interface NewsRepositoryInterface
 
     public function updateNewsByIdNews(int $newsId, string $title, ?string $mainImage, array $content, ?string $publishedAt = null);
 
-    public function updateNewsByNewsObject(News $news, string $title, ?string $mainImage, array $content, ?string $publishedAt = null): News;
+    public function updateNewsByNewsObject(News $news, string $title, ?string $mainImage, string $content, ?string $publishedAt = null): News;
 
-    public function saveNews(string $title, ?string $mainImage, array $content,int $userId, ?string $publishedAt = null): News;
+    public function saveNews(string $title, ?string $mainImage, string $content,int $userId, ?string $publishedAt = null): News;
 
     public function deleteNews(News $news);
     public function deleteNewsById(int $id);

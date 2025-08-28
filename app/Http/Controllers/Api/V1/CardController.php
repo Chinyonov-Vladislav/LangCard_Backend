@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\JobStatuses;
+use App\Enums\NameJobsEnum;
 use App\Enums\TypeInfoAboutDeck;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\CardRequests\AddingVoiceForCardRequest;
@@ -356,7 +357,7 @@ class CardController extends Controller
             return ApiResponse::error("Текущий пользователь не является автором колоды, к которой принадлежит удаляемая карточка, поэтому её удаление невозможно.", null, 409);
         }
         $jobId = (string)Str::uuid();
-        $this->jobStatusRepository->saveNewJobStatus($jobId, "GeneratingVoiceJob", JobStatuses::queued->value, auth()->id());
+        $this->jobStatusRepository->saveNewJobStatus($jobId, NameJobsEnum::GeneratingVoiceJob->value, JobStatuses::queued->value, auth()->id());
         GeneratingVoiceJob::dispatch($jobId, $request->originalVoices, $request->targetVoices, $id);
         return ApiResponse::success("Генерация произношения слов для карточки начата", (object)["job_id" => $jobId]);
     }

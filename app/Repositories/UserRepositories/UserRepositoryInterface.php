@@ -2,6 +2,7 @@
 
 namespace App\Repositories\UserRepositories;
 
+use App\DTO\DataFromIpGeolocation\CoordinatesFromIpGeolocationDTO;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use PhpParser\Node\Expr\Cast\Double;
@@ -37,7 +38,7 @@ interface UserRepositoryInterface
 
     public function updateLanguageIdByIdUser(int $userId, ?int $languageId);
 
-    public function updateCoordinatesByIdUser(int $userId, ?float $latitude, ?float $longitude);
+    public function updateCoordinatesByIdUser(int $userId, CoordinatesFromIpGeolocationDTO $coordinates);
 
     public function getInfoAboutUsersForHistoryPurchaseSeeder();
 
@@ -55,5 +56,5 @@ interface UserRepositoryInterface
 
     public function getUsersNearBy(float $latitude,float $longitude, int $radius);
 
-    public function changeMyVisibility(User $user);
+    public function changeMyVisibility(User $user): User;
 }

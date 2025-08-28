@@ -99,6 +99,8 @@ return [
     'count_recovery_codes'=>(int)env('COUNT_RECOVERY_CODES',10),
 
     'limit_count_messages_per_request'=>(int)env('LIMIT_COUNT_MESSAGES_PER_REQUEST',10),
+    'limit_count_months_to_update_profile_data'=>(int)env("LIMIT_COUNT_MONTHS_TO_UPDATE_PROFILE_DATA", 6),
+    'limit_count_request_on_day_to_ip_geolocation'=>(int)env("LIMIT_COUNT_REQUEST_ON_DAY_TO_IP_GEOLOCATION", 1000),
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

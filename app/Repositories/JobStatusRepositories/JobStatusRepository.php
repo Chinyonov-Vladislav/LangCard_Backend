@@ -2,6 +2,7 @@
 
 namespace App\Repositories\JobStatusRepositories;
 
+use App\Enums\JobStatuses;
 use App\Enums\NameJobsEnum;
 use App\Enums\TypeRequestApi;
 use App\Models\JobStatus;
@@ -20,12 +21,14 @@ class JobStatusRepository implements JobStatusRepositoryInterface
 
     public function saveNewJobStatus(string $job_id, string $name_job, string $status,int $userId, ?array $initial_data = null, ?array $result = null): void
     {
+        logger("initial_data");
+        logger($initial_data);
         $newJobStatus = new JobStatus();
         $newJobStatus->job_id = $job_id;
-        $newJobStatus->initial_data = $initial_data === null ? null : json_encode($initial_data);
+        $newJobStatus->initial_data = $initial_data;
         $newJobStatus->name_job = $name_job;
         $newJobStatus->status = $status;
-        $newJobStatus->result = $result === null ? null : json_encode($result);
+        $newJobStatus->result = $result;
         $newJobStatus->user_id = $userId;
         $newJobStatus->save();
     }
@@ -59,15 +62,24 @@ class JobStatusRepository implements JobStatusRepositoryInterface
 
     public function isExistJobWithStatusQueuedOrProcessingForAutomaticDefineUserData(int $userId, TypeRequestApi $type): bool
     {
-        return $this->model->where("user_id", "=",$userId)
-            ->where("name_job","=","ProcessDelayedApiRequest")
-            ->where("initial_data->type", "=", $type)
-            ->whereIn("status", ["queued","processing"])
+        return $this->model->where("user_id", "=", $userId)
+            ->where("name_job", "=", NameJobsEnum::ProcessDelayedApiRequest->value)
+            ->where('initial_data->type',"=", $type->value)
+            ->whereIn("status", [JobStatuses::queued->value, JobStatuses::processing->value])
             ->exists();
     }
 
     public function getJobForNews(int $newsId): ?JobStatus
     {
         return $this->model->where("name_job", "=", NameJobsEnum::SendNewsMailJob->value)->where("initial_data->news_id","=",$newsId)->first();
+    }
+
+    public function getJobWithStatusQueuedOrProcessingForAutomaticDefineUserData(int $userId, TypeRequestApi $type): ?JobStatus
+    {
+        return $this->model->where("user_id", "=", $userId)
+            ->where("name_job", "=", NameJobsEnum::ProcessDelayedApiRequest->value)
+            ->where('initial_data->type',"=", $type->value)
+            ->whereIn("status", [JobStatuses::queued->value, JobStatuses::processing->value])
+            ->first();
     }
 }

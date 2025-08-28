@@ -2,6 +2,7 @@
 
 namespace App\Repositories\UserRepositories;
 
+use App\DTO\DataFromIpGeolocation\CoordinatesFromIpGeolocationDTO;
 use App\Models\Card;
 use App\Models\User;
 use Carbon\Carbon;
@@ -94,9 +95,22 @@ class UserRepository implements UserRepositoryInterface
 
     public function getInfoUserById(int $userId)
     {
-        return $this->model->with(['currency', 'timezone','language', 'inviter'])->where('id','=', $userId)
-            ->select(['id', 'name', 'email', 'type_user','invite_code', 'currency_id', 'timezone_id','inviter_id','language_id',
-            'vip_status_time_end','latitude','longitude','hideMyCoordinates', 'created_at'])->first();
+        return $this->model->with(
+            [
+                'currency'=>function ($query) { $query->select(["id","name","code","symbol"]);},
+                'timezone'=>function ($query) { $query->select(["id", "name","offset_utc"]);},
+                'language'=>function ($query) { $query->select(["id","name","native_name","code","flag_url","locale"]);},
+                'inviter'
+            ])->where('id','=', $userId)
+            ->select(['id', 'name', 'email', 'type_user','invite_code',
+                'currency_id',"last_time_update_currency",
+                'timezone_id', 'last_time_update_timezone',
+                'inviter_id',
+                'language_id', 'last_time_update_language',
+                'mailing_enabled',
+                'vip_status_time_end',
+                'latitude','longitude', 'last_time_update_coordinates','hideMyCoordinates',
+                'created_at'])->first();
     }
 
     public function getInfoUserAccountByProviderAndProviderId(string $providerId, string $provider)
@@ -156,11 +170,11 @@ class UserRepository implements UserRepositoryInterface
         $user->save();
     }
 
-    public function updateCoordinatesByIdUser(int $userId, ?float $latitude, ?float $longitude): void
+    public function updateCoordinatesByIdUser(int $userId, CoordinatesFromIpGeolocationDTO $coordinates): void
     {
         $this->model->where("id","=",$userId)->update([
-            "latitude"=>$latitude,
-            "longitude"=>$longitude,
+            "latitude"=>$coordinates->getLatitude(),
+            "longitude"=>$coordinates->getLongitude(),
             "last_time_update_coordinates"=>Carbon::now()
         ]);
     }
@@ -174,10 +188,11 @@ class UserRepository implements UserRepositoryInterface
         )->get();
     }
 
-    public function changeMyVisibility(User $user): void
+    public function changeMyVisibility(User $user): User
     {
         $user->hideMyCoordinates = !$user->hideMyCoordinates;
         $user->save();
+        return $user;
     }
 
     public function updateNameAndAvatar(int $userId, string $name, string $avatar): void

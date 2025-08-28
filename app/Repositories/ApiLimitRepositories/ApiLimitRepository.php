@@ -17,7 +17,7 @@ class ApiLimitRepository implements ApiLimitRepositoryInterface
         return $this->model->firstOrCreate(['day' => $date]);
     }
 
-    public function incrementRequestCount(ApiLimit $apiLimit)
+    public function incrementRequestCount(ApiLimit $apiLimit): void
     {
         $apiLimit->increment('request_count');
     }

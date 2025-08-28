@@ -2,6 +2,7 @@
 
 namespace App\Repositories\TimezoneRepositories;
 
+use App\DTO\DataFromIpGeolocation\TimezoneFromIpGeolocationDTO;
 use App\Models\Timezone;
 use App\Services\PaginatorService;
 use Illuminate\Database\Eloquent\Collection;
@@ -59,5 +60,14 @@ class TimezoneRepository implements TimezoneRepositoryInterface
         $data = $paginator->paginate($query, $countOnPage, $currentPage);
         $metadataPagination = $paginator->getMetadataForPagination($data);
         return ['items' => collect($data->items()), "pagination" => $metadataPagination];
+    }
+
+    public function getTimezoneIdByDataFromApi(TimezoneFromIpGeolocationDTO $timezoneFromIpGeolocationDTO): ?int
+    {
+        if ($timezoneFromIpGeolocationDTO->getTimezoneName() && $this->isExistTimezoneByNameRegion($timezoneFromIpGeolocationDTO->getTimezoneName())) {
+            $timezoneDB = $this->getTimezoneByNameRegion($timezoneFromIpGeolocationDTO->getTimezoneName());
+            return $timezoneDB->id;
+        }
+        return null;
     }
 }

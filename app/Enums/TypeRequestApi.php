@@ -2,13 +2,13 @@
 
 namespace App\Enums;
 
-enum TypeRequestApi: int
+enum TypeRequestApi: string
 {
-    case currencyRequest = 0;
-    case timezoneRequest = 1;
+    case currencyRequest = "currencyRequest";
+    case timezoneRequest = "timezoneRequest";
 
-    case languageRequest = 2;
+    case languageRequest = "languageRequest";
 
-    case coordinatesRequest = 3;
-    case allRequests = 4;
+    case coordinatesRequest = "coordinatesRequest";
+    case allRequests = "allRequests";
 }

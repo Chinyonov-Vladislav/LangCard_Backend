@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('main_image')->nullable();
-            $table->json('content');
+            $table->text('content');
             $table->timestamp('published_at');
             $table->foreignId('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');

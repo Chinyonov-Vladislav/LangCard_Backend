@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\AuthControllers;
 
 use App\Enums\TypeRequestApi;
 use App\Enums\TypeStatus;
+use App\Enums\TypeStatusRequestApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\RegistrationRequest;
 use App\Http\Responses\ApiResponse;
@@ -51,6 +52,7 @@ class RegistrationController extends Controller
      *              @OA\Property(
      *                  property="data",
      *                  type="object",
+     *                  nullable = true,
      *                  @OA\Property(
      *                       property="job_id",
      *                       type="string",
@@ -97,8 +99,11 @@ class RegistrationController extends Controller
     public function registration(RegistrationRequest $request): JsonResponse
     {
         $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, null, mailing_enabled: $request->mailing_enabled);
-        $allJobId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
+        $resultDataFromApi = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
         $this->achievementService->startAchievementsForNewUser($user->id);
-        return ApiResponse::success(__('api.user_registered_successfully'), (object)["job_id"=>$allJobId], 201);
+        if($resultDataFromApi['status'] === TypeStatusRequestApi::delayed->name) {
+            return ApiResponse::success(__('api.user_registered_successfully'), (object)["job_id" => $resultDataFromApi["job_id"]], 201);
+        }
+        return ApiResponse::success(__('api.user_registered_successfully'), null, 201);
     }
 }

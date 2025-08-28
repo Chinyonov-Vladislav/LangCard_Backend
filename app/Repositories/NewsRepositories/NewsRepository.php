@@ -31,7 +31,7 @@ class NewsRepository implements NewsRepositoryInterface
         return $this->model->with(["user"])->first();
     }
 
-    public function saveNews(string $title, ?string $mainImage, array $content, int $userId, ?string $publishedAt = null): News
+    public function saveNews(string $title, ?string $mainImage, string $content, int $userId, ?string $publishedAt = null): News
     {
         $newItemNews = new News();
         $newItemNews->title = $title;
@@ -63,7 +63,7 @@ class NewsRepository implements NewsRepositoryInterface
         ]);
     }
 
-    public function updateNewsByNewsObject(News $news, string $title, ?string $mainImage, array $content, ?string $publishedAt = null): News
+    public function updateNewsByNewsObject(News $news, string $title, ?string $mainImage, string $content, ?string $publishedAt = null): News
     {
         $news->title = $title;
         $news->main_image = $mainImage;

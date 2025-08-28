@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Repositories\CurrencyRepositories\CurrencyRepositoryInterface;
+use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
+use App\Repositories\TimezoneRepositories\TimezoneRepositoryInterface;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -12,10 +14,18 @@ class UserSeeder extends Seeder
 
     protected CurrencyRepositoryInterface $currencyRepository;
 
-    public function __construct(RegistrationRepositoryInterface $registrationRepository, CurrencyRepositoryInterface $currencyRepository)
+    protected LanguageRepositoryInterface $languageRepository;
+    protected TimezoneRepositoryInterface $timezoneRepository;
+
+    public function __construct(RegistrationRepositoryInterface $registrationRepository,
+                                CurrencyRepositoryInterface $currencyRepository,
+                                LanguageRepositoryInterface $languageRepository,
+                                TimezoneRepositoryInterface $timezoneRepository)
     {
         $this->registrationRepository = $registrationRepository;
         $this->currencyRepository = $currencyRepository;
+        $this->languageRepository = $languageRepository;
+        $this->timezoneRepository = $timezoneRepository;
     }
 
     /**
@@ -34,6 +44,7 @@ class UserSeeder extends Seeder
                 'provider'=>null,
                 'currency_id' => 3,
                 'timezone_id' => null,
+                'language_id' => null,
                 'vip_status_time_end' => null
             ],
             [
@@ -44,6 +55,7 @@ class UserSeeder extends Seeder
                 'type_user' => 'user',
                 'provider_id'=>null,
                 'provider'=>null,
+                'language_id' => null,
                 'currency_id' => 3,
                 'timezone_id' => null,
                 'vip_status_time_end' => null
@@ -53,10 +65,27 @@ class UserSeeder extends Seeder
             if($this->registrationRepository->isExistUserByEmail($user['email'])) {
                 continue;
             }
-            if(!$this->currencyRepository->isExistCurrencyById($user['currency_id'])) {
+            if($user['currency_id']!== null && !$this->currencyRepository->isExistCurrencyById($user['currency_id'])) {
                 continue;
             }
-            $this->registrationRepository->registerUser($user['name'],$user['email'], $user['password'], $user['timezone_id'], $user['currency_id'], $user['avatar_url'], $user['type_user'], $user['vip_status_time_end']);
+            if($user["language_id"] !== null && !$this->languageRepository->isExistLanguageById($user["language_id"]))
+            {
+                continue;
+            }
+            if($user["timezone_id"]!== null && $this->timezoneRepository->getTimezoneById($user["timezone_id"]) === null) {
+                continue;
+            }
+            $this->registrationRepository->registerUser(
+                $user['name'],
+                $user['email'],
+                $user['password'],
+                $user['type_user'],
+                $user['avatar_url'],
+                $user['vip_status_time_end'],
+                $user['timezone_id'],
+                $user['currency_id'],
+                $user['language_id'],
+            );
         }
 
     }

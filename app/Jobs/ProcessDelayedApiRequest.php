@@ -9,8 +9,7 @@ use App\Repositories\CurrencyRepositories\CurrencyRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\TimezoneRepositories\TimezoneRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
+use App\Services\ApiServices\IpGeolocationApiService;
 
 class ProcessDelayedApiRequest extends BaseJob
 {
@@ -27,144 +26,9 @@ class ProcessDelayedApiRequest extends BaseJob
         $this->userId = $userId;
         $this->typeRequest = $typeRequest;
     }
-
-
-    private function getCurrencyTimezoneLanguageCoordinatesByOneRequest(CurrencyRepositoryInterface $currencyRepository, TimezoneRepositoryInterface $timezoneRepository, LanguageRepositoryInterface $languageRepository): array
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        try {
-            $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
-                'apiKey' => $apiKey,
-                'ip' => $this->ipAddress,
-            ]);
-        } catch (ConnectionException) {
-            return ["status"=>TypeStatus::error, "message"=>"Не удалось получить данные для определения валюты, часового пояса, языка и координат пользователя по ссылке: https://api.ipgeolocation.io/v2/ipgeo"];
-        }
-        $data = $response->json();
-        logger("Данные");
-        logger($data);
-        //валюта
-        $currencyId = null;
-        $currencyData = data_get($data, 'currency');
-        if ($currencyData) {
-            if(!$currencyRepository->isExistByCode($currencyData['code'])) {
-                $currencyRepository->saveNewCurrency($currencyData['name'], $currencyData['code'], $currencyData['symbol']);
-            }
-            $currencyInfoFromDatabase = $currencyRepository->getByCode($currencyData['code']);
-            $currencyId = $currencyInfoFromDatabase->id;
-        }
-        //часовой пояс
-        $timezoneId = null;
-        $nameRegion = data_get($data, 'time_zone.name');
-        if ($nameRegion && $timezoneRepository->isExistTimezoneByNameRegion($nameRegion)) {
-            $timezoneDB = $timezoneRepository->getTimezoneByNameRegion($nameRegion);
-            $timezoneId = $timezoneDB->id;
-        }
-        //язык
-        $languageId = null;
-        $locales = data_get($data, 'country_metadata.languages');
-        for($i = 0; $i < count($locales); $i++) {
-            $infoLanguageByLocale = $languageRepository->getLanguageByLocale($locales[$i]);
-            if($infoLanguageByLocale !== null) {
-                $languageId = $infoLanguageByLocale->id;
-                break;
-            }
-        }
-        $latitude = data_get($data, 'location.latitude');
-        $longitude = data_get($data, 'location.longitude');
-        return ["status"=>TypeStatus::success, "currency_id"=>$currencyId,"timezone_id"=>$timezoneId,"language_id"=>$languageId, "latitude"=>$latitude,"longitude"=>$longitude];
-    }
-
-    private function getCurrencyByIpAddress(CurrencyRepositoryInterface $currencyRepository): array
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        try {
-            $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
-                'apiKey' => $apiKey,
-                'ip' => $this->ipAddress,
-                'fields' => 'currency'
-            ]);
-        } catch (ConnectionException) {
-            return ["status"=>TypeStatus::error, "message"=>"Не удалось получить данные для определения валюты по ссылке: https://api.ipgeolocation.io/v2/ipgeo"];
-        }
-        $data = $response->json();
-        $currencyId = null;
-        $currencyData = data_get($data, 'currency');
-        if ($currencyData) {
-            if(!$currencyRepository->isExistByCode($currencyData['code'])) {
-                $currencyRepository->saveNewCurrency($currencyData['name'], $currencyData['code'], $currencyData['symbol']);
-            }
-            $currencyInfoFromDatabase = $currencyRepository->getByCode($currencyData['code']);
-            $currencyId = $currencyInfoFromDatabase->id;
-        }
-        return ["status"=>TypeStatus::success, "currency_id"=>$currencyId];
-    }
-
-
-    private function getLanguageByIpAddress(LanguageRepositoryInterface $languageRepository)
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        try {
-            $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
-                'apiKey' => $apiKey,
-                'ip' => $this->ipAddress,
-            ]);
-        } catch (ConnectionException) {
-            return ["status"=>TypeStatus::error, "message"=>"Не удалось получить данные для определения языка по ссылке: https://api.ipgeolocation.io/v2/ipgeo"];
-        }
-        $data = $response->json();
-        $languageId = null;
-        $locales = data_get($data, 'country_metadata.languages');
-        for($i = 0; $i < count($locales); $i++) {
-            $infoLanguageByLocale = $languageRepository->getLanguageByLocale($locales[$i]);
-            if($infoLanguageByLocale !== null) {
-                $languageId = $infoLanguageByLocale->id;
-                break;
-            }
-        }
-        return ["status"=>TypeStatus::success, "language_id"=>$languageId];
-    }
-
-    private function getTimezoneByIpAddress(TimezoneRepositoryInterface $timezoneRepository): array
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        try {
-            $response = Http::get("https://api.ipgeolocation.io/v2/timezone", [
-                'apiKey' => $apiKey,
-                'ip' => $this->ipAddress,
-            ]);
-        } catch (ConnectionException) {
-            return ["status"=>TypeStatus::error, "message"=>"Не удалось получить данные для определения временной зоны по ссылке: https://api.ipgeolocation.io/v2/ipgeo"];
-        }
-        $data = $response->json();
-        $timezoneId = null;
-        $nameRegion = data_get($data, 'time_zone.name');
-        if ($nameRegion && $timezoneRepository->isExistTimezoneByNameRegion($nameRegion)) {
-            $timezoneDB = $timezoneRepository->getTimezoneByNameRegion($nameRegion);
-            $timezoneId = $timezoneDB->id;
-        }
-        return ["status"=>TypeStatus::success, "timezone_id"=>$timezoneId];
-    }
-
-    private function getCoordinatesByIpAddress(): array
-    {
-        $apiKey = config('services.ipgeolocation.key');
-        try {
-            $response = Http::get("https://api.ipgeolocation.io/v2/ipgeo", [
-                'apiKey' => $apiKey,
-                'ip' => $this->ipAddress,
-            ]);
-        } catch (ConnectionException) {
-            return ["status"=>TypeStatus::error, "message"=>"Не удалось получить данные для определения координат пользователя по ссылке: https://api.ipgeolocation.io/v2/ipgeo"];
-        }
-        $data = $response->json();
-        $latitude = data_get($data, 'location.latitude');
-        $longitude = data_get($data, 'location.longitude');
-        return ["status"=>TypeStatus::success, "latitude"=>$latitude,"longitude"=>$longitude];
-    }
-
     protected function execute(...$args): void
     {
+        $ipGeolocationApiService = new IpGeolocationApiService();
         $currencyRepository = app(CurrencyRepositoryInterface::class);
         $timezoneRepository = app(TimezoneRepositoryInterface::class);
         $languageRepository = app(LanguageRepositoryInterface::class);
@@ -172,56 +36,70 @@ class ProcessDelayedApiRequest extends BaseJob
         $this->updateJobStatus(JobStatuses::processing->value);
         if($this->typeRequest === TypeRequestApi::allRequests)
         {
-            $data = $this->getCurrencyTimezoneLanguageCoordinatesByOneRequest($currencyRepository, $timezoneRepository, $languageRepository);
+            $data = $ipGeolocationApiService->getCurrencyTimezoneLanguageCoordinatesByOneRequest($this->ipAddress, true);
             if($data['status'] === TypeStatus::error)
             {
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
                 return;
             }
-            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id']);
-            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['timezone_id']);
-            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
-            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
+            $currencyDataDTO = $data["currencyDTO"];
+            $currencyId = $currencyRepository->getCurrencyIdByDataFromApi($currencyDataDTO);
+            $userRepository->updateCurrencyIdByIdUser($this->userId, $currencyId);
+            /*$timezoneDTO = $data["timezoneDTO"];
+            $timezoneId = $timezoneRepository->getTimezoneIdByDataFromApi($timezoneDTO);
+            $userRepository->updateTimezoneIdByIdUser($this->userId, $timezoneId);*/
+            $languageDTO = $data["languageDTO"];
+            $languageId = $languageRepository->getLanguageIdByDataFromApi($languageDTO);
+            $userRepository->updateLanguageIdByIdUser($this->userId, $languageId);
+            $coordinateDTO = $data["coordinatesDTO"];
+            $userRepository->updateCoordinatesByIdUser($this->userId, $coordinateDTO);
         }
         else if($this->typeRequest === TypeRequestApi::currencyRequest)
         {
-            $data = $this->getCurrencyByIpAddress($currencyRepository);
+            $data = $ipGeolocationApiService->getCurrencyByIpAddress($this->ipAddress, true);
             if($data['status'] === TypeStatus::error)
             {
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
                 return;
             }
-            $userRepository->updateCurrencyIdByIdUser($this->userId, $data['currency_id'] );
+            $currencyDataDTO = $data["currencyDTO"];
+            $currencyId = $currencyRepository->getCurrencyIdByDataFromApi($currencyDataDTO);
+            $userRepository->updateCurrencyIdByIdUser($this->userId, $currencyId);
         }
         else if($this->typeRequest === TypeRequestApi::timezoneRequest)
         {
-            $data = $this->getTimezoneByIpAddress($timezoneRepository);
+            $data = $ipGeolocationApiService->getTimezoneByIpAddress($this->ipAddress, true);
             if($data['status'] === TypeStatus::error)
             {
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
                 return;
             }
-            $userRepository->updateTimezoneIdByIdUser($this->userId, $data['currency_id']);
+            $timezoneDTO = $data["timezoneDTO"];
+            $timezoneId = $timezoneRepository->getTimezoneIdByDataFromApi($timezoneDTO);
+            $userRepository->updateTimezoneIdByIdUser($this->userId, $timezoneId);
         }
         else if($this->typeRequest === TypeRequestApi::languageRequest)
         {
-            $data = $this->getLanguageByIpAddress($languageRepository);
+            $data = $ipGeolocationApiService->getLanguageByIpAddress($this->ipAddress, true);
             if($data['status'] === TypeStatus::error)
             {
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
                 return;
             }
-            $userRepository->updateLanguageIdByIdUser($this->userId, $data['language_id']);
+            $languageDTO = $data["languageDTO"];
+            $languageId = $languageRepository->getLanguageIdByDataFromApi($languageDTO);
+            $userRepository->updateLanguageIdByIdUser($this->userId, $languageId);
         }
         else if($this->typeRequest === TypeRequestApi::coordinatesRequest)
         {
-            $data = $this->getCoordinatesByIpAddress();
+            $data = $ipGeolocationApiService->getCoordinatesByIpAddress($this->ipAddress, true);
             if($data['status'] === TypeStatus::error)
             {
                 $this->updateJobStatus(JobStatuses::failed->value, ["message"=>$data['message']]);
                 return;
             }
-            $userRepository->updateCoordinatesByIdUser($this->userId, $data['latitude'], $data['longitude']);
+            $coordinateDTO = $data["coordinatesDTO"];
+            $userRepository->updateCoordinatesByIdUser($this->userId, $coordinateDTO);
         }
         $this->updateJobStatus(JobStatuses::finished->value);
     }

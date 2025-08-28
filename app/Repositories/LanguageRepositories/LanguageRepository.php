@@ -2,6 +2,7 @@
 
 namespace App\Repositories\LanguageRepositories;
 
+use App\DTO\DataFromIpGeolocation\LanguageFromIpGeolocationDTO;
 use App\Models\Language;
 
 class LanguageRepository implements LanguageRepositoryInterface
@@ -59,5 +60,21 @@ class LanguageRepository implements LanguageRepositoryInterface
     public function getLanguageByLocale(string $locale): ?Language
     {
         return $this->model->where('locale', '=', $locale)->orWhere("code", "=", $locale)->first();
+    }
+
+    public function getLanguageIdByDataFromApi(LanguageFromIpGeolocationDTO $languageFromIpGeolocationDTO): ?int
+    {
+        if($languageFromIpGeolocationDTO->getLocales() === null)
+        {
+            return null;
+        }
+        $locales = $languageFromIpGeolocationDTO->getLocales();
+        for($i = 0; $i < count($locales); $i++) {
+            $infoLanguageByLocale = $this->getLanguageByLocale($locales[$i]);
+            if($infoLanguageByLocale !== null) {
+                return $infoLanguageByLocale->id;
+            }
+        }
+        return null;
     }
 }

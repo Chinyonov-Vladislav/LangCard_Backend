@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\JobStatuses;
+use App\Enums\NameJobsEnum;
 use App\Enums\TypeStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\VoiceFilter;
@@ -140,7 +141,7 @@ class VoiceController extends Controller
     public function createVoice()
     {
         $jobId = (string) Str::uuid();
-        $this->jobStatusRepository->saveNewJobStatus($jobId, "FetchVoicesFromFreetts", JobStatuses::queued->value, auth()->id());
+        $this->jobStatusRepository->saveNewJobStatus($jobId, NameJobsEnum::FetchVoicesFromFreetts->value, JobStatuses::queued->value, auth()->id());
         FetchVoicesFromFreetts::dispatch($jobId);
         return ApiResponse::success('Задача на получение голосов поставлена в очередь',(object)["job_id" => $jobId]);
     }
@@ -173,7 +174,7 @@ class VoiceController extends Controller
     public function updateStatusOfVoices()
     {
         $jobId = (string) Str::uuid();
-        $this->jobStatusRepository->saveNewJobStatus($jobId, "SyncVoiceStatusesFromFreetts", JobStatuses::queued->value, auth()->id());
+        $this->jobStatusRepository->saveNewJobStatus($jobId, NameJobsEnum::SyncVoiceStatusesFromFreetts->value, JobStatuses::queued->value, auth()->id());
         SyncVoiceStatusesFromFreetts::dispatch($jobId);
         return ApiResponse::success('Синхронизация статусов голосов запущена', (object)["job_id" => $jobId]);
     }

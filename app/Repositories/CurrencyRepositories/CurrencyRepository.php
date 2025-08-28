@@ -2,6 +2,7 @@
 
 namespace App\Repositories\CurrencyRepositories;
 
+use App\DTO\DataFromIpGeolocation\CurrencyFromIpGeolocationDTO;
 use App\Models\Currency;
 
 class CurrencyRepository implements CurrencyRepositoryInterface
@@ -40,5 +41,17 @@ class CurrencyRepository implements CurrencyRepositoryInterface
     public function isExistCurrencyById(int $currencyId)
     {
         return $this->model->where('id', '=', $currencyId)->exists();
+    }
+
+    public function getCurrencyIdByDataFromApi(?CurrencyFromIpGeolocationDTO $currencyDataDTO): ?int
+    {
+        if ($currencyDataDTO) {
+            if(!$this->isExistByCode($currencyDataDTO->getCode())) {
+                $this->saveNewCurrency($currencyDataDTO->getName(), $currencyDataDTO->getCode(), $currencyDataDTO->getSymbol());
+            }
+            $currencyInfoFromDatabase = $this->getByCode($currencyDataDTO->getCode());
+            return $currencyInfoFromDatabase->id;
+        }
+        return null;
     }
 }
