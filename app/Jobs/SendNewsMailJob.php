@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Enums\JobStatuses;
 use App\Mail\NewsPublishedMail;
-use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\NewsRepositories\NewsRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Mail;

@@ -22,7 +22,7 @@ class ApiLimitRepository implements ApiLimitRepositoryInterface
         $apiLimit->increment('request_count');
     }
 
-    public function deleteInfoBeforeCurrentDay()
+    public function deleteInfoBeforeCurrentDay(): void
     {
         $this->model->where('day', '<', Carbon::today())->delete();
     }

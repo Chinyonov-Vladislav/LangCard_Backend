@@ -8,7 +8,7 @@ use App\Http\Resources\V1\TimezoneResources\TimezoneResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\TimezoneRepositories\TimezoneRepositoryInterface;
 use App\Services\PaginatorService;
-use Illuminate\Http\Request;
+
 class TimezoneController extends Controller
 {
     protected TimezoneRepositoryInterface $timezoneRepository;

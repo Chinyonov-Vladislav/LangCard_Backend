@@ -81,12 +81,12 @@ class DeckRepository implements DeckRepositoryInterface
         $deck->forceDelete();
     }
 
-    public function softDeleteDeckById(int $id)
+    public function softDeleteDeckById(int $id): void
     {
         $this->model->where('id', '=', $id)->delete();
     }
 
-    public function softDeleteDeckByDeckObject(Deck $deck)
+    public function softDeleteDeckByDeckObject(Deck $deck): void
     {
         $deck->delete();
     }

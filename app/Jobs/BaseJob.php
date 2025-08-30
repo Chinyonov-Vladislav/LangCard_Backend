@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Enums\JobStatuses;
-use App\Repositories\JobStatusRepositories\JobStatusRepository;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;

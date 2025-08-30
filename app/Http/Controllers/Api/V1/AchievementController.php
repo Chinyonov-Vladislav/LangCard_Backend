@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AchievementRequests\AchievementFilterRequest;
 use App\Http\Resources\V1\AchievementResources\AchievementResource;
-use App\Http\Resources\V1\DeckResources\DeckResource;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\AchievementRepositories\AchievementRepositoryInterface;

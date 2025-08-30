@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\JobStatuses;
 use App\Enums\NameJobsEnum;
-use App\Enums\TypeStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\VoiceFilter;
 use App\Http\Requests\Api\V1\VoiceRequests\GetVoicesRequest;
@@ -13,14 +12,11 @@ use App\Http\Resources\v1\VoiceResources\VoiceResource;
 use App\Http\Responses\ApiResponse;
 use App\Jobs\FetchVoicesFromFreetts;
 use App\Jobs\SyncVoiceStatusesFromFreetts;
-use App\Models\JobStatus;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Repositories\LanguageRepositories\LanguageRepositoryInterface;
 use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use App\Services\PaginatorService;
 use Dedoc\Scramble\Attributes\QueryParameter;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
 use Str;
 
 class VoiceController extends Controller

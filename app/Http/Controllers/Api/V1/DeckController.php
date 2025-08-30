@@ -19,7 +19,6 @@ use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
 use App\Services\AchievementService;
 use App\Services\PaginatorService;
-use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Exception;
 use Illuminate\Support\Facades\DB;

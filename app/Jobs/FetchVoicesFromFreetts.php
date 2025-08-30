@@ -9,6 +9,7 @@ use App\Repositories\VoiceRepositories\VoiceRepositoryInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class FetchVoicesFromFreetts extends BaseJob
 {
@@ -18,7 +19,7 @@ class FetchVoicesFromFreetts extends BaseJob
      *
      * @var int
      */
-    public $tries = 3;
+    public int $tries = 3;
 
     /**
      * Задержка между повторными попытками
@@ -69,14 +70,14 @@ class FetchVoicesFromFreetts extends BaseJob
                         $countNewVoices++;
                     }
                 }
-                Log::info("FetchVoicesFromFreetts: добавлено новых голосов = {$countNewVoices}");
+                Log::info("FetchVoicesFromFreetts: добавлено новых голосов = $countNewVoices");
                 $this->updateJobStatus(JobStatuses::finished->value);
                 return;
             }
             $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'FetchVoicesFromFreetts: ошибка при получении данных с freetts.ru']);
         } catch (ConnectionException $e) {
             $this->updateJobStatus(JobStatuses::failed->value, [JobStatuses::failed->value, ['message'=>'FetchVoicesFromFreetts: ошибка подключения - ' . $e->getMessage()]]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->updateJobStatus(JobStatuses::failed->value, ['message'=>'FetchVoicesFromFreetts: непредвиденная ошибка - ' . $e->getMessage()]);
         }
     }

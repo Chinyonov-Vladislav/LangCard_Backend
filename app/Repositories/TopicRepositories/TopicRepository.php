@@ -14,7 +14,7 @@ class TopicRepository implements TopicRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewTopic(string $topicName)
+    public function saveNewTopic(string $topicName): Topic
     {
         $newTopic = new Topic();
         $newTopic->name = $topicName;

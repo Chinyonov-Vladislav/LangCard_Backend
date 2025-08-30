@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\TypeTwoFactorAuthorization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\AuthRequests\AuthRequest;
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\CodeGoogleAuthenticatorRequest;
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\ConfirmationCodeEmailTwoFactorAuthorizationRequest;
 use App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests\EnableDisableATwoFactorAuthorizationRequest;
@@ -23,6 +22,9 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
+use PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException;
+use PragmaRX\Google2FA\Exceptions\InvalidCharactersException;
+use PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException;
 use QrCode;
 
 class TwoFactorAuthorizationController extends Controller
@@ -358,7 +360,7 @@ class TwoFactorAuthorizationController extends Controller
         }
         if($request->code !== $tokenInfo->user->two_factor_code_email)
         {
-            return ApiResponse::error('Введенный код некорректен! Повторите попытку ввода!', null, 400);
+            return ApiResponse::error('Введенный код некорректен! Повторите попытку ввода!');
         }
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
         $arrayTokens = $this->generationAuthTokenService->generateTokens($tokenInfo->user, $countMinutesExpirationRefreshToken);
@@ -433,6 +435,16 @@ class TwoFactorAuthorizationController extends Controller
      *             @OA\Property(property="errors", type="object", nullable=true, example=null)
      *         )
      *     ),
+     *          @OA\Response(
+     *          response=500,
+     *          description="Ошибка при проверки ключа двухфакторной авторизации с использованием Google Authenticator",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="status", type="string", example="error"),
+     *              @OA\Property(property="message", type="string", example="Произошла ошибка при проверки ключа двухфакторной авторизации с использованием Google Authenticator"),
+     *              @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *          )
+     *      ),
      *
      *     @OA\Response(
      *         response=422,
@@ -460,10 +472,14 @@ class TwoFactorAuthorizationController extends Controller
             return ApiResponse::success('Двухфакторная авторизация через Google Authenticator отключена',null, 409 );
         }
         $google2fa = app('pragmarx.google2fa');
-        $valid = $google2fa->verifyKey(
-            Crypt::decrypt($user->google2fa_secret),
-            $request->code
-        );
+        try {
+            $valid = $google2fa->verifyKey(
+                Crypt::decrypt($user->google2fa_secret),
+                $request->code
+            );
+        } catch (IncompatibleWithGoogleAuthenticatorException|InvalidCharactersException|SecretKeyTooShortException) {
+            return ApiResponse::error('Произошла ошибка при проверки ключа двухфакторной авторизации с использованием Google Authenticator', null, 500);
+        }
         if (!$valid) {
             return ApiResponse::error('Неверный код двухфакторной авторизации через Google Authenticator', null, 403);
         }

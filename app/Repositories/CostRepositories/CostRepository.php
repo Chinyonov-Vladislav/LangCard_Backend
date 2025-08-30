@@ -14,12 +14,12 @@ class CostRepository implements CostRepositoryInterface
         $this->model = $model;
     }
 
-    public function isExistByTariffIdAndCurrencyId(int $tariffId, int $currencyId)
+    public function isExistByTariffIdAndCurrencyId(int $tariffId, int $currencyId): bool
     {
         return $this->model->where('tariff_id','=', $tariffId)->where('currency_id','=',$currencyId)->exists();
     }
 
-    public function saveNewCost(float $cost, int $tariffId, int $currencyId, bool $isActive)
+    public function saveNewCost(float $cost, int $tariffId, int $currencyId, bool $isActive): Cost
     {
         $newCost = new Cost();
         $newCost->cost = $cost;
@@ -27,6 +27,7 @@ class CostRepository implements CostRepositoryInterface
         $newCost->tariff_id = $tariffId;
         $newCost->is_active = $isActive;
         $newCost->save();
+        return $newCost;
     }
 
     public function getAllCostsWithActiveTariffByCurrencyId(int $currencyId): Collection

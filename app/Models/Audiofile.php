@@ -5,18 +5,20 @@ namespace App\Models;
 use App\Helpers\ColumnLabel;
 use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
+use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $path
  * @property string $destination
  * @property int $card_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Card $card
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Card $card
  * @method static Builder<static>|Audiofile newModelQuery()
  * @method static Builder<static>|Audiofile newQuery()
  * @method static Builder<static>|Audiofile query()
@@ -26,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static Builder<static>|Audiofile whereId($value)
  * @method static Builder<static>|Audiofile wherePath($value)
  * @method static Builder<static>|Audiofile whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @mixin Eloquent
  */
 class Audiofile extends Model implements ColumnLabelsableInterface
 {

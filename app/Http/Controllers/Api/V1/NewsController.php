@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\JobStatuses;
 use App\Enums\NameJobsEnum;
+use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\NewsFilter;
 use App\Http\Requests\Api\V1\NewsRequests\CreateNewsRequest;
 use App\Http\Requests\Api\V1\NewsRequests\NewsFilterRequest;

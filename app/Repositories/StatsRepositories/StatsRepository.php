@@ -14,8 +14,7 @@ class StatsRepository implements StatsRepositoryInterface
     public function getCountUsersByMonth($startDate, $endDate): Collection
     {
         $data = User::select(
-            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period"),
-            DB::raw('COUNT(*) as count')
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period, COUNT(*) as count")
         )
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))

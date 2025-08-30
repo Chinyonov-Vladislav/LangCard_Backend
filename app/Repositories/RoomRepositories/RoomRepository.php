@@ -16,7 +16,7 @@ class RoomRepository implements RoomRepositoryInterface
         $this->model = $model;
     }
 
-    public function createGroupRoom(string $name, bool $isPrivate)
+    public function createGroupRoom(string $name, bool $isPrivate): Room
     {
         $newModel = new Room();
         $newModel->name = $name;

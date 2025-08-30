@@ -4,7 +4,6 @@ namespace App\Repositories\HistoryPurchasesRepository;
 
 use App\Models\HistoryPurchase;
 use App\Services\PaginatorService;
-use Illuminate\Database\Eloquent\Collection;
 
 class HistoryPurchaseRepository implements HistoryPurchaseRepositoryInterface
 {
@@ -15,7 +14,7 @@ class HistoryPurchaseRepository implements HistoryPurchaseRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewHistoryPurchase(string $datePurchase, string $dateEnd, int $userId, int $costId)
+    public function saveNewHistoryPurchase(string $datePurchase, string $dateEnd, int $userId, int $costId): HistoryPurchase
     {
         $newHistoryPurchase = new HistoryPurchase();
         $newHistoryPurchase->date_purchase = $datePurchase;
@@ -23,6 +22,7 @@ class HistoryPurchaseRepository implements HistoryPurchaseRepositoryInterface
         $newHistoryPurchase->user_id = $userId;
         $newHistoryPurchase->cost_id = $costId;
         $newHistoryPurchase->save();
+        return $newHistoryPurchase;
     }
 
     public function getHistoryPurchasesOfAuthUser(PaginatorService $paginatorService, int $authUserId, int $countOnPage, int $page): array

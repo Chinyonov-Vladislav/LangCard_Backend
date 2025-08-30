@@ -61,7 +61,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         return $user;
     }
 
-    public function isExistUserByEmail($email)
+    public function isExistUserByEmail($email): bool
     {
         return $this->model->where('email','=', $email)->exists();
     }

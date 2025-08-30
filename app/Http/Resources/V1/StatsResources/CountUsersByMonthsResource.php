@@ -36,8 +36,8 @@ class CountUsersByMonthsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'date'=>$this->date,
-            'count'=>$this->count
+            'date'=>$this['date'],
+            'count'=>$this['count']
         ];
     }
 }

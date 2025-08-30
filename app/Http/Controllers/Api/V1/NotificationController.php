@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\TypesNotification;
+use App\Http\Controllers\Controller;
 use App\Http\Filters\FiltersForModels\NotificationFilter;
 use App\Http\Requests\Api\V1\NotificationRequests\NotificationFilterRequest;
 use App\Http\Resources\V1\NotificationResources\NotificationResource;

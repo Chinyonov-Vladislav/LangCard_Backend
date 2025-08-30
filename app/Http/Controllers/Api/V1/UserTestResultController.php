@@ -298,7 +298,7 @@ class UserTestResultController extends Controller
             return ApiResponse::error(__('api.attempt_already_completed', ['attemptId' => $request->attemptId]), null, 409);
         }
         if ($infoAttempt->test->time_seconds) {
-            $endTime = Carbon::parse($infoAttempt->start_time)->addSeconds($infoAttempt->test->time_seconds)->addMinutes(1);
+            $endTime = Carbon::parse($infoAttempt->start_time)->addSeconds($infoAttempt->test->time_seconds)->addMinutes();
             if ($endTime->isPast()) {
                 return ApiResponse::error(__('api.test_time_expired', ['testId' => $infoAttempt->test->id]), null, 409);
             }

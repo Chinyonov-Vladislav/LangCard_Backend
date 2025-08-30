@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\TypeStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\ExampleRequests\AddingExampleRequest;
-use App\Http\Requests\Api\V1\ExampleRequests\AddingMultipleExamplesRequest;
 use App\Http\Requests\Api\V1\ExampleRequests\UpdateMultipleExamplesRequest;
 use App\Http\Requests\Api\V1\ExampleRequests\UpdateSingleExampleRequest;
-use App\Http\Resources\V1\ExampleResources\InfoSavingExampleUsingWordInCardResource;
 use App\Http\Resources\V1\ExampleResources\ResultUpdateMultipleExamplesResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\CardRepositories\CardRepositoryInterface;

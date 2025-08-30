@@ -12,20 +12,21 @@ class RecoveryCodeRepository implements RecoveryCodeRepositoryInterface
         $this->model = $model;
     }
 
-    public function deleteRecoveryCodesForUser(int $userId)
+    public function deleteRecoveryCodesForUser(int $userId): void
     {
         $this->model->where('user_id','=', $userId)->delete();
     }
 
-    public function saveRecoveryCode(int $userId, string $recoveryCode)
+    public function saveRecoveryCode(int $userId, string $recoveryCode): RecoveryCode
     {
         $newRecoveryCode = new RecoveryCode();
         $newRecoveryCode->code = $recoveryCode;
         $newRecoveryCode->user_id = $userId;
         $newRecoveryCode->save();
+        return $newRecoveryCode;
     }
 
-    public function deleteRecoveryCode(int $userId, string $code)
+    public function deleteRecoveryCode(int $userId, string $code): void
     {
         $this->model->where('user_id','=', $userId)->where('code','=', $code)->delete();
     }

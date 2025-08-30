@@ -39,7 +39,7 @@ class SendingMessageRequest extends FormRequest
             'paths_to_files.*.string' => "The item of array \"files\" must be a string.",
         ];
     }
-    public function withValidator($validator)
+    public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
             if (!$this->filled('message') && !$this->filled('paths_to_files')) {

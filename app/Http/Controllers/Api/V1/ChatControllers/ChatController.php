@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1\ChatControllers;
 
 use App\Enums\GroupChatInviteTypes;
 use App\Enums\TypesMessage;
 use App\Enums\TypesRoom;
 use App\Enums\TypesUserInRoom;
 use App\Events\MessageSentInChat;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ChatRequests\BlockUserInCharRequest;
 use App\Http\Requests\Api\V1\ChatRequests\CreatingDirectCharRequest;
 use App\Http\Requests\Api\V1\ChatRequests\CreatingGroupChatRequest;
@@ -232,7 +233,7 @@ class ChatController extends Controller
             return ApiResponse::error("Невозможно создание приглашение в комнату с id = $chatId, так как она не является закрытой", null, 409);
         }
         $senderUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if ($senderUserInRoom !== null || $senderUserInRoom->deleted_at !== null) {
+        if ($senderUserInRoom !== null && $senderUserInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь уже является участником комнаты", null, 409);
         }
         if ($room->admin === null) {

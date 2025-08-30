@@ -13,7 +13,7 @@ class CurrencyRepository implements CurrencyRepositoryInterface
     {
         $this->model = $model;
     }
-    public function isExistByCode($code)
+    public function isExistByCode($code): bool
     {
         return $this->model->where('code', $code)->exists();
     }
@@ -33,12 +33,12 @@ class CurrencyRepository implements CurrencyRepositoryInterface
         return $newCurrency;
     }
 
-    public function getAllIdCurrencies()
+    public function getAllIdCurrencies(): array
     {
         return $this->model->pluck('id')->toArray();
     }
 
-    public function isExistCurrencyById(int $currencyId)
+    public function isExistCurrencyById(int $currencyId): bool
     {
         return $this->model->where('id', '=', $currencyId)->exists();
     }

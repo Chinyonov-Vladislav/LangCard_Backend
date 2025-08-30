@@ -20,7 +20,7 @@ class NotificationRepository implements NotificationRepositoryInterface
 
     public function saveNotification(User $user, TypesNotification $typeNotification, string $notifiableType, int $notifiableId, array $data)
     {
-        $newNotification = Notification::create([
+        return Notification::create([
             'id' => (string)Str::uuid(),
             'type' => $typeNotification->value,
             'notifiable_type' => User::class,
@@ -28,7 +28,6 @@ class NotificationRepository implements NotificationRepositoryInterface
             'data' => $data,
             'read_at' => null,
         ]);
-        return $newNotification;
     }
 
     public function getNotificationsOfUser(PaginatorService $paginator, NotificationFilter $notificationFilter, User $user, ?int $countOnPage, ?int $numberCurrentPage)

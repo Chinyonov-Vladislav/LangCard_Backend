@@ -12,7 +12,7 @@ use App\Repositories\PromocodeRepositories\PromocodeRepositoryInterface;
 use App\Repositories\TariffRepositories\TariffRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\GenerationCodeServices\PromocodeGeneratorService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Carbon\Carbon;
 use Exception;
 

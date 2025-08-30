@@ -27,12 +27,12 @@ class TariffRepository implements TariffRepositoryInterface
         return null; // Ошибка при сохранении
     }
 
-    public function isExistTariff(string $name, int $days)
+    public function isExistTariff(string $name, int $days): bool
     {
         return $this->model->where('name', '=', $name)->where('days', '=', $days)->exists();
     }
 
-    public function getAllIdTariffs()
+    public function getAllIdTariffs(): array
     {
         return $this->model->pluck('id')->toArray();
     }
@@ -58,7 +58,7 @@ class TariffRepository implements TariffRepositoryInterface
             ->get();
     }
 
-    public function getAllActiveTariffs()
+    public function getAllActiveTariffs(): Collection
     {
         return $this->model
             ->where('is_active', '=', true)
@@ -72,7 +72,7 @@ class TariffRepository implements TariffRepositoryInterface
             ->get();
     }
 
-    public function isExistTariffById(int $tariffId)
+    public function isExistTariffById(int $tariffId): bool
     {
         return $this->model->where('id', '=', $tariffId)->exists();
     }
@@ -84,7 +84,7 @@ class TariffRepository implements TariffRepositoryInterface
         $currentTariff->save();
     }
 
-    public function getAllIdActiveTariffs()
+    public function getAllIdActiveTariffs(): array
     {
         return $this->model->where('is_active','=', true)->pluck('id')->toArray();
     }

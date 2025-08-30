@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1\NewsRequests;
 
 use App\Rules\FutureDatePublicationNews;
 use App\Rules\FilePathExistsRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateNewsRequest extends FormRequest
@@ -19,7 +20,7 @@ class CreateNewsRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {

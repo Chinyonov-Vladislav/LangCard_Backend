@@ -10,7 +10,6 @@ use App\Http\Responses\ApiResponse;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
 use App\Services\PaginatorService;
 use Dedoc\Scramble\Attributes\QueryParameter;
-use Illuminate\Http\Request;
 
 class HistoryAttemptsTestController extends Controller
 {

@@ -3,8 +3,6 @@
 namespace App\Services\GenerationCodeServices;
 
 use App\Repositories\RecoveryCodeRepositories\RecoveryCodeRepositoryInterface;
-use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepository;
-use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use Str;
 
 class GenerationRecoveryCodeService

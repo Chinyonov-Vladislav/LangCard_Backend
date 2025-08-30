@@ -2,7 +2,6 @@
 
 namespace App\Repositories\TwoFactorAuthorizationRepositories;
 
-use App\Models\Card;
 use App\Models\TwoFactorAuthorizationToken;
 use App\Models\User;
 use Carbon\Carbon;

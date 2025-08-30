@@ -19,7 +19,7 @@ class TestRepository implements TestRepositoryInterface
         return $this->model->where('id', '=', $id)->exists();
     }
 
-    public function saveNewTest(string $name, ?int $timeSeconds, ?int $countAttempts, int $deckId)
+    public function saveNewTest(string $name, ?int $timeSeconds, ?int $countAttempts, int $deckId): void
     {
         $newTest = new Test();
         $newTest->name = $name;
@@ -34,7 +34,7 @@ class TestRepository implements TestRepositoryInterface
         return $this->model->where('id', '=', $id)->first();
     }
 
-    public function getCountQuestionInTest($testId)
+    public function getCountQuestionInTest($testId): int
     {
         return Question::where('test_id','=', $testId)->count();
     }

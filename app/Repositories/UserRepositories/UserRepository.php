@@ -3,7 +3,6 @@
 namespace App\Repositories\UserRepositories;
 
 use App\DTO\DataFromIpGeolocation\CoordinatesFromIpGeolocationDTO;
-use App\Models\Card;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -62,7 +61,7 @@ class UserRepository implements UserRepositoryInterface
         return $this->model->where('id', '=', $idUser)->first()->vip_status_time_end;
     }
 
-    public function getInfoAboutUsersForHistoryPurchaseSeeder()
+    public function getInfoAboutUsersForHistoryPurchaseSeeder(): Collection
     {
         return $this->model->select(['id', 'currency_id', 'vip_status_time_end'])->get();
     }

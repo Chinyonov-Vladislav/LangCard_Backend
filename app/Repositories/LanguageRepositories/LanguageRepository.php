@@ -4,6 +4,7 @@ namespace App\Repositories\LanguageRepositories;
 
 use App\DTO\DataFromIpGeolocation\LanguageFromIpGeolocationDTO;
 use App\Models\Language;
+use Illuminate\Database\Eloquent\Collection;
 
 class LanguageRepository implements LanguageRepositoryInterface
 {
@@ -14,12 +15,12 @@ class LanguageRepository implements LanguageRepositoryInterface
         $this->model = $model;
     }
 
-    public function getAllLanguagesName()
+    public function getAllLanguagesName(): array
     {
         return $this->model->select(['id','name'])->get()->toArray();
     }
 
-    public function isExistLanguageByLocale(string $languageLocale)
+    public function isExistLanguageByLocale(string $languageLocale): bool
     {
         return $this->model->where('locale','=', $languageLocale)->exists();
     }
@@ -36,21 +37,21 @@ class LanguageRepository implements LanguageRepositoryInterface
         return $newLanguage;
     }
 
-    public function getAllIdLanguages()
+    public function getAllIdLanguages(): array
     {
         return $this->model->select(['id'])->get()->toArray();
     }
 
-    public function isExistLanguageById(int $languageId)
+    public function isExistLanguageById(int $languageId): bool
     {
         return $this->model->where('id', '=', $languageId)->exists();
     }
 
-    public function getAllLanguages()
+    public function getAllLanguages(): Collection
     {
         return $this->model->get();
     }
-    public function getExistentLocale(array $locales)
+    public function getExistentLocale(array $locales): array
     {
         return Language::whereIn('locale', $locales)
             ->pluck('locale')

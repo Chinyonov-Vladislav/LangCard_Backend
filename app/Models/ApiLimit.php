@@ -5,23 +5,26 @@ namespace App\Models;
 use App\Helpers\ColumnLabel;
 use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $day
  * @property int $request_count
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit whereDay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit whereRequestCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|ApiLimit whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @method static Builder<static>|ApiLimit newModelQuery()
+ * @method static Builder<static>|ApiLimit newQuery()
+ * @method static Builder<static>|ApiLimit query()
+ * @method static Builder<static>|ApiLimit whereCreatedAt($value)
+ * @method static Builder<static>|ApiLimit whereDay($value)
+ * @method static Builder<static>|ApiLimit whereId($value)
+ * @method static Builder<static>|ApiLimit whereRequestCount($value)
+ * @method static Builder<static>|ApiLimit whereUpdatedAt($value)
+ * @mixin Eloquent
  */
 class ApiLimit extends Model implements  ColumnLabelsableInterface
 {

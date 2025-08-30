@@ -38,7 +38,7 @@ class UserAchievementRepository implements UserAchievementRepositoryInterface
         return $this->model->with(['achievement'])->where("achievement_id","=",$achievementId)->where("user_id", "=", $userId)->first();
     }
 
-    public function updateDateUnlockedAchievement(int $achievementId, int $userId)
+    public function updateDateUnlockedAchievement(int $achievementId, int $userId): void
     {
         $this->model->where("achievement_id","=",$achievementId)->where("user_id", "=", $userId)->update(['unlocked_at'=>now()]);
     }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\TypesRoom;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\RoomRepositories\RoomRepositoryInterface;
 use Closure;
@@ -19,7 +18,7 @@ class CheckChatIsDeleteMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(Request): (Response)  $next
+     * @param Closure(Request): (Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {

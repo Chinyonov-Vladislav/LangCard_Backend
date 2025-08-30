@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Helpers\ColumnLabel;
 use App\Models\Interfaces\ColumnLabelsableInterface;
 use App\Traits\HasTableColumns;
+use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -19,16 +22,16 @@ use Illuminate\Support\Str;
  * @property string|null $image_url
  * @property string|null $pronunciation_url
  * @property int $deck_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Audiofile> $audiofilesForOriginalWord
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Audiofile> $audiofilesForOriginalWord
  * @property-read int|null $audiofiles_for_original_word_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Audiofile> $audiofilesForTargetWord
+ * @property-read Collection<int, Audiofile> $audiofilesForTargetWord
  * @property-read int|null $audiofiles_for_target_word_count
- * @property-read \App\Models\Deck $deck
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Example> $examples
+ * @property-read Deck $deck
+ * @property-read Collection<int, Example> $examples
  * @property-read int|null $examples_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question> $questions
+ * @property-read Collection<int, Question> $questions
  * @property-read int|null $questions_count
  * @method static Builder<static>|Card newModelQuery()
  * @method static Builder<static>|Card newQuery()
@@ -41,7 +44,7 @@ use Illuminate\Support\Str;
  * @method static Builder<static>|Card whereTranslate($value)
  * @method static Builder<static>|Card whereUpdatedAt($value)
  * @method static Builder<static>|Card whereWord($value)
- * @mixin \Eloquent
+ * @mixin Eloquent
  */
 class Card extends Model implements  ColumnLabelsableInterface
 {
@@ -81,7 +84,7 @@ class Card extends Model implements  ColumnLabelsableInterface
     }
 
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

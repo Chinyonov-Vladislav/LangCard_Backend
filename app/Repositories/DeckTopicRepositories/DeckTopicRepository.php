@@ -13,11 +13,12 @@ class DeckTopicRepository implements DeckTopicRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewDeckTopic(int $deckId, int $topicId)
+    public function saveNewDeckTopic(int $deckId, int $topicId): DeckTopic
     {
         $newDeckTopic = new DeckTopic();
         $newDeckTopic->topic_id = $topicId;
         $newDeckTopic->deck_id = $deckId;
         $newDeckTopic->save();
+        return $newDeckTopic;
     }
 }

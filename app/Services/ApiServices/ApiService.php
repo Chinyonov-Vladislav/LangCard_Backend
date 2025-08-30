@@ -121,7 +121,7 @@ class ApiService
         return ["status" => TypeStatusRequestApi::success->value];
     }
 
-    private function processSingleRequest(IpGeolocationApiService $service, $ipAddress, $userId, TypeRequestApi $type)
+    private function processSingleRequest(IpGeolocationApiService $service, $ipAddress, $userId, TypeRequestApi $type): array
     {
         $map = [
             TypeRequestApi::currencyRequest->value => [

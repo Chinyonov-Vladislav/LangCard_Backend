@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use Exception;
 
 class ValidationDateFromString
 {
@@ -11,7 +12,7 @@ class ValidationDateFromString
         try {
             $convertedDate = Carbon::createFromFormat($format, $date);
             return $convertedDate && $convertedDate->format($format) === $date;
-        } catch (\Exception) {
+        } catch (Exception) {
             return false;
         }
     }

@@ -4,7 +4,6 @@ namespace App\Http\Requests\Api\V1\TwoFactorAuthorizationRequests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Sabberworm\CSS\Rule\Rule;
 
 /**
  * @OA\Schema(

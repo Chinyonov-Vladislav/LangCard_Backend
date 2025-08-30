@@ -4,7 +4,6 @@ namespace App\Repositories\InviteToChatRepositories;
 
 use App\Models\GroupChatInvite;
 use App\Services\PaginatorService;
-use Illuminate\Database\Eloquent\Collection;
 
 class InviteToChatRepository implements InviteToChatRepositoryInterface
 {

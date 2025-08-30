@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\ChatRequests\MessagesRequests;
 
 use App\Rules\FilePathExistsRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatingMessageRequest extends FormRequest
@@ -18,7 +19,7 @@ class UpdatingMessageRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
@@ -26,7 +27,7 @@ class UpdatingMessageRequest extends FormRequest
             "message" => ["nullable", "string"],
             "attachments" => ['nullable', 'array'],
             "attachments.*.path" => ['required_with:files', 'string', new FilePathExistsRule()],
-            "attachments.*.action" => ['required_with:files', 'string', 'in:add,delete'],
+            "attachments.*.action" => ['required_with:files', 'string', 'in:add,delete, nothing'],
         ];
     }
 
@@ -50,7 +51,7 @@ class UpdatingMessageRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
+    public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
             if (!$this->filled('message') && !$this->filled('paths_to_files')) {

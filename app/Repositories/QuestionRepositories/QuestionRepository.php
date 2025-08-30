@@ -13,7 +13,7 @@ class QuestionRepository implements QuestionRepositoryInterface
     {
         $this->model = $model;
     }
-    public function isExistCardForQuestionInSameDeckAsTest(int $cardId, int $testId)
+    public function isExistCardForQuestionInSameDeckAsTest(int $cardId, int $testId): bool
     {
         return Card::where('id', $cardId)
             ->whereHas('deck', function ($query1) use ($testId) {
@@ -23,7 +23,7 @@ class QuestionRepository implements QuestionRepositoryInterface
             })->exists();
     }
 
-    public function saveNewQuestion(?string $text, string $type, int $cardId, int $testId)
+    public function saveNewQuestion(?string $text, string $type, int $cardId, int $testId): Question
     {
         $newQuestionForTest = new Question();
         $newQuestionForTest->text = $text;
@@ -31,6 +31,7 @@ class QuestionRepository implements QuestionRepositoryInterface
         $newQuestionForTest->card_id = $cardId;
         $newQuestionForTest->test_id = $testId;
         $newQuestionForTest->save();
+        return $newQuestionForTest;
     }
 
     public function isExistQuestionById(int $id): bool
@@ -43,7 +44,7 @@ class QuestionRepository implements QuestionRepositoryInterface
         return $this->model->with(['card'])->where('id','=', $questionId)->first();
     }
 
-    public function isExistQuestionByIdInTest($questionId, $testId)
+    public function isExistQuestionByIdInTest($questionId, $testId): bool
     {
         return $this->model->where('id','=',$questionId)->where('test_id','=',$testId)->exists();
     }

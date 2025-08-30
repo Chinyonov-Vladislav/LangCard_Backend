@@ -2,7 +2,6 @@
 
 namespace App\Repositories\RoomUserRepositories;
 
-use App\Models\Room;
 use App\Models\RoomUser;
 
 class RoomUserRepository implements RoomUserRepositoryInterface

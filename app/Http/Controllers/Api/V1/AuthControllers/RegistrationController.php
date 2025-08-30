@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1\AuthControllers;
 
 use App\Enums\TypeRequestApi;
-use App\Enums\TypeStatus;
 use App\Enums\TypeStatusRequestApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\RegistrationRequest;
@@ -98,7 +97,7 @@ class RegistrationController extends Controller
      */
     public function registration(RegistrationRequest $request): JsonResponse
     {
-        $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, null, mailing_enabled: $request->mailing_enabled);
+        $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, mailing_enabled: $request->mailing_enabled);
         $resultDataFromApi = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
         $this->achievementService->startAchievementsForNewUser($user->id);
         if($resultDataFromApi['status'] === TypeStatusRequestApi::delayed->name) {

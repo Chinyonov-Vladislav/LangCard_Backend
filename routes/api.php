@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\AuthControllers\AuthController;
 use App\Http\Controllers\Api\V1\AuthControllers\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\AuthControllers\RegistrationController;
 use App\Http\Controllers\Api\V1\CardController;
+use App\Http\Controllers\Api\V1\ChatControllers\ChatController;
+use App\Http\Controllers\Api\V1\ChatControllers\EmotionController;
 use App\Http\Controllers\Api\V1\ColumnsController;
 use App\Http\Controllers\Api\V1\DailyRewardController;
 use App\Http\Controllers\Api\V1\DeckController;
@@ -18,22 +20,20 @@ use App\Http\Controllers\Api\V1\HistoryPurchaseController;
 use App\Http\Controllers\Api\V1\InviteController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LanguageController;
+use App\Http\Controllers\Api\V1\NewsController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PromocodeController;
 use App\Http\Controllers\Api\V1\SpellingController;
 use App\Http\Controllers\Api\V1\StatsController;
 use App\Http\Controllers\Api\V1\TariffController;
+use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\TopicController;
 use App\Http\Controllers\Api\V1\TwoFactorAuthorizationController;
 use App\Http\Controllers\Api\V1\UploadController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserTestResultController;
-use App\Http\Controllers\Api\V1\TimezoneController;
 use App\Http\Controllers\Api\V1\VoiceController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\EmotionController;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -190,8 +190,8 @@ Route::prefix('v1')->group(callback: function () {
                         Route::delete("/{messageId}", [ChatController::class, "deleteMessage"])->whereNumber("messageId")->name('deleteMessage')->middleware(["checkChatIsDelete"]);
                         Route::post('/{messageId}/emotions/{emotionId}', [ChatController::class, 'addOrDeleteEmotion'])->whereNumber("messageId")->whereNumber("emotionId")->name('addOrDeleteEmotion')->middleware(["checkChatIsDelete"]);
                     });
-                    Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);;
-                    Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);;
+                    Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);
+                    Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);
                 });
 
                 Route::prefix("invites")->group(function () {

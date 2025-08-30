@@ -45,7 +45,7 @@ class CardRepository implements CardRepositoryInterface
         $this->model->where('id', '=', $idCard)->update(['image_url' => $imageUrl]);
     }
 
-    public function addPronunciationToCard(int $idCard, string $pronunciationUrl)
+    public function addPronunciationToCard(int $idCard, string $pronunciationUrl): void
     {
         $this->model->where('id', '=', $idCard)->update(['pronunciation_url' => $pronunciationUrl]);
     }

@@ -7,7 +7,6 @@ use App\Http\Requests\Api\V1\JobRequests\JobFilterRequest;
 use App\Http\Resources\V1\JobResources\JobResource;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Responses\ApiResponse;
-use App\Repositories\JobStatusRepositories\JobStatusRepository;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;
 use App\Services\PaginatorService;
 

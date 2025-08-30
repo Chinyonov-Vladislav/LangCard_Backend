@@ -5,7 +5,6 @@ namespace App\Services;
 use Illuminate\Contracts\Cookie\Factory;
 use Illuminate\Cookie\CookieJar;
 use Illuminate\Foundation\Application;
-use PhpOption\None;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class CookieService
@@ -28,11 +27,10 @@ class CookieService
 
     public function getCookieForRefreshTokenWithPartitioned(string $refreshToken, int $countMinutesExpirationRefreshToken): string
     {
-        $cookieHeader = sprintf(
+        return sprintf(
             'refresh_token=%s; Path=/api/v1/refresh; Max-Age=%d; Secure; HttpOnly; SameSite=None; Partitioned',
             urlencode($refreshToken),
             $countMinutesExpirationRefreshToken * 60
         );
-        return $cookieHeader;
     }
 }

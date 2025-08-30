@@ -13,13 +13,14 @@ class ExampleRepository implements ExampleRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewExample(string $textExample, int $cardId, string $source)
+    public function saveNewExample(string $textExample, int $cardId, string $source): Example
     {
         $newExample = new Example();
         $newExample->name = $textExample;
         $newExample->card_id = $cardId;
         $newExample->source = $source;
         $newExample->save();
+        return $newExample;
     }
 
     public function getExampleById(int $id): ?Example

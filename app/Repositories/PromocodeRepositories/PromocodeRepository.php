@@ -32,14 +32,14 @@ class PromocodeRepository implements PromocodeRepositoryInterface
         return $this->model->with(['tariff'])->where('code','=', $code)->first();
     }
 
-    public function deactivatePromocodeByCode(string $code)
+    public function deactivatePromocodeByCode(string $code): void
     {
         $this->model->where('code', $code)->update([
             'active' => false
         ]);
     }
 
-    public function deactivatePromocodeByPromocode(Promocode $promocode)
+    public function deactivatePromocodeByPromocode(Promocode $promocode): void
     {
         $promocode->active = false;
         $promocode->save();
