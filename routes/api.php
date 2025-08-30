@@ -179,19 +179,21 @@ Route::prefix('v1')->group(callback: function () {
                     Route::get('/', [ChatController::class, 'getChats'])->name('getChats');
                     Route::post("/createGroupChat", [ChatController::class, "createGroupChat"])->name('createGroupChat');
                     Route::post("/createDirectChat", [ChatController::class, "createDirectChat"])->name('createDirectChat');
-                    Route::post("{chatId}/blockUserInChat", [ChatController::class, "blockUserInChat"])->whereNumber("chatId")->name('blockUserInChat')->middleware("checkExistRoom");
-
+                    Route::post("/{chatId}/blockUserInChat", [ChatController::class, "blockUserInChat"])->whereNumber("chatId")->name('blockUserInChat')->middleware(["checkExistRoom","checkChatIsDelete"]);
+                    Route::delete("/{chatId}", [ChatController::class, "deleteChat"])->whereNumber("chatId")->name('deleteChat')->middleware("checkExistRoom");
+                    Route::delete("/{chatId}/leave", [ChatController::class, "leaveChat"])->whereNumber("chatId")->name('leaveChat')->middleware(["checkExistRoom","checkChatIsDelete"]);
+                    Route::get("/{chatId}/statistics", [ChatController::class, "getChatStatistics"])->whereNumber("chatId")->name('getChatStatistics')->middleware(["checkExistRoom"]);
                     Route::prefix("{chatId}/messages")->middleware("checkExistRoom")->group(function () {
                         Route::get("/", [ChatController::class, 'getMessages'])->name('getMessages');
-                        Route::post("/", [ChatController::class, "sendMessage"])->name('sendMessage');
-                        Route::put("/{messageId}", [ChatController::class, "updateMessage"])->whereNumber("messageId")->name('updateMessage');
-                        Route::delete("/{messageId}", [ChatController::class, "deleteMessage"])->whereNumber("messageId")->name('deleteMessage');
-                        Route::post('/{messageId}/emotions/{emotionId}', [ChatController::class, 'addOrDeleteEmotion'])->whereNumber("messageId")->whereNumber("emotionId")->name('addOrDeleteEmotion');
+                        Route::post("/", [ChatController::class, "sendMessage"])->name('sendMessage')->middleware(["checkChatIsDelete"]);
+                        Route::put("/{messageId}", [ChatController::class, "updateMessage"])->whereNumber("messageId")->name('updateMessage')->middleware(["checkChatIsDelete"]);
+                        Route::delete("/{messageId}", [ChatController::class, "deleteMessage"])->whereNumber("messageId")->name('deleteMessage')->middleware(["checkChatIsDelete"]);
+                        Route::post('/{messageId}/emotions/{emotionId}', [ChatController::class, 'addOrDeleteEmotion'])->whereNumber("messageId")->whereNumber("emotionId")->name('addOrDeleteEmotion')->middleware(["checkChatIsDelete"]);
                     });
-                    Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom");
-                    Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom");
-
+                    Route::post("/{chatId}/sendInvite", [ChatController::class, "sendInvite"])->whereNumber("chatId")->name('sendInvite')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);;
+                    Route::post("/{chatId}/sendRequest", [ChatController::class, "sendRequest"])->whereNumber("chatId")->name('sendRequest')->middleware("checkExistRoom")->middleware(["checkChatIsDelete"]);;
                 });
+
                 Route::prefix("invites")->group(function () {
                     Route::get("/", [ChatController::class, "getInvites"])->name('getInvites');
                     Route::delete("/{id}", [ChatController::class, "deleteInvite"])->whereNumber("id")->name('deleteInvite');

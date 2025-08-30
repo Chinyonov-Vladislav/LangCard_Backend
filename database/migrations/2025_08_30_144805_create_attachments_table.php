@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('message_emotion_users', function (Blueprint $table) {
+        Schema::create('attachments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignId('message_emotion_id')->references('id')->on('message_emotions')
+            $table->string('path');
+            $table->enum('type', ['image', 'audio', 'video', 'document']);
+            $table->string('extension', 10);
+            $table->bigInteger('size');
+            $table->foreignId('message_id')->references('id')->on('messages')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('message_emotion_users');
+        Schema::dropIfExists('attachments');
     }
 };

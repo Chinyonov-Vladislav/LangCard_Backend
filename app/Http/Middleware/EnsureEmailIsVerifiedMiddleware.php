@@ -2,13 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\TypeUsers;
 use App\Http\Responses\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IsAdmin
+class EnsureEmailIsVerifiedMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,9 +16,8 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $currentUser = $request->user();
-        if ($currentUser->type_user !== TypeUsers::Admin->value) {
-            return ApiResponse::error(__('api.user_not_admin'),null,403);
+        if ($request->user()->email_verified_at === null) {
+            return ApiResponse::error('Электронная почта авторизованного пользователя не подтверждена', null, 420);
         }
         return $next($request);
     }

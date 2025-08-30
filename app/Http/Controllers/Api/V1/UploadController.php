@@ -63,8 +63,8 @@ class UploadController extends Controller
     public function uploadFile(UploadRequest $request)
     {
         try {
-            $path = $this->saveFileService->saveFile($request->file);
-            return ApiResponse::success('Файл был сохранён на сервере',(object)['path' => $path]);
+            $data = $this->saveFileService->saveFile($request->file);
+            return ApiResponse::success('Файл был сохранён на сервере',(object)['path'=>$data]);
         }
         catch (ErrorDefiningFile $e) {
             return ApiResponse::error($e->getMessage(), null, 500);

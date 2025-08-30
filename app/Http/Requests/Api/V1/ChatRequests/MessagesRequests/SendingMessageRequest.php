@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\ChatRequests\MessagesRequests;
 
+use App\Rules\FilePathExistsRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,22 +24,27 @@ class SendingMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "message"=>["required", "string"],
-            "emotions"=>['sometimes', "array"],
-            "emotions.*"=>["required", "integer", "exists:emotions,id"]
+            "message"=>["nullable", "string"],
+            "paths_to_files"   => ['nullable', 'array'],
+            "paths_to_files.*" => ['required_with:files', 'string', new FilePathExistsRule()],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'message.required'    => 'The message field is required.',
-            'message.string'      => 'The message must be a string.',
-            'emotions.array'      => 'The emotions field must be an array.',
-            'emotions.*.required' => 'Each emotion is required.',
-            'emotions.*.integer'   => 'Each emotion must be a integer.',
-            'emotions.*.exists'   => 'The selected emotion does not exist.',
+            'message.string' => 'The message must be a string.',
+            'paths_to_files.array' => "The field \"files\" must be an array.",
+            'paths_to_files.*.required_with' => "The item of array \"files\" is required.",
+            'paths_to_files.*.string' => "The item of array \"files\" must be a string.",
         ];
     }
-
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (!$this->filled('message') && !$this->filled('paths_to_files')) {
+                $validator->errors()->add('message', 'Message or files are required.');
+            }
+        });
+    }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('room_id')->references('id')->on('rooms')
                 ->onUpdate('cascade')->onDelete('cascade');
-            $table->text('message');
+            $table->text('message')->nullable();
             $table->enum('type', ['info', "messageFromUser"]);
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\RoomUserRepositories;
 
+use App\Models\Room;
 use App\Models\RoomUser;
 
 class RoomUserRepository implements RoomUserRepositoryInterface
@@ -22,16 +23,20 @@ class RoomUserRepository implements RoomUserRepositoryInterface
         return $newRoomUser;
     }
 
-    public function getUserInRoom(int $roomId, int $userId)
+    public function getUserInRoom(int $roomId, int $userId): ?RoomUser
     {
         return $this->model->where("room_id", "=", $roomId)->where("user_id", "=", $userId)->first();
     }
 
-    public function changeBlockedStatusForUser(RoomUser $roomUser)
+    public function changeBlockedStatusForUser(RoomUser $roomUser): RoomUser
     {
         $roomUser->is_blocked = !$roomUser->is_blocked;
         $roomUser->save();
         return $roomUser;
     }
 
+    public function deleteUserFromRoom(int $roomId, int $userId): void
+    {
+        $this->model->where("room_id", "=", $roomId)->where("user_id", "=", $userId)->delete();
+    }
 }

@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckExistRoom
+class CheckExistRoomMiddleware
 {
     protected RoomRepositoryInterface $roomRepository;
     public function __construct(RoomRepositoryInterface $roomRepository)

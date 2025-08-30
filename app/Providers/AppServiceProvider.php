@@ -6,6 +6,8 @@ use App\Repositories\AchievementRepositories\AchievementRepository;
 use App\Repositories\AchievementRepositories\AchievementRepositoryInterface;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepository;
 use App\Repositories\ApiLimitRepositories\ApiLimitRepositoryInterface;
+use App\Repositories\AttachmentRepositories\AttachmentRepository;
+use App\Repositories\AttachmentRepositories\AttachmentRepositoryInterface;
 use App\Repositories\AudiofileRepositories\AudiofileRepository;
 use App\Repositories\AudiofileRepositories\AudiofileRepositoryInterface;
 use App\Repositories\AuthTokenRepositories\AuthTokenRepository;
@@ -154,7 +156,7 @@ class AppServiceProvider extends ServiceProvider
             NewsRepositoryInterface::class => NewsRepository::class,
             EmotionRepositoryInterface::class=>EmotionRepository::class,
             MessageEmotionRepositoryInterface::class=>MessageEmotionRepository::class,
-            MessageEmotionUserRepositoryInterface::class=>MessageEmotionUserRepository::class,
+            AttachmentRepositoryInterface::class => AttachmentRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

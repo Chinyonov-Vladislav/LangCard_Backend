@@ -3,6 +3,7 @@
 namespace App\Http\Resources\V1\MessageResources;
 
 use App\Enums\TypesMessage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,7 +20,8 @@ class MessageResource extends JsonResource
             "id"=>$this->id,
             "message"=>$this->message,
             "type"=>$this->type,
-            "created_at"=>$this->created_at->toDateTimeString(),
+            "created_at"=> $this->created_at->toDateTimeString(),
+            "is_message_from_me"=> $this->relationLoaded('user') && ($this->type === TypesMessage::MessageFromUser->value && $this->user->id === auth()->id()),
             "user"=>$this->whenLoaded('user', function (){
                 $user = $this->user;
                 return [
@@ -28,21 +30,28 @@ class MessageResource extends JsonResource
                     "avatar_url"=>$user->avatar_url,
                 ];
             }),
-            "emotions"=>$this->when($this->type === TypesMessage::MessageFromUser->value && $this->relationLoaded("messageEmotions"), function () {
-                return $this->messageEmotions->map(function ($messageEmotion) {
-                    $emotion = $messageEmotion->relationLoaded('emotion') ? $messageEmotion->emotion : null;
-                    if($emotion === null) {
-                        return null;
-                    }
+            "emotions"=>$this->when($this->type === TypesMessage::MessageFromUser->value && $this->relationLoaded("emotions"), function () {
+                return $this->emotions->map(function ($emotion) {
                     return [
                         "id"=>$emotion->id,
                         "name"=>$emotion->name,
                         'icon'=>$emotion->icon,
-                        'count'=>$messageEmotion->users_count,
-                        "reacted_by_me"=>(bool)$messageEmotion->reacted_by_me
+                        'count'=>$emotion->message_emotions_count,
+                        "reacted_by_me"=>(bool)$emotion->reacted_by_current_user
                     ];
-                })->values();
+                });
             }),
+            "attachments"=>$this->when($this->type === TypesMessage::MessageFromUser->value && $this->relationLoaded("attachments"), function () {
+                return $this->attachments->map(function ($attachment) {
+                    return [
+                        "id"=>$attachment->id,
+                        "path"=>$attachment->path,
+                        'type'=>$attachment->type,
+                        'extension'=>$attachment->extension,
+                        "size"=>$attachment->size
+                    ];
+                });
+            })
         ];
     }
 }

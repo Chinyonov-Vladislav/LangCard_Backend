@@ -216,6 +216,30 @@ class User extends Authenticatable implements ColumnLabelsableInterface
             ->orderBy('distance');
     }
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    public function messageEmotions(): HasMany
+    {
+        return $this->hasMany(MessageEmotion::class, 'user_id', 'id');
+    }
+
+    public function reactedMessages(): BelongsToMany
+    {
+        return $this->belongsToMany(Message::class, 'message_emotions', 'user_id', 'message_id')
+            ->withPivot('emotion_id')
+            ->withTimestamps();
+    }
+
+    public function usedEmotions(): BelongsToMany
+    {
+        return $this->belongsToMany(Emotion::class, 'message_emotions', 'user_id', 'emotion_id')
+            ->withPivot('message_id')
+            ->withTimestamps();
+    }
+
     public function getParentKeyName(): string
     {
         return 'inviter_id';

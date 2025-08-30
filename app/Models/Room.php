@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Room extends Model
 {
+    use softDeletes;
     protected $table = 'rooms';
     protected $guarded= [];
 
@@ -58,6 +60,32 @@ class Room extends Model
     {
         return $this->hasMany(GroupChatInvite::class, "room_id");
     }
+
+    // связи для статистики
+
+    public function usersJoinedByMonth()
+    {
+        return $this->hasMany(RoomUser::class)
+            ->selectRaw('room_id, DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
+            ->groupBy('room_id', 'month');
+    }
+
+    public function usersLeftByMonth()
+    {
+        return $this->hasMany(RoomUser::class)
+            ->selectRaw('room_id, DATE_FORMAT(deleted_at, "%Y-%m") as month, COUNT(*) as count')
+            ->whereNotNull('deleted_at')
+            ->groupBy('room_id', 'month');
+    }
+
+    public function messagesCountByUser()
+    {
+        return $this->hasMany(Message::class)
+            ->selectRaw('room_id, user_id, COUNT(*) as count')
+            ->where('type', 'messageFromUser')
+            ->groupBy('room_id', 'user_id');
+    }
+
 
     protected function casts(): array
     {

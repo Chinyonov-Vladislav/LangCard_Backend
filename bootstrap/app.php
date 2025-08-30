@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Middleware\CheckExistRoom;
-use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Http\Middleware\IsAdmin;
-use App\Http\Middleware\SetApiLocale;
+use App\Http\Middleware\CheckChatIsDeleteMiddleware;
+use App\Http\Middleware\CheckExistRoomMiddleware;
+use App\Http\Middleware\EnsureEmailIsVerifiedMiddleware;
+use App\Http\Middleware\IsAdminMiddleware;
+use App\Http\Middleware\SetApiLocaleMiddleware;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -23,10 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'isAdmin' => IsAdmin::class,
-            'setApiLocale'=>SetApiLocale::class,
-            'verifiedEmail' => EnsureEmailIsVerified::class,
-            'checkExistRoom'=> CheckExistRoom::class
+            'isAdmin' => IsAdminMiddleware::class,
+            'setApiLocale'=>SetApiLocaleMiddleware::class,
+            'verifiedEmail' => EnsureEmailIsVerifiedMiddleware::class,
+            'checkExistRoom'=> CheckExistRoomMiddleware::class,
+            'checkChatIsDelete'=>CheckChatIsDeleteMiddleware::class,
         ]);
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('api', HandleCors::class);

@@ -17,4 +17,10 @@ interface RoomRepositoryInterface
     public function createDirectRoom();
 
     public function isExistDirectRoomForUsers(int $firstUserId, int $secondUserId): bool;
+
+    public function deleteRoomById(int $id);
+
+    public function getStatisticForRoomByMonth(int $id);
+
+    public function getCountMessageFromUsersForRoom(int $id);
 }

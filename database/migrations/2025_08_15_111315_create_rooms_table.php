@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('room_type', ['group', 'direct'])->default('group');
             $table->boolean('is_private')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

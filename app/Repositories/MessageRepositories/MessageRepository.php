@@ -14,7 +14,7 @@ class MessageRepository implements MessageRepositoryInterface
         $this->model = $model;
     }
 
-    public function saveNewMessage(int $userId, int $roomId, string $message, string $type): Message
+    public function saveNewMessage(int $userId, int $roomId, ?string $message, string $type): Message
     {
         $newMessage = new Message();
         $newMessage->user_id = $userId;
@@ -25,12 +25,37 @@ class MessageRepository implements MessageRepositoryInterface
         return $newMessage;
     }
 
-    public function getMessage(int $id)
+    public function getMessage(int $id): ?Message
     {
-        return $this->model->where("id", "=", $id)->first();
+        $message = $this->model
+            ->select(['id', 'user_id', 'room_id', 'message', 'type', 'created_at'])
+            ->with([
+                'user' => function ($query) {
+                    $query->select(["id", "name", "avatar_url"]);
+                },
+            ])
+            ->where('id', $id)->first();
+        if($message === null)
+        {
+            return null;
+        }
+        $message->load([
+            'emotions' => function ($query){
+                $query->select('emotions.id', 'emotions.name', 'emotions.icon')
+                    ->withCount('messageEmotions')
+                    ->withCount([
+                        'messageEmotions as reacted_by_current_user' => function ($query) {
+                            $query->where('user_id', auth()->id());
+                        }
+                    ])
+                    ->orderByDesc('message_emotions_count');
+            },
+            'attachments'
+        ]);
+        return $message;
     }
 
-    public function updateMessage(int $messageId, string $textMessage): void
+    public function updateMessage(int $messageId, ?string $textMessage): void
     {
         $this->model->where("id", "=", $messageId)->update(['message' => $textMessage]);
     }
@@ -43,10 +68,12 @@ class MessageRepository implements MessageRepositoryInterface
     public function getMessagesOfChatWithPagination(int $currentUserId, int $chatId, int $limit = 10, ?int $lastMessageId = null): array
     {
         $query = $this->model
-            ->select(['id','user_id','room_id','message','type','created_at'])
-            ->with(['user'=>function($query){
-                $query->select(["id","name","avatar_url"]);
-            }])
+            ->select(['id', 'user_id', 'room_id', 'message', 'type', 'created_at'])
+            ->with([
+                'user' => function ($query) {
+                    $query->select(["id", "name", "avatar_url"]);
+                },
+            ])
             ->where('room_id', $chatId)
             ->orderByDesc('id');
         if ($lastMessageId) {
@@ -58,25 +85,22 @@ class MessageRepository implements MessageRepositoryInterface
             $messages->pop();
         }
         $userMessages = $messages->filter(
-            fn ($message) => $message->type === TypesMessage::MessageFromUser->value
+            fn($message) => $message->type === TypesMessage::MessageFromUser->value
         );
         $userMessages->load([
-            'messageEmotions' => function ($q) use ($currentUserId) {
-                $q->select(['id','message_id','emotion_id'])
-                    ->with('emotion:id,name,icon')
-                    ->withCount('users')
-                    ->when($currentUserId, function ($q) use ($currentUserId) {
-                        $q->withCount([
-                            'users as reacted_by_me' => fn ($q) => $q->where('user_id', $currentUserId),
-                        ]);
-                    })
-                    ->orderByDesc('users_count')
-                    ->orderBy('id');
-            }
+            'emotions' => function ($query) use ($currentUserId) {
+                $query->select('emotions.id', 'emotions.name', 'emotions.icon')
+                    ->withCount('messageEmotions')
+                    ->withCount([
+                        'messageEmotions as reacted_by_current_user' => function ($query) use ($currentUserId) {
+                            $query->where('user_id', $currentUserId);
+                        }
+                    ])
+                    ->orderByDesc('message_emotions_count');
+            },
+            "attachments"
         ]);
-        if ($lastMessageId === null) {
-            $messages = $messages->reverse()->values();
-        }
+        $messages = $messages->reverse()->values();
         return ["messages" => $messages, "hasMoreMessages" => $hasMore];
     }
 }

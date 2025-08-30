@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
@@ -27,26 +28,23 @@ class Message extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function emotions()
+    public function emotions(): BelongsToMany
     {
-        return $this->belongsToMany(Emotion::class, 'message_emotions',
-            "message_id", "emotion_id")->withTimestamps();
-    }
-    public function messageEmotions(): HasMany
-    {
-        return $this->hasMany(MessageEmotion::class, "message_id");
+        return $this->belongsToMany(Emotion::class, 'message_emotions', 'message_id', 'emotion_id')
+            ->withPivot('user_id')
+            ->withTimestamps();
     }
 
-    public function reactionUsers()
+    public function emotionUsers(): BelongsToMany
     {
-        return $this->hasManyThrough(
-            MessageEmotionUser::class, // конечная модель
-            MessageEmotion::class,     // промежуточная модель
-            'message_id',              // FK на MessageEmotion (вторая таблица)
-            'message_emotion_id',      // FK на MessageEmotionUser (конечная таблица)
-            'id',                      // локальный ключ в Message
-            'id'                       // локальный ключ в MessageEmotion
-        );
+        return $this->belongsToMany(User::class, 'message_emotions', 'message_id', 'user_id')
+            ->withPivot('emotion_id')
+            ->withTimestamps();
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class, "message_id");
     }
 
     protected function casts(): array

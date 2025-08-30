@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('type', ['admin', 'member'])->default('member');
             $table->boolean("is_blocked")->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

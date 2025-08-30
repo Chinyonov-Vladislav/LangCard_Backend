@@ -31,14 +31,4 @@ class EmotionRepository implements EmotionRepositoryInterface
     {
         return $this->model->where("id", "=", $id)->first();
     }
-
-    public function getEmotionForMessageFromUser(int $userId, int $messageId): ?Emotion
-    {
-        return $this->model->whereHas('messageEmotions', function($query) use ($userId, $messageId) {
-            $query->where('message_id', $messageId)
-                ->whereHas('users', function($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                });
-        })->first();
-    }
 }

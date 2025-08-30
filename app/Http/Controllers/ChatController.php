@@ -6,6 +6,7 @@ use App\Enums\GroupChatInviteTypes;
 use App\Enums\TypesMessage;
 use App\Enums\TypesRoom;
 use App\Enums\TypesUserInRoom;
+use App\Events\MessageSentInChat;
 use App\Http\Requests\Api\V1\ChatRequests\BlockUserInCharRequest;
 use App\Http\Requests\Api\V1\ChatRequests\CreatingDirectCharRequest;
 use App\Http\Requests\Api\V1\ChatRequests\CreatingGroupChatRequest;
@@ -17,17 +18,20 @@ use App\Http\Requests\Api\V1\ChatRequests\MessagesRequests\SendingMessageRequest
 use App\Http\Requests\Api\V1\ChatRequests\MessagesRequests\UpdatingMessageRequest;
 use App\Http\Resources\V1\ChatResources\ChatResource;
 use App\Http\Resources\V1\ChatResources\RequestOrInvitationResource;
+use App\Http\Resources\V1\ChatResources\StatisticResources\StatisticByMonthsForChatResource;
+use App\Http\Resources\V1\ChatResources\StatisticResources\StatisticCountMessagesFromUsersForChatResource;
 use App\Http\Resources\V1\MessageResources\MessageResource;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Responses\ApiResponse;
+use App\Repositories\AttachmentRepositories\AttachmentRepositoryInterface;
 use App\Repositories\EmotionRepositories\EmotionRepositoryInterface;
 use App\Repositories\InviteToChatRepositories\InviteToChatRepositoryInterface;
 use App\Repositories\MessageEmotionRepositories\MessageEmotionRepositoryInterface;
-use App\Repositories\MessageEmotionUserRepositories\MessageEmotionUserRepository;
 use App\Repositories\MessageRepositories\MessageRepositoryInterface;
 use App\Repositories\RoomRepositories\RoomRepositoryInterface;
 use App\Repositories\RoomUserRepositories\RoomUserRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
+use App\Services\FileServices\FileInfoService;
 use App\Services\PaginatorService;
 
 class ChatController extends Controller
@@ -45,16 +49,17 @@ class ChatController extends Controller
 
     protected MessageEmotionRepositoryInterface $messageEmotionRepository;
 
-    protected MessageEmotionUserRepository $messageEmotionUserRepository;
+    protected AttachmentRepositoryInterface $attachmentRepository;
 
-    public function __construct(RoomRepositoryInterface $roomRepository,
-                                RoomUserRepositoryInterface $roomUserRepository,
-                                MessageRepositoryInterface $messageRepository,
-                                UserRepositoryInterface $userRepository,
-                                InviteToChatRepositoryInterface $inviteToChatRepository,
-                                EmotionRepositoryInterface $emotionRepository,
+
+    public function __construct(RoomRepositoryInterface           $roomRepository,
+                                RoomUserRepositoryInterface       $roomUserRepository,
+                                MessageRepositoryInterface        $messageRepository,
+                                UserRepositoryInterface           $userRepository,
+                                InviteToChatRepositoryInterface   $inviteToChatRepository,
+                                EmotionRepositoryInterface        $emotionRepository,
                                 MessageEmotionRepositoryInterface $messageEmotionRepository,
-                                MessageEmotionUserRepository $messageEmotionUserRepository)
+                                AttachmentRepositoryInterface     $attachmentRepository)
     {
         $this->roomRepository = $roomRepository;
         $this->roomUserRepository = $roomUserRepository;
@@ -63,7 +68,7 @@ class ChatController extends Controller
         $this->inviteToChatRepository = $inviteToChatRepository;
         $this->emotionRepository = $emotionRepository;
         $this->messageEmotionRepository = $messageEmotionRepository;
-        $this->messageEmotionUserRepository = $messageEmotionUserRepository;
+        $this->attachmentRepository = $attachmentRepository;
     }
 
     public function getChats()
@@ -84,8 +89,7 @@ class ChatController extends Controller
     public function createDirectChat(CreatingDirectCharRequest $request)
     {
         $isExistDirectRoomForTwoUser = $this->roomRepository->isExistDirectRoomForUsers(auth()->id(), $request->second_user_id);
-        if($isExistDirectRoomForTwoUser)
-        {
+        if ($isExistDirectRoomForTwoUser) {
             return ApiResponse::error("Комната для общения двух людей уже существует", null, 409);
         }
         $newDirectRoom = $this->roomRepository->createDirectRoom();
@@ -103,113 +107,121 @@ class ChatController extends Controller
         $room = $this->roomRepository->getRoomById($chatId);
         $firstUser = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
         $secondUser = $this->roomUserRepository->getUserInRoom($chatId, $request->user_id);
-        if($firstUser === null)
-        {
+        if ($firstUser === null || $firstUser->deleted_at !== null) {
             return ApiResponse::error("Вы не являетесь участником этого чата", null, 404);
         }
-        if($secondUser === null)
-        {
+        if ($secondUser === null || $secondUser->deleted_at !== null) {
             return ApiResponse::error("Пользователя, которого вы хотите заблокировать/разблокировать, не является участником чата", null, 404);
         }
-        if($room->room_type === TypesRoom::Group->value) // если чат групповой
+        if ($room->room_type === TypesRoom::Group->value) // если чат групповой
         {
-            if($firstUser->type !== TypesUserInRoom::Admin->value)
-            {
+            if ($firstUser->type !== TypesUserInRoom::Admin->value) {
                 return ApiResponse::error("Вы не являетесь администратором в чате, поэтому вы не можете заблокировать/разблокировать пользователя");
             }
         }
         $this->roomUserRepository->changeBlockedStatusForUser($secondUser);
         return ApiResponse::success("Статус блокировки пользователя успешно изменён", null, 201);
     }
+
     public function sendMessage(int $chatId, SendingMessageRequest $request)
     {
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if($userInRoom === null)
-        {
+        if ($userInRoom === null || $userInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь не является участником чата", null, 404);
         }
-        if($userInRoom->is_blocked)
-        {
+        if ($userInRoom->is_blocked) {
             return ApiResponse::error("В данном чате пользователь заблокирован и не может отправлять сообщения", null, 409);
         }
         $newMessage = $this->messageRepository->saveNewMessage(auth()->id(), $chatId, $request->message, TypesMessage::MessageFromUser->value);
-        foreach ($request->emotions as $emotionId)
-        {
-            $this->messageEmotionRepository->addEmotionToMessage($newMessage->id, $emotionId);
+        if ($request->paths_to_files !== null) {
+            $fileInfoService = new FileInfoService();
+            $pathsToFiles = array_unique($request->paths_to_files);
+            foreach ($pathsToFiles as $pathToFile) {
+                $dataInfoFile = $fileInfoService->getInfoAboutFile($pathToFile);
+                $this->attachmentRepository->addNewAttachmentToMessage($newMessage->id, $dataInfoFile);
+            }
         }
         //TODO сделать отправку сообщения в чата с помощью WebSockets
+        broadcast(new MessageSentInChat($newMessage->id))->toOthers();
         return ApiResponse::success("Сообщение успешно отправлено", null, 201);
     }
 
-    public function updateMessage(int $chatId,int $messageId, UpdatingMessageRequest $request)
+    public function updateMessage(int $chatId, int $messageId, UpdatingMessageRequest $request)
     {
         $message = $this->messageRepository->getMessage($messageId);
-        if($message === null)
-        {
+        if ($message === null) {
             return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
         }
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if($userInRoom === null)
-        {
+        if ($userInRoom === null || $userInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь не является участником чата", null, 404);
         }
-        if($userInRoom->is_blocked)
-        {
+        if ($userInRoom->is_blocked) {
             return ApiResponse::error("В данном чате пользователь заблокирован и не может редактировать сообщения", null, 409);
         }
-        if($message->user_id !== auth()->id())
-        {
+        if ($message->user_id !== auth()->id()) {
             return ApiResponse::error("Пользователь не является автором редактируемого сообщения", null, 409);
         }
-        if($message->type === TypesMessage::Info->value)
-        {
+        if ($message->type === TypesMessage::Info->value) {
             return ApiResponse::error("Редактируемое сообщение является информационным, из-за чего его нельзя редактировать", null, 409);
         }
         $this->messageRepository->updateMessage($messageId, $request->message_text);
+        if ($request->attachments !== null) {
+            $fileInfoService = new FileInfoService();
+            foreach ($request->attachments as $itemAttachmentToUpdate) {
+                $path = $itemAttachmentToUpdate['path'];
+                $action = $itemAttachmentToUpdate['action'];
+                $attachment = $this->attachmentRepository->getAttachmentByPathForMessage($path, $messageId);
+                if ($action === 'add' && $attachment === null) {
+                    $dataInfoFile = $fileInfoService->getInfoAboutFile($path);
+                    $this->attachmentRepository->addNewAttachmentToMessage($messageId, $dataInfoFile);
+
+                }
+                if ($action === "delete" && $attachment !== null) {
+                    $this->attachmentRepository->deleteAttachment($attachment);
+                }
+            }
+        }
         return ApiResponse::success("Сообщение было успешно отредактировано", null, 201);
     }
 
     public function deleteMessage(int $chatId, int $messageId)
     {
         $message = $this->messageRepository->getMessage($messageId);
-        if($message === null)
-        {
+        if ($message === null) {
             return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
         }
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if($userInRoom === null)
-        {
+        if ($userInRoom === null || $userInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь не является участником чата", null, 404);
         }
-        if($userInRoom->is_blocked)
-        {
+        if ($userInRoom->is_blocked) {
             return ApiResponse::error("В данном чате пользователь заблокирован и не может удалять сообщения", null, 409);
         }
-        if($message->user_id !== auth()->id())
-        {
+        if ($message->user_id !== auth()->id()) {
             return ApiResponse::error("Пользователь не является автором удаляемого сообщения", null, 409);
         }
-        if($message->type === TypesMessage::Info->value)
-        {
+        if ($message->type === TypesMessage::Info->value) {
             return ApiResponse::error("Удаляемое сообщение является информационным, из-за чего его нельзя удалять", null, 409);
         }
         $this->messageRepository->deleteMessage($messageId);
         return ApiResponse::success("Сообщение с id = $messageId было успешно удалено", null, 201);
     }
+
     public function getInvites(PaginatorService $paginator, RequestOrInviteFilterRequest $request)
     {
         $acceptedSortDirection = ['asc', 'desc'];
         $countOnPage = (int)$request->input('countOnPage', config('app.default_count_on_page'));
         $numberCurrentPage = (int)$request->input('page', config('app.default_page'));
         $sortDirection = $request->input('sortDirection', 'asc');
-        if(!in_array($sortDirection, $acceptedSortDirection))
-        {
+        if (!in_array($sortDirection, $acceptedSortDirection)) {
             $sortDirection = 'asc';
         }
         $data = $this->inviteToChatRepository->getRequestOrInvitationForUserWithPaginationAndSortDirection($paginator, auth()->id(), $countOnPage, $numberCurrentPage, $sortDirection);
-        return ApiResponse::success("Получены заявки/приглашения на вступление в закрытые чаты", (object)["items"=>RequestOrInvitationResource::collection($data['items']),
+        return ApiResponse::success("Получены заявки/приглашения на вступление в закрытые чаты", (object)["items" => RequestOrInvitationResource::collection($data['items']),
             'pagination' => new PaginationResource($data['pagination'])]);
     }
+
     public function sendRequest(int $chatId)
     {
         $room = $this->roomRepository->getRoomByIdWithAdmin($chatId);
@@ -220,96 +232,81 @@ class ChatController extends Controller
             return ApiResponse::error("Невозможно создание приглашение в комнату с id = $chatId, так как она не является закрытой", null, 409);
         }
         $senderUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if ($senderUserInRoom !== null) {
+        if ($senderUserInRoom !== null || $senderUserInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь уже является участником комнаты", null, 409);
         }
-        if ($room->admin === null)
-        {
+        if ($room->admin === null) {
             return ApiResponse::error("Для комнаты с id = $chatId не найден администратор", null, 404);
         }
-        if($this->inviteToChatRepository->isExistRequestOrInvitationToChat($chatId, auth()->id(), $room->admin->id, GroupChatInviteTypes::Request->value))
-        {
+        if ($this->inviteToChatRepository->isExistRequestOrInvitationToChat($chatId, auth()->id(), $room->admin->id, GroupChatInviteTypes::Request->value)) {
             return ApiResponse::error("Авторизованный пользователь уже делал запрос на вступление в групповой чат", null, 409);
         }
         $newInviteToGroupChat = $this->inviteToChatRepository->saveInviteToGroupChat($chatId, auth()->id(), $room->admin->id, GroupChatInviteTypes::Request->value);
         return ApiResponse::success("Вы отправили запрос на вступление в закрытый чат с id = $chatId", null, 201);
     }
+
     public function sendInvite(int $chatId, SendInviteToChatRequest $request)
     {
         $room = $this->roomRepository->getRoomById($chatId);
-        if($room->room_type !== TypesRoom::Group->value)
-        {
-            return ApiResponse::error("Невозможно создать приглашение в комнату с id = $chatId, так как она не является типа group",null, 409);
+        if ($room->room_type !== TypesRoom::Group->value) {
+            return ApiResponse::error("Невозможно создать приглашение в комнату с id = $chatId, так как она не является типа group", null, 409);
         }
-        if($room->is_private === false)
-        {
+        if ($room->is_private === false) {
             return ApiResponse::error("Невозможно создание приглашение в комнату с id = $chatId, так как она не является закрытой", null, 409);
         }
         $senderUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if($senderUserInRoom === null)
-        {
+        if ($senderUserInRoom === null || $senderUserInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь не является участником чата", null, 404);
         }
-        if($senderUserInRoom->type !== TypesUserInRoom::Admin->value)
-        {
+        if ($senderUserInRoom->type !== TypesUserInRoom::Admin->value) {
             return ApiResponse::error("Пользователь не является администратором группового чата, из-за чего не может выдавать приглашение", null, 409);
         }
         $recipientUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, $request->user_id);
-        if($recipientUserInRoom !== null)
-        {
+        if ($recipientUserInRoom !== null) {
             return ApiResponse::error("Невозможно выдать пользователю приглашение в групповой чат, так как он уже состоит в нём", null, 409);
         }
-        if($this->inviteToChatRepository->isExistRequestOrInvitationToChat($chatId, auth()->id(), $request->user_id, GroupChatInviteTypes::Invitation->value))
-        {
+        if ($this->inviteToChatRepository->isExistRequestOrInvitationToChat($chatId, auth()->id(), $request->user_id, GroupChatInviteTypes::Invitation->value)) {
             return ApiResponse::error("Авторизованный пользователь уже высылал приглашение пользователю в групповой чат", null, 409);
         }
         $newInviteToGroupChat = $this->inviteToChatRepository->saveInviteToGroupChat($chatId, auth()->id(), $request->user_id, GroupChatInviteTypes::Invitation->value);
         return ApiResponse::success("Приглашение в чат с id = $chatId было отправлено пользователю с id = $request->user_id");
     }
+
     public function deleteInvite(int $id)
     {
-       $request_invite_info = $this->inviteToChatRepository->getRequestOrInvitationToChatById($id);
-       if($request_invite_info === null)
-       {
-           return ApiResponse::error("Запрос на вступление в группу или приглашение в группу не найдено", null, 404);
-       }
-       if($request_invite_info->accepted !== null)
-       {
-           return ApiResponse::error("Пользователь - получатель уже ответил на запрос вступления/приглашения в группу", null, 409);
-       }
-       if($request_invite_info->sender_user_id !== auth()->id())
-       {
-           return ApiResponse::error("Авторизованный пользователь не является отправителем запроса на вступление/приглашение в группу, поэтому не может выполнить его удаление", null, 409);
-       }
-       $this->inviteToChatRepository->deleteRequestInviteToGroupChat($id);
-       return ApiResponse::success("Запрос на вступление/приглашение в группу был успешно удалён");
+        $request_invite_info = $this->inviteToChatRepository->getRequestOrInvitationToChatById($id);
+        if ($request_invite_info === null) {
+            return ApiResponse::error("Запрос на вступление в группу или приглашение в группу не найдено", null, 404);
+        }
+        if ($request_invite_info->accepted !== null) {
+            return ApiResponse::error("Пользователь - получатель уже ответил на запрос вступления/приглашения в группу", null, 409);
+        }
+        if ($request_invite_info->sender_user_id !== auth()->id()) {
+            return ApiResponse::error("Авторизованный пользователь не является отправителем запроса на вступление/приглашение в группу, поэтому не может выполнить его удаление", null, 409);
+        }
+        $this->inviteToChatRepository->deleteRequestInviteToGroupChat($id);
+        return ApiResponse::success("Запрос на вступление/приглашение в группу был успешно удалён");
     }
+
     public function responseToChatInvitationFromUser(int $id, ResponseUserToRequestOrInvitationToGroupChatRequest $request)
     {
         $request_invite_info = $this->inviteToChatRepository->getRequestOrInvitationToChatById($id);
-        if($request_invite_info === null)
-        {
+        if ($request_invite_info === null) {
             return ApiResponse::error("Запрос на вступление в группу или приглашение в группу не найдено", null, 404);
         }
-        if($request_invite_info->recipient_user_id !== auth()->id())
-        {
+        if ($request_invite_info->recipient_user_id !== auth()->id()) {
             return ApiResponse::error("Авторизованный пользователь не является пользователем, для которого предназначена заявка на вступление или приглашение в группу", null, 409);
         }
-        if($request_invite_info->accepted !== null)
-        {
+        if ($request_invite_info->accepted !== null) {
             return ApiResponse::error("Пользователь, для которого была предназначена заявка на вступление или приглашение в группу, уже предоставил на неё ответ", null, 409);
         }
         $this->inviteToChatRepository->setResponseUserToRequestOrInvitationToChat($id, $request->response_user);
-        if($request->response_user === false)
-        {
+        if ($request->response_user === false) {
             return ApiResponse::success("Пользователь отклонил заявку на вступление/приглашение в группу");
         }
-        if($request_invite_info->type === GroupChatInviteTypes::Request->value)
-        {
+        if ($request_invite_info->type === GroupChatInviteTypes::Request->value) {
             $adminGroupId = $request_invite_info->recipient_user_id;
-        }
-        else
-        {
+        } else {
             $adminGroupId = $request_invite_info->sender_user_id;
         }
         $this->roomUserRepository->addUserToRoom($request_invite_info->room_id, auth()->id(), TypesUserInRoom::Member->value);
@@ -322,50 +319,112 @@ class ChatController extends Controller
     public function addOrDeleteEmotion(int $chatId, int $messageId, int $emotionId)
     {
         $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
-        if($userInRoom === null)
-        {
+        if ($userInRoom === null || $userInRoom->deleted_at !== null) {
             return ApiResponse::error("Пользователь не является участником чата", null, 404);
         }
-        if($userInRoom->is_blocked)
-        {
+        if ($userInRoom->is_blocked) {
             return ApiResponse::error("В данном чате пользователь заблокирован и не может оставлять реакции на сообщения", null, 409);
         }
         $message = $this->messageRepository->getMessage($messageId);
-        if($message === null)
-        {
+        if ($message === null) {
             return ApiResponse::error("Сообщение с id = $messageId не найдено", null, 404);
         }
         $emotion = $this->emotionRepository->getEmotion($emotionId);
-        if($emotion === null)
-        {
+        if ($emotion === null) {
             return ApiResponse::error("Эмоция с id = $emotionId не найдена", null, 404);
         }
-        $newMessageEmotion = $this->messageEmotionRepository->getMessageEmotion($messageId, $emotionId); //разрешенная эмоция для сообщения (объект класса MessageEmotion)
-        if($newMessageEmotion === null)
+        $emotionFromUserToMessage = $this->messageEmotionRepository->getMessageEmotionByUserId($messageId, $emotionId, auth()->id());
+        if ($emotionFromUserToMessage === null) //пользователь еще не добавлял эмоцию к сообщению
         {
-            return ApiResponse::error("Для сообщения с id = $messageId не разрешена эмоция с id = $emotionId", null, 409);
+            $newEmotionToMessage = $this->messageEmotionRepository->addEmotionToMessage($messageId, $emotionId, auth()->id());
+            $infoMessage = "Пользователь добавил эмоцию к сообщению";
+        } else {
+            if ($emotionFromUserToMessage->emotion_id === $emotionId) {
+                // пользователь удаляет эмоцию
+                $this->messageEmotionRepository->deleteEmotionForMessageFromUser($messageId, $emotionId, auth()->id());
+                $infoMessage = "Пользователь удалил эмоцию к сообщению";
+            } else {
+                $this->messageEmotionRepository->updateEmotionForMessageFromUser($messageId, $emotionFromUserToMessage->emotion_id, $emotionId, auth()->id());
+                $infoMessage = "Эмоция успешно изменена в сообщении";
+            }
         }
-        $emotionFromUserForMessage = $this->emotionRepository->getEmotionForMessageFromUser(auth()->id(), $messageId); // объект класса Emotion
-        if($emotionFromUserForMessage === null)
-        {
-            $this->messageEmotionUserRepository->addNewEmotionToMessageFromUser($newMessageEmotion->id, auth()->id());
-            return ApiResponse::success("Эмоция успешно оставлена к сообщению");
-        }
-        // пользователь оставлял эмоцию к сообщению
-        if($emotionFromUserForMessage->id === $emotionId) //удалить эмоцию, если новая эмоция совпадает с той, которую прислал пользователь в запросе
-        {
-            $this->messageEmotionUserRepository->removeEmotionForMessageFromUser($newMessageEmotion->id, auth()->id());
-            return ApiResponse::success("Оставленная эмоция успешно удалена из сообщения");
-        }
-        $currentMessageEmotion = $this->messageEmotionRepository->getMessageEmotion($messageId, $emotionFromUserForMessage->id);
-        $this->messageEmotionUserRepository->removeEmotionForMessageFromUser($currentMessageEmotion->id, auth()->id());
-        $this->messageEmotionUserRepository->addNewEmotionToMessageFromUser($newMessageEmotion->id, auth()->id());
-        return ApiResponse::success("Эмоция успешно изменена в сообщении");
+        $message = $this->messageRepository->getMessage($messageId);
+        return ApiResponse::success($infoMessage, (object)["message" => new MessageResource($message)]);
     }
+
     public function getMessages(int $chatId, MessageChatFilterRequest $request)
     {
-        $limit = $request->limit === null ? config("app.limit_count_messages_per_request"): $request->limit;
-        $data = $this->messageRepository->getMessagesOfChatWithPagination(auth()->id(),$chatId, $limit, $request->last_message_id);
-        return ApiResponse::success("Сообщения для чата с id = $chatId", (object)["messages"=>MessageResource::collection($data["messages"]), "hasMoreMessages"=>$data["hasMoreMessages"]]);
+        $userInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
+        if ($userInRoom === null || $userInRoom->deleted_at) {
+            return ApiResponse::error("Пользователь не является участником чата", null, 404);
+        }
+        $limit = $request->limit === null ? config("app.limit_count_messages_per_request") : $request->limit;
+        $data = $this->messageRepository->getMessagesOfChatWithPagination(auth()->id(), $chatId, $limit, $request->last_message_id);
+        return ApiResponse::success("Сообщения для чата с id = $chatId", (object)["messages" => MessageResource::collection($data["messages"]), "hasMoreMessages" => $data["hasMoreMessages"]]);
+    }
+
+    public function deleteChat(int $chatId)
+    {
+        $room = $this->roomRepository->getRoomById($chatId);
+        if ($room->room_type === TypesRoom::Direct->value) {
+            return ApiResponse::error("Невозможно удалить чат между двумя пользователями", null, 409);
+        }
+        if ($room->deleted_at !== null) {
+            return ApiResponse::error("Чат уже был удалён ранее", null, 409);
+        }
+        $authUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
+        if ($authUserInRoom === null || $authUserInRoom->deleted_at === null) {
+            return ApiResponse::error("Авторизованный пользователь не является участником комнаты");
+        }
+        if ($authUserInRoom->type !== TypesUserInRoom::Admin->value) {
+            return ApiResponse::error("Вы не являетесь администратором в чате, поэтому вы не можете удалить его");
+        }
+        $this->roomRepository->deleteRoomById($chatId);
+        $message = "Групповой чат \"$room->name\" был удалён администратором";
+        $this->messageRepository->saveNewMessage(auth()->id(), $room->id, $message, TypesMessage::Info->value);
+        return ApiResponse::success("Чат был успешно удалён");
+    }
+
+    public function leaveChat(int $chatId)
+    {
+        $room = $this->roomRepository->getRoomById($chatId);
+        if ($room->room_type === TypesRoom::Direct->value) {
+            return ApiResponse::error("Невозможно покинуть чат между двумя пользователями", null, 409);
+        }
+        $authUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
+        if ($authUserInRoom === null || $authUserInRoom->deleted_at) {
+            return ApiResponse::error("Авторизованный пользователь не является участником комнаты", null, 404);
+        }
+        if ($authUserInRoom->is_blocked) {
+            return ApiResponse::error("В данном чате пользователь заблокирован и не может покинуть его", null, 409);
+        }
+        $isAdmin = $authUserInRoom->type !== TypesUserInRoom::Admin->value;
+        $this->roomUserRepository->deleteUserFromRoom($chatId, auth()->id());
+        if ($isAdmin) {
+            $message = "Администратор покинул групповой чат \"$room->name\", из-за чего он автоматически был удалён";
+            $this->messageRepository->saveNewMessage(auth()->id(), $room->id, $message, TypesMessage::Info->value);
+            $this->roomRepository->deleteRoomById($chatId);
+            return ApiResponse::success("Вы покинули чат и так как вы являетесь администратором, то чат был удалён");
+        }
+        return ApiResponse::success("Вы покинули чат");
+    }
+
+    public function getChatStatistics(int $chatId)
+    {
+        $room = $this->roomRepository->getRoomById($chatId);
+        logger($room);
+        if ($room->room_type !== TypesRoom::Group->value) {
+            return ApiResponse::error("Статистика доступна только для групповых чатов", null, 409);
+        }
+        $authUserInRoom = $this->roomUserRepository->getUserInRoom($chatId, auth()->id());
+        if ($authUserInRoom === null) {
+            return ApiResponse::error("Пользователь не является участником чата", null, 404);
+        }
+        if ($authUserInRoom->type !== TypesUserInRoom::Admin->value) {
+            return ApiResponse::error("Пользователь не является администратором группового чата, из-за чего не может получить данные о статистике чата", null, 409);
+        }
+        $statisticByMonth = $this->roomRepository->getStatisticForRoomByMonth($chatId);
+        $countMessagesFromUsersForRoom = $this->roomRepository->getCountMessageFromUsersForRoom($chatId);
+        return ApiResponse::success("Статистика для группового чата", (object)["statsByMonth" => StatisticByMonthsForChatResource::collection($statisticByMonth), "countMessagesByUsersInRoom" => StatisticCountMessagesFromUsersForChatResource::collection($countMessagesFromUsersForRoom)]);
     }
 }

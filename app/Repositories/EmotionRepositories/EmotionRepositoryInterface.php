@@ -12,5 +12,4 @@ interface EmotionRepositoryInterface
 
     public function saveNewEmotion(string $name, string $icon): Emotion;
 
-    public function getEmotionForMessageFromUser(int $userId, int $messageId): ?Emotion;
 }
