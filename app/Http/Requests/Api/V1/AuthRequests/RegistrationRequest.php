@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  *     schema="RegistrationRequest",
- *     required={"name", "email", "password", "password_confirmation", "mailing_enabled"},
+ *     required={"name", "email", "password", "password_confirmation", "mailing_enabled", "terms_accepted"},
  *     title="Registration Request (Данные для регистрации)",
  *     description="Данные, необходимые для регистрации нового пользователя",
  *     @OA\Property(
@@ -41,7 +41,12 @@ use Illuminate\Foundation\Http\FormRequest;
  *          property="mailing_enabled",
  *          type="boolean",
  *          example="true"
- *      )
+ *      ),
+ *      @OA\Property(
+ *           property="terms_accepted",
+ *           type="boolean",
+ *           example="true"
+ *       )
  * )
  */
 class RegistrationRequest extends FormRequest
@@ -66,6 +71,7 @@ class RegistrationRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'confirmed', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
             'mailing_enabled'=>['required','boolean'],
+            'terms_accepted'=>["required","boolean"],
         ];
     }
     /**
@@ -85,6 +91,8 @@ class RegistrationRequest extends FormRequest
             'password.regex' => __('validation.password_regex'),
             'mailing_enabled.required' => "The field \"mailing_enabled\" is required.",
             'mailing_enabled.boolean' => "The field \"mailing_enabled\" must be boolean.",
+            "terms_accepted.required" => "The field \"terms_accepted\" is required.",
+            "terms_accepted.boolean" => "The field \"terms_accepted\" must be boolean.",
         ];
     }
 }

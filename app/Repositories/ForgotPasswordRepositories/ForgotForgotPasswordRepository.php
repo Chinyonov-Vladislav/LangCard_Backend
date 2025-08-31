@@ -17,20 +17,20 @@ class ForgotForgotPasswordRepository implements ForgotPasswordRepositoryInterfac
         );
     }
 
-    public function deleteTokenByEmail($email): void
-    {
-        DB::table('password_reset_tokens')->where('email', $email)->delete();
-    }
-
-    public function getInfoAboutTokenResetPassword($email)
+    public function getInfoAboutTokenResetPassword(string $token)
     {
         return DB::table('password_reset_tokens')
-            ->where('email', $email)
+            ->where('token', $token)
             ->first();
     }
 
     public function updatePassword($email, $password): void
     {
         DB::table('users')->where('email', $email)->update(['password' => Hash::make($password)]);
+    }
+
+    public function deleteToken(string $token): void
+    {
+        DB::table('password_reset_tokens')->where('token','=', $token)->delete();
     }
 }

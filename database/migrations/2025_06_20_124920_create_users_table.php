@@ -50,6 +50,7 @@ return new class extends Migration
             $table->decimal('longitude', 8, 5)->nullable()->default(null);
             $table->boolean("hideMyCoordinates")->default(true);
             $table->dateTime('last_time_update_coordinates')->nullable()->default(null);
+            $table->boolean("terms_accepted")->default(true);
             $table->rememberToken();
             $table->timestamps();
         });

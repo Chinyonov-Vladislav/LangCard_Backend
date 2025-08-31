@@ -24,6 +24,7 @@ use App\Services\GenerationCodeServices\GenerationTwoFactorAuthorizationToken;
 use App\Services\NicknameExtractorFromEmailService;
 use Carbon\Carbon;
 use Exception;
+use FontLib\Table\Type\name;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
@@ -305,6 +306,7 @@ class AuthController extends Controller
             if (!in_array($provider, $this->acceptedCallbackProviders)) {
                 return ApiResponse::error(__('api.auth_provider_not_supported', ['provider' => $provider]), null, 404);
             }
+            $isNewUser = false;
             // TODO: добавить авторизацию через telegram
             if ($provider === 'microsoft') {
                 $microsoftUser = Socialite::driver($provider)->stateless()->user();
@@ -321,7 +323,8 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    $user = $this->registrationRepository->registerUser(name:$nickname, email:$microsoftUser->email, password: null, avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
+                    $isNewUser = true;
                 }
             }
             else if ($provider == 'yandex') {
@@ -335,12 +338,14 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    $user = $this->registrationRepository->registerUser(name:$nickname, email: $yandexUser->email, password: null,avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
+                    $isNewUser = true;
                 }
+
             }
             else // авторизация через гугл
             {
@@ -355,21 +360,23 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($avatarURL);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser($nickname, null, null, null, null, $pathToAvatar, 'user', null, $providerId, $provider);
+                    $user = $this->registrationRepository->registerUser(name:$nickname, email:$googleUser->getEmail(), password: null,avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
+                    $isNewUser = true;
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
-
                 }
             }
-            $this->achievementService->startAchievementsForNewUser($user->id);
-            if ($user->email_verified_at === null) {
-                $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
-            }
-            if (!$this->userRepository->hasUserInviteCode(auth()->user()->id)) {
-                $code = $this->generationInviteCodeService->generateInviteCode();
-                $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
+            if($isNewUser) {
+                $this->achievementService->startAchievementsForNewUser($user->id);
+                if ($user->email_verified_at === null) {
+                    $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
+                }
+                if (!$this->userRepository->hasUserInviteCode(auth()->user()->id)) {
+                    $code = $this->generationInviteCodeService->generateInviteCode();
+                    $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
+                }
             }
             if($user->two_factor_email_enabled || $user->google2fa_enable)
             {

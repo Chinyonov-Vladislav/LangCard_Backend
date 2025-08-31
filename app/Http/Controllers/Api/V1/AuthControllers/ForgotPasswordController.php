@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\AuthControllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\AuthRequests\PasswordResetTokenRequest;
 use App\Http\Requests\Api\V1\AuthRequests\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\AuthRequests\SendResetLinkRequest;
 use App\Http\Requests\Api\V1\UpdatePasswordRequests\UpdatePasswordRequest;
@@ -12,7 +13,6 @@ use App\Repositories\ForgotPasswordRepositories\ForgotPasswordRepositoryInterfac
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -81,9 +81,8 @@ class ForgotPasswordController extends Controller
             return ApiResponse::error(__('api.user_not_registered_with_password'),null, 409);
         }
         $token = Str::uuid();
-        $hashedToken = Hash::make($token);
-        $this->forgotPasswordRepository->updateOrCreateTokenByEmail($request->email, $hashedToken);
-        Mail::to($request->email)->queue(new PasswordResetMail($request->email, $token));
+        $this->forgotPasswordRepository->updateOrCreateTokenByEmail($request->email, $token);
+        Mail::to($request->email)->queue(new PasswordResetMail($token));
         return ApiResponse::success(__('api.password_reset_link_sent'));
     }
 
@@ -112,7 +111,7 @@ class ForgotPasswordController extends Controller
      *     ),
      *
      *     @OA\Response(
-     *         response=400,
+     *         response=404,
      *         description="Неверный токен сброса пароля",
      *         @OA\JsonContent(
      *             type="object",
@@ -152,17 +151,108 @@ class ForgotPasswordController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $dataResetPasswordToken = $this->forgotPasswordRepository->getInfoAboutTokenResetPassword($request->email);
-        if (!$dataResetPasswordToken || !Hash::check($request->token, $dataResetPasswordToken->token)) {
-            return ApiResponse::error(__('api.invalid_password_reset_token'));
+        $dataResetPasswordToken = $this->forgotPasswordRepository->getInfoAboutTokenResetPassword($request->token);
+        if (!$dataResetPasswordToken) {
+            return ApiResponse::error(__('api.invalid_password_reset_token'), null, 404);
         }
         if (Carbon::parse($dataResetPasswordToken->created_at)->addMinutes(60)->isPast()) {
             return ApiResponse::error(__('api.expired_password_reset_token'), null, 410);
         }
-        $this->forgotPasswordRepository->updatePassword($request->email, $request->password);
-        $this->forgotPasswordRepository->deleteTokenByEmail($request->email);
+        $this->forgotPasswordRepository->updatePassword($dataResetPasswordToken->email, $request->password);
+        $this->forgotPasswordRepository->deleteToken($request->token);
         return ApiResponse::success(__('api.user_password_changed_successfully'));
     }
+
+
+    /**
+     * @OA\Post  (
+     *     path="/password/infoAboutToken",
+     *     summary="Получение информации о корректности токена сброса пароля",
+     *     description="Позволяет получить информацию о корректности токена сброса пароля",
+     *     operationId="infoAboutTokenResetPassword",
+     *     tags={"Сброс пароля для неавторизованного пользователя"},
+     *     @OA\Parameter(ref="#/components/parameters/AcceptLanguageHeader"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/PasswordResetTokenRequest")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о корректном токене сброса пароля",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="success"),
+     *             @OA\Property(property="message", type="string", example="Токен валиден"),
+     *             @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(
+     *                       property="count_seconds",
+     *                       type="integer",
+     *                       example=123
+     *                   ),
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Неверный токен сброса пароля",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Неверный токен сброса пароля"),
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=410,
+     *         description="Истёкший токен сброса пароля",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string",enum={"success", "error"}, example="error"),
+     *             @OA\Property(property="message", type="string", example="Срок действия токена истёк"),
+     *             @OA\Property(property="errors", type="object", nullable=true, example=null)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибки валидации запроса",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                      property="token",
+     *                      type="array",
+     *                      @OA\Items(type="string", example="The field 'token' is required.")
+     *                  ),
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function infoAboutToken(PasswordResetTokenRequest $request)
+    {
+        $dataResetPasswordToken = $this->forgotPasswordRepository->getInfoAboutTokenResetPassword($request->token);
+        if (!$dataResetPasswordToken) {
+            return ApiResponse::error(__('api.invalid_password_reset_token'), null, 404);
+        }
+        $timeEndOfToken = Carbon::parse($dataResetPasswordToken->created_at)->addMinutes(60);
+        $secondsLeft = Carbon::now()->diffInSeconds($timeEndOfToken);
+        if($secondsLeft <= 0)
+        {
+            return ApiResponse::error("Срок действия токена истёк", null, 410);
+        }
+        return ApiResponse::success("Токен валиден", (object)["count_seconds"=>(int)$secondsLeft]);
+    }
+
 
     /**
      * @OA\Post(
@@ -208,4 +298,6 @@ class ForgotPasswordController extends Controller
         $this->forgotPasswordRepository->updatePassword($authUser->email, $request->password);
         return ApiResponse::success(__('api.user_password_changed_successfully'));
     }
+
+
 }

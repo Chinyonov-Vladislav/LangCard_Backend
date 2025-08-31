@@ -46,6 +46,7 @@ Route::prefix('v1')->group(callback: function () {
             Route::get('{provider}/callback', [AuthController::class, 'handleCallback'])->name('handleCallback');
         });
         Route::prefix('password')->group(function () {
+            Route::post('infoAboutToken', [ForgotPasswordController::class, 'infoAboutToken'])->name('infoAboutToken');
             Route::post('sendResetLink', [ForgotPasswordController::class, 'sendResetLink'])->name('sendResetLink');
             Route::post('reset', [ForgotPasswordController::class, 'resetPassword'])->name('resetPassword');
         });

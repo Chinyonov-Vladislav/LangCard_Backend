@@ -12,15 +12,12 @@ use Illuminate\Queue\SerializesModels;
 class PasswordResetMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    private string $email;
     private string $token;
     /**
      * Create a new message instance.
      */
-    public function __construct(string $email, string $token)
+    public function __construct(string $token)
     {
-        $this->email = $email;
         $this->token = $token;
     }
 
@@ -39,8 +36,7 @@ class PasswordResetMail extends Mailable
      */
     public function content(): Content
     {
-        $url = url('/api/password/reset?token='.$this->token.'&email='.$this->email);
-
+        $url = url('http://localhost:5173/reset-password?token='.$this->token);
         return new Content(
             view: 'emails.emailResetPasswordLink',
             with: [

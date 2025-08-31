@@ -1007,7 +1007,7 @@
                             }
                         }
                     },
-                    "400": {
+                    "404": {
                         "description": "Неверный токен сброса пароля",
                         "content": {
                             "application/json": {
@@ -1089,6 +1089,156 @@
                                                     "The password must be at least 8 characters."
                                                 ]
                                             }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/password/infoAboutToken": {
+            "get": {
+                "tags": [
+                    "Сброс пароля для неавторизованного пользователя"
+                ],
+                "summary": "Получение информации о корректности токена сброса пароля",
+                "description": "Позволяет получить информацию о корректности токена сброса пароля",
+                "operationId": "infoAboutTokenResetPassword",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/AcceptLanguageHeader"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PasswordResetTokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Информация о корректном токене сброса пароля",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ],
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Токен валиден"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "count_seconds": {
+                                                    "type": "integer",
+                                                    "example": 123
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Неверный токен сброса пароля",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ],
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Неверный токен сброса пароля"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "Истёкший токен сброса пароля",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ],
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Срок действия токена истёк"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибки валидации запроса",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The field 'token' is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1223,18 +1373,38 @@
                                         },
                                         "data": {
                                             "properties": {
-                                                "timezone_job_id": {
-                                                    "description": "Идентификатор фоновой задачи на определение часового пояса (если не удалось получить сразу)",
-                                                    "type": "string",
-                                                    "example": "job_12345"
-                                                },
-                                                "currency_job_id": {
-                                                    "description": "Идентификатор фоновой задачи на определение валюты (если не удалось получить сразу)",
+                                                "job_id": {
+                                                    "description": "Идентификатор фоновой задачи на определение валюты, часового пояса и языка пользователя",
                                                     "type": "string",
                                                     "example": "job_67890"
                                                 }
                                             },
                                             "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Ошибка пользовательского соглашения",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Пользователь должен быть согласен с условиями использования сайта"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
                                             "nullable": true
                                         }
                                     },
@@ -1261,38 +1431,37 @@
                                                         "type": "string",
                                                         "example": "Поле email уже используется."
                                                     }
+                                                },
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле name обязательно для заполнения."
+                                                    }
+                                                },
+                                                "password": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле password обязательно для заполнения."
+                                                    }
+                                                },
+                                                "mailing_enabled": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле mailing_enabled обязательно для заполнения."
+                                                    }
+                                                },
+                                                "terms_accepted": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле terms_accepted обязательно для заполнения."
+                                                    }
                                                 }
                                             },
                                             "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при регистрации пользователя",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "enum": [
-                                                "success",
-                                                "error"
-                                            ],
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Не удалось зарегистрировать пользователя."
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": null,
-                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -4183,152 +4352,6 @@
                 ]
             }
         },
-        "/profile/{id}": {
-            "get": {
-                "tags": [
-                    "Профиль"
-                ],
-                "summary": "Получение профиля пользователя",
-                "description": "Возвращает данные профиля. Если id не передан — возвращаются данные авторизованного пользователя.",
-                "operationId": "320a30f61ad09f7ce9e45334f0c00018",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/AcceptLanguageHeader"
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID пользователя. Если не указан — берётся ID авторизованного пользователя.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Данные профиля успешно получены",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Данные о профиле пользователя с id = 15"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "item": {
-                                                    "$ref": "#/components/schemas/ProfileUserResource"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "420": {
-                        "$ref": "#/components/responses/NotVerifiedEmail"
-                    },
-                    "404": {
-                        "description": "Пользователь не найден",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Пользователь с id = 15 не найден"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "nullable": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/profile/": {
-            "get": {
-                "tags": [
-                    "Профиль"
-                ],
-                "summary": "Получение профиля авторизованного пользователя",
-                "description": "Возвращает данные профиля авторизованного пользователя",
-                "operationId": "87e59e5bafdf593b4a2dd77a78324b07",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/AcceptLanguageHeader"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Данные профиля успешно получены",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Данные о профиле пользователя с id = 15"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "item": {
-                                                    "$ref": "#/components/schemas/ProfileUserResource"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "420": {
-                        "$ref": "#/components/responses/NotVerifiedEmail"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/promocodes": {
             "post": {
                 "tags": [
@@ -6407,6 +6430,31 @@
                             }
                         }
                     },
+                    "500": {
+                        "description": "Ошибка при проверки ключа двухфакторной авторизации с использованием Google Authenticator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Произошла ошибка при проверки ключа двухфакторной авторизации с использованием Google Authenticator"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "Ошибка валидации полей запроса",
                         "content": {
@@ -7490,6 +7538,20 @@
                 },
                 "type": "object"
             },
+            "PasswordResetTokenRequest": {
+                "title": "Password Reset Token Request (Данные для проверки коррректности токена сброса пароля)",
+                "description": "Данные, необходимые для проверки коррректности токена сброса пароля",
+                "required": [
+                    "token"
+                ],
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "bd65600d-8669-4903-8a14-af88203add38"
+                    }
+                },
+                "type": "object"
+            },
             "RegistrationRequest": {
                 "title": "Registration Request (Данные для регистрации)",
                 "description": "Данные, необходимые для регистрации нового пользователя",
@@ -7497,7 +7559,9 @@
                     "name",
                     "email",
                     "password",
-                    "password_confirmation"
+                    "password_confirmation",
+                    "mailing_enabled",
+                    "terms_accepted"
                 ],
                 "properties": {
                     "name": {
@@ -7522,6 +7586,14 @@
                         "type": "string",
                         "format": "password",
                         "example": "Str0ngP@ssword!"
+                    },
+                    "mailing_enabled": {
+                        "type": "boolean",
+                        "example": "true"
+                    },
+                    "terms_accepted": {
+                        "type": "boolean",
+                        "example": "true"
                     }
                 },
                 "type": "object"
@@ -9082,14 +9154,6 @@
             "LanguageResource": {
                 "title": "Language Resource (ресурс языка)",
                 "description": "Ресурс языка с основными свойствами",
-                "required": [
-                    "id",
-                    "name",
-                    "native_name",
-                    "code",
-                    "flag_url",
-                    "locale"
-                ],
                 "properties": {
                     "id": {
                         "description": "Уникальный идентификатор языка",
@@ -9121,6 +9185,18 @@
                         "description": "Локаль языка",
                         "type": "string",
                         "example": "en_US"
+                    },
+                    "created_at": {
+                        "description": "Дата создания записи",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-28T12:34:56Z"
+                    },
+                    "updated_at": {
+                        "description": "Дата изменения записи",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-28T12:34:56Z"
                     }
                 },
                 "type": "object"
@@ -9194,134 +9270,6 @@
                             },
                             "type": "object"
                         }
-                    }
-                },
-                "type": "object"
-            },
-            "ProfileUserResource": {
-                "title": "Profile User Resource (ресурс профиля пользователя)",
-                "required": [
-                    "id",
-                    "name",
-                    "email",
-                    "created_at",
-                    "vip_status_time_end",
-                    "invite_code"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID пользователя",
-                        "type": "integer",
-                        "example": 101
-                    },
-                    "name": {
-                        "description": "Имя пользователя",
-                        "type": "string",
-                        "example": "Владислав"
-                    },
-                    "email": {
-                        "description": "Email пользователя",
-                        "type": "string",
-                        "format": "email",
-                        "example": "user@example.com",
-                        "nullable": true
-                    },
-                    "vip_status_time_end": {
-                        "description": "Дата окончания VIP-статуса или null",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-09-10 12:00:00",
-                        "nullable": true
-                    },
-                    "invite_code": {
-                        "description": "Код приглашения (доступен только аутентифицированному пользователю)",
-                        "type": "string",
-                        "example": "ABCD1234",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Дата и время создания пользователя",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-04-01 10:30:00"
-                    },
-                    "currency": {
-                        "description": "Валюта пользователя",
-                        "required": [
-                            "id",
-                            "name",
-                            "code",
-                            "symbol"
-                        ],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Российский рубль"
-                            },
-                            "code": {
-                                "type": "string",
-                                "example": "RUB"
-                            },
-                            "symbol": {
-                                "type": "string",
-                                "example": "₽"
-                            }
-                        },
-                        "type": "object",
-                        "nullable": true
-                    },
-                    "timezone": {
-                        "description": "Часовой пояс пользователя",
-                        "required": [
-                            "id",
-                            "name",
-                            "offset_utc"
-                        ],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 5
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Europe/Moscow"
-                            },
-                            "offset_utc": {
-                                "type": "string",
-                                "example": "+03:00"
-                            }
-                        },
-                        "type": "object",
-                        "nullable": true
-                    },
-                    "inviter": {
-                        "description": "Пользователь, который пригласил",
-                        "required": [
-                            "id",
-                            "name",
-                            "avatar"
-                        ],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 45
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Иван Иванов"
-                            },
-                            "avatar": {
-                                "type": "string",
-                                "format": "uri",
-                                "example": "https://example.com/avatar.jpg"
-                            }
-                        },
-                        "type": "object",
-                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -10046,10 +9994,6 @@
         {
             "name": "Языки",
             "description": "Языки"
-        },
-        {
-            "name": "Профиль",
-            "description": "Профиль"
         },
         {
             "name": "Промокоды",

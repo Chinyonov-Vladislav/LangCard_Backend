@@ -61,7 +61,16 @@ class RegistrationController extends Controller
      *              )
      *          )
      *      ),
-     *
+     *      @OA\Response(
+     *          response=409,
+     *          description="Ошибка пользовательского соглашения",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="status", type="string", example="error"),
+     *              @OA\Property(property="message", type="string", example="Пользователь должен быть согласен с условиями использования сайта"),
+     *              @OA\Property(property="data", type="object", nullable=true, example=null)
+     *          )
+     *     ),
      *     @OA\Response(
      *         response=422,
      *         description="Ошибка валидации входных данных",
@@ -90,14 +99,23 @@ class RegistrationController extends Controller
      *                        type="array",
      *                        @OA\Items(type="string", example="Поле mailing_enabled обязательно для заполнения.")
      *                    ),
+     *                @OA\Property(
+     *                         property="terms_accepted",
+     *                         type="array",
+     *                         @OA\Items(type="string", example="Поле terms_accepted обязательно для заполнения.")
+     *                     ),
      *             )
      *         )
-     *     ),
+     *     )
      * )
      */
     public function registration(RegistrationRequest $request): JsonResponse
     {
-        $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, null, mailing_enabled: $request->mailing_enabled);
+        if($request->terms_accepted === false)
+        {
+            return ApiResponse::error("Пользователь должен быть согласен с условиями использования сайта",null, 409);
+        }
+        $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, mailing_enabled: $request->mailing_enabled);
         $resultDataFromApi = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
         $this->achievementService->startAchievementsForNewUser($user->id);
         if($resultDataFromApi['status'] === TypeStatusRequestApi::delayed->name) {
