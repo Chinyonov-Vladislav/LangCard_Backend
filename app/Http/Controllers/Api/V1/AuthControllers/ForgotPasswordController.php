@@ -140,10 +140,16 @@ class ForgotPasswordController extends Controller
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Validation failed"),
      *             @OA\Property(property="errors", type="object",
-     *                 example={
-     *                   "email": {"The email field is required."},
-     *                   "password": {"The password must be at least 8 characters."}
-     *                 }
+     *                 @OA\Property(
+     *                      property="password",
+     *                      type="array",
+     *                      @OA\Items(type="string", example="'Поле \'password\' обязательно для заполнения.'")
+     *                  ),
+     *                 @OA\Property(
+     *                       property="token",
+     *                       type="array",
+     *                       @OA\Items(type="string", example="'Поле \'token\' обязательно для заполнения.'")
+     *                   ),
      *             )
      *         )
      *     )
@@ -298,6 +304,4 @@ class ForgotPasswordController extends Controller
         $this->forgotPasswordRepository->updatePassword($authUser->email, $request->password);
         return ApiResponse::success(__('api.user_password_changed_successfully'));
     }
-
-
 }

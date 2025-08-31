@@ -31,8 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkChatIsDelete'=>CheckChatIsDeleteMiddleware::class,
         ]);
         $middleware->trustProxies(at: '*');
-        $middleware->appendToGroup('api', HandleCors::class);
-        //$middleware->append(HandleCors::class);
+        //$middleware->appendToGroup('api', HandleCors::class);
+        $middleware->append(HandleCors::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {

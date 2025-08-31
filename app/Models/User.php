@@ -103,6 +103,11 @@ class User extends Authenticatable implements ColumnLabelsableInterface
         'remember_token',
     ];
 
+    public function providers(): Builder|HasMany
+    {
+        return $this->hasMany(UserProvider::class, 'user_id');
+    }
+
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class, 'currency_id');

@@ -70,11 +70,9 @@ Route::prefix('v1')->group(callback: function () {
                 Route::prefix("users")->group(function () {
                    Route::get("/nearBy", [UserController::class, 'nearBy'])->name('nearBy');
                 });
-
                 Route::prefix('timezones')->group(function () {
                     Route::get('timezones', [TimezoneController::class, 'getTimezones'])->name('getTimezones');
                 });
-
                 Route::get('columns/{nameTable}', [ColumnsController::class, 'getColumns'])->name('getColumns');
                 Route::get('filtersData/{nameTable}', [FilterDataController::class, 'getFilterData'])->name('getFilterData');
                 Route::prefix('profile')->group(function () {

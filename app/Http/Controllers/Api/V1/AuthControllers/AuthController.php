@@ -12,6 +12,7 @@ use App\Repositories\InviteCodeRepositories\InviteCodeRepositoryInterface;
 use App\Repositories\LoginRepositories\LoginRepositoryInterface;
 use App\Repositories\RegistrationRepositories\RegistrationRepositoryInterface;
 use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
+use App\Repositories\UserProviderRepositories\UserProviderRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Services\AchievementService;
 use App\Services\ApiServices\ApiService;
@@ -44,6 +45,8 @@ class AuthController extends Controller
     protected TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository;
 
     protected InviteCodeRepositoryInterface $inviteCodeRepository;
+
+    protected UserProviderRepositoryInterface $userProviderRepository;
     protected ApiService $apiService;
 
     protected GenerationAuthTokenService $generationAuthTokenService;
@@ -61,13 +64,14 @@ class AuthController extends Controller
     private array $acceptedCallbackProviders = ['google', 'yandex', 'microsoft'];
 
 
-    public function __construct(LoginRepositoryInterface        $loginRepository,
-                                RegistrationRepositoryInterface $registrationRepository,
-                                UserRepositoryInterface         $userRepository,
-                                AuthTokenRepositoryInterface    $authTokenRepository,
-                                EmailVerificationCodeRepository $emailVerificationCodeRepository,
-                                InviteCodeRepositoryInterface   $inviteCodeRepository,
-                                TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository)
+    public function __construct(LoginRepositoryInterface                  $loginRepository,
+                                RegistrationRepositoryInterface           $registrationRepository,
+                                UserRepositoryInterface                   $userRepository,
+                                AuthTokenRepositoryInterface              $authTokenRepository,
+                                EmailVerificationCodeRepository           $emailVerificationCodeRepository,
+                                InviteCodeRepositoryInterface             $inviteCodeRepository,
+                                TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository,
+                                UserProviderRepositoryInterface           $userProviderRepository)
     {
         $this->loginRepository = $loginRepository;
         $this->registrationRepository = $registrationRepository;
@@ -76,6 +80,7 @@ class AuthController extends Controller
         $this->emailVerificationCodeRepository = $emailVerificationCodeRepository;
         $this->inviteCodeRepository = $inviteCodeRepository;
         $this->twoFactorAuthorizationRepository = $twoFactorAuthorizationRepository;
+        $this->userProviderRepository = $userProviderRepository;
         $this->apiService = app(ApiService::class);
         $this->downloadFileService = new DownloadFileService();
         $this->saveFileService = new SaveFileService();
@@ -155,12 +160,11 @@ class AuthController extends Controller
         if ($user->email === null || $user->password === null || !Hash::check($request->password, $user->password)) {
             return ApiResponse::error(__('api.user_not_found_by_email'), null, 404);
         }
-        if($user->two_factor_email_enabled || $user->google2fa_enable)
-        {
+        if ($user->two_factor_email_enabled || $user->google2fa_enable) {
             $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
             $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
-            return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled,
-                'two_factor_google_authenticator_enabled'=>$user->google2fa_enable, 'two_factor_token'=>$tokenData['token']]);
+            return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled' => $user->two_factor_email_enabled,
+                'two_factor_google_authenticator_enabled' => $user->google2fa_enable, 'two_factor_token' => $tokenData['token']]);
         }
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
         $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
@@ -311,8 +315,8 @@ class AuthController extends Controller
             if ($provider === 'microsoft') {
                 $microsoftUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $microsoftUser->id;
-                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($user === null) {
+                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                if ($userProviderData === null) {
                     if ($microsoftUser->nickname !== null) {
                         $nickname = $microsoftUser->nickname;
                     } else {
@@ -323,36 +327,50 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser(name:$nickname, email:$microsoftUser->email, password: null, avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
+                    $idToken = $microsoftUser->accessTokenResponseBody['id_token']; // берём id_token из ответа
+                    $parts = explode('.', $idToken);
+                    $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+                    $email = $payload['email'] ?? $payload['preferred_username'] ?? null;
+                    $user = $this->loginRepository->getUserByEmail($email);
+                    if ($user === null) {
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $email, password: null, avatar_url: $pathToAvatar);
+                    }
+                    $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
                     $isNewUser = true;
+                } else {
+                    $user = $userProviderData->user;
                 }
-            }
-            else if ($provider == 'yandex') {
+            } else if ($provider == 'yandex') {
                 $yandexUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $yandexUser->id;
-                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($user === null) {
+                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                if ($userProviderData === null) {
                     $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($yandexUser->email);
                     $pathToAvatar = null;
                     if ($yandexUser->avatar !== null) {
                         $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser(name:$nickname, email: $yandexUser->email, password: null,avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
+                    $user = $this->loginRepository->getUserByEmail($yandexUser->email);
+                    if ($user === null) {
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $yandexUser->email, password: null, avatar_url: $pathToAvatar);
+                    }
+                    $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
                     $isNewUser = true;
+                } else {
+                    $user = $userProviderData->user;
                 }
 
-            }
-            else // авторизация через гугл
+            } else // авторизация через гугл
             {
                 $googleUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $googleUser->getId();
-                $user = $this->loginRepository->getUserByProviderAndProviderId($providerId, $provider);
-                if ($user === null) {
+                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                if ($userProviderData === null) {
                     $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($googleUser->getEmail());
                     $avatarURL = $googleUser->getAvatar();
                     $pathToAvatar = null;
@@ -360,41 +378,49 @@ class AuthController extends Controller
                         $avatar = $this->downloadFileService->downloadFile($avatarURL);
                         $pathToAvatar = $this->saveFileService->saveFile($avatar);
                     }
-                    $user = $this->registrationRepository->registerUser(name:$nickname, email:$googleUser->getEmail(), password: null,avatar_url: $pathToAvatar, providerId: $providerId, providerName: $provider);
+                    $user = $this->loginRepository->getUserByEmail($googleUser->getEmail());
+                    if ($user === null) {
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $googleUser->getEmail(), password: null, avatar_url: $pathToAvatar);
+                    }
+                    $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
                     $isNewUser = true;
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
+                } else {
+                    $user = $userProviderData->user;
                 }
             }
-            if($isNewUser) {
+            if ($isNewUser) {
                 $this->achievementService->startAchievementsForNewUser($user->id);
                 if ($user->email_verified_at === null) {
                     $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
                 }
-                if (!$this->userRepository->hasUserInviteCode(auth()->user()->id)) {
+                if (!$this->userRepository->hasUserInviteCode($user->id)) {
                     $code = $this->generationInviteCodeService->generateInviteCode();
-                    $this->inviteCodeRepository->saveInviteCode(auth()->user()->id, $code);
+                    $this->inviteCodeRepository->saveInviteCode($user->id, $code);
                 }
             }
-            if($user->two_factor_email_enabled || $user->google2fa_enable)
-            {
+            if ($user->two_factor_email_enabled || $user->google2fa_enable) {
                 $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
                 $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
-                return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled'=>$user->two_factor_email_enabled,
-                    'two_factor_google_authenticator_enabled'=>$user->google2fa_enable, 'two_factor_token'=>$tokenData['token']]);
+                return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled' => $user->two_factor_email_enabled,
+                    'two_factor_google_authenticator_enabled' => $user->google2fa_enable, 'two_factor_token' => $tokenData['token']]);
             }
             $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
             $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
             $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
             return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
-        } catch (Exception $exception) {
-            logger($exception->getMessage());
-            return ApiResponse::error(__('api.common_mistake_authorization_with_oauth', ['provider' => $provider]), null, 500);
+        }
+        catch (Exception $exception)
+        {
+            logger($exception);
+            return ApiResponse::error(__("api.common_mistake_authorization_with_oauth", ["provider"=>$provider]), null,500);
         }
 
     }
+
     /**
      * @OA\Post(
      *     path="/refresh",
@@ -454,8 +480,7 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $refreshToken = $request->cookie('refresh_token');
-        if($refreshToken === null)
-        {
+        if ($refreshToken === null) {
             return ApiResponse::error('Невалидный refresh токен', null, 401);
         }
         $hashedToken = $this->generationAuthTokenService->hashToken($refreshToken);

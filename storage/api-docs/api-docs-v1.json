@@ -430,8 +430,7 @@
                             "type": "string",
                             "enum": [
                                 "google",
-                                "yandex",
-                                "microsoft"
+                                "yandex"
                             ]
                         }
                     }
@@ -521,8 +520,7 @@
                             "type": "string",
                             "enum": [
                                 "google",
-                                "yandex",
-                                "microsoft"
+                                "yandex"
                             ]
                         }
                     }
@@ -1080,15 +1078,23 @@
                                             "example": "Validation failed"
                                         },
                                         "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "email": [
-                                                    "The email field is required."
-                                                ],
-                                                "password": [
-                                                    "The password must be at least 8 characters."
-                                                ]
-                                            }
+                                            "properties": {
+                                                "password": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "'Поле \\'password\\' обязательно для заполнения.'"
+                                                    }
+                                                },
+                                                "token": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "'Поле \\'token\\' обязательно для заполнения.'"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1100,7 +1106,7 @@
             }
         },
         "/password/infoAboutToken": {
-            "get": {
+            "post": {
                 "tags": [
                     "Сброс пароля для неавторизованного пользователя"
                 ],

@@ -25,14 +25,12 @@ class RegistrationRepository implements RegistrationRepositoryInterface
                                  ?int $language_id = null,
                                  ?float $latitude = null,
                                  ?float $longitude = null,
-                                 ?string $providerId = null,
-                                 ?string $providerName = null,
                                  bool $mailing_enabled = false ): User
     {
         $user = new User();
         $user->name = $name;
         $user->email = $email;
-        $user->password = bcrypt($password);
+        $user->password = $password === null ? null : bcrypt($password);
         if($timezone_id !== null){
             $user->timezone_id = $timezone_id;
             $user->last_time_update_timezone = Carbon::now();
@@ -54,8 +52,6 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         $user->avatar_url = $avatar_url;
         $user->type_user = $type_user;
         $user->vip_status_time_end = $vip_status_time_end;
-        $user->provider_id = $providerId;
-        $user->provider = $providerName;
         $user->mailing_enabled = $mailing_enabled;
         $user->save();
         return $user;

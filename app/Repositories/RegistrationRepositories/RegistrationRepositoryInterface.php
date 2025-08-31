@@ -18,8 +18,6 @@ interface RegistrationRepositoryInterface
                                  ?int $language_id = null,
                                  ?float $latitude = null,
                                  ?float $longitude = null,
-                                 ?string $providerId = null,
-                                 ?string $providerName = null,
                                  bool $mailing_enabled = false,
     ): User;
 }

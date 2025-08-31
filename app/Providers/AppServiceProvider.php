@@ -80,6 +80,8 @@ use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRe
 use App\Repositories\TwoFactorAuthorizationRepositories\TwoFactorAuthorizationRepositoryInterface;
 use App\Repositories\UserAchievementRepositories\UserAchievementRepository;
 use App\Repositories\UserAchievementRepositories\UserAchievementRepositoryInterface;
+use App\Repositories\UserProviderRepositories\UserProviderRepository;
+use App\Repositories\UserProviderRepositories\UserProviderRepositoryInterface;
 use App\Repositories\UserRepositories\UserRepository;
 use App\Repositories\UserRepositories\UserRepositoryInterface;
 use App\Repositories\UserTestAnswerRepositories\UserTestAnswerRepository;
@@ -156,6 +158,7 @@ class AppServiceProvider extends ServiceProvider
             EmotionRepositoryInterface::class=>EmotionRepository::class,
             MessageEmotionRepositoryInterface::class=>MessageEmotionRepository::class,
             AttachmentRepositoryInterface::class => AttachmentRepository::class,
+            UserProviderRepositoryInterface::class => UserProviderRepository::class,
         ];
         foreach ($repositories as $interface => $model) {
             $this->app->bind($interface, $model);

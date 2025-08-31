@@ -21,9 +21,6 @@ return new class extends Migration
             $table->dateTime('email_verification_code_expiration_date')->nullable()->default(null);
             $table->timestamp('email_verified_at')->nullable()->default(null);
             $table->string('invite_code', 16)->nullable()->default(null);
-            $table->string('provider_id')->nullable();
-            $table->enum('provider', ['google', 'yandex', 'microsoft'])->nullable();
-            $table->unique(['provider_id', 'provider']);
             $table->enum('type_user', ['admin', 'user'])->default('user');
             $table->foreignId('currency_id')->nullable()->default(null)->references('id')->on('currencies')
                 ->onUpdate('cascade')->nullOnDelete();
