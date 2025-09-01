@@ -430,7 +430,8 @@
                             "type": "string",
                             "enum": [
                                 "google",
-                                "yandex"
+                                "yandex",
+                                "microsoft"
                             ]
                         }
                     }
@@ -520,17 +521,18 @@
                             "type": "string",
                             "enum": [
                                 "google",
-                                "yandex"
+                                "yandex",
+                                "microsoft"
                             ]
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешная авторизация или требуется двухфакторная авторизация",
+                        "description": "Успешная авторизация",
                         "headers": {
                             "Set-Cookie": {
-                                "description": "Refresh токен устанавливается в cookie (если 2FA отключена)",
+                                "description": "Refresh токен устанавливается в cookie",
                                 "schema": {
                                     "type": "string",
                                     "example": "refresh_token=abc123; HttpOnly; Secure"
@@ -540,66 +542,73 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "properties": {
-                                                "status": {
-                                                    "enum": [
-                                                        "success",
-                                                        "error"
-                                                    ],
-                                                    "example": "success"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Авторизация прошла успешно."
-                                                },
-                                                "data": {
-                                                    "properties": {
-                                                        "access_token": {
-                                                            "type": "string",
-                                                            "example": "eyJhbGciOiJIUzI1..."
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
+                                    "properties": {
+                                        "status": {
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ],
+                                            "example": "success"
                                         },
-                                        {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизация прошла успешно."
+                                        },
+                                        "data": {
                                             "properties": {
-                                                "status": {
-                                                    "enum": [
-                                                        "success",
-                                                        "error"
-                                                    ],
-                                                    "example": "success"
-                                                },
-                                                "message": {
+                                                "access_token": {
                                                     "type": "string",
-                                                    "example": "Включена двухфакторная авторизация"
+                                                    "example": "eyJhbGciOiJIUzI1..."
                                                 },
-                                                "data": {
-                                                    "properties": {
-                                                        "two_factor_email_enabled": {
-                                                            "type": "boolean",
-                                                            "example": true
-                                                        },
-                                                        "two_factor_google_authenticator_enabled": {
-                                                            "type": "boolean",
-                                                            "example": false
-                                                        },
-                                                        "two_factor_token": {
-                                                            "type": "string",
-                                                            "example": "abc123def456"
-                                                        }
-                                                    },
-                                                    "type": "object"
+                                                "email_is_verified": {
+                                                    "type": "boolean",
+                                                    "example": "true"
                                                 }
                                             },
                                             "type": "object"
                                         }
-                                    ]
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Требуется двухфакторная авторизация",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ],
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Включена двухфакторная авторизация"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "two_factor_email_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "two_factor_google_authenticator_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "two_factor_token": {
+                                                    "type": "string",
+                                                    "example": "eyJhbGciOiJIUzI1..."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }

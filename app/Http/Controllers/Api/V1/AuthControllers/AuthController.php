@@ -249,43 +249,44 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Успешная авторизация или требуется двухфакторная авторизация",
+     *         description="Успешная авторизация",
      *         @OA\JsonContent(
-     *             oneOf={
-     *                 @OA\Schema(
-     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
-     *                     @OA\Property(property="message", type="string", example="Авторизация прошла успешно."),
-     *                     @OA\Property(
-     *                         property="data",
-     *                         type="object",
-     *                         @OA\Property(property="access_token", type="string", example="eyJhbGciOiJIUzI1...")
-     *                     )
-     *                 ),
-     *                 @OA\Schema(
-     *                     @OA\Property(property="status", enum={"success", "error"}, example="success"),
-     *                     @OA\Property(property="message", type="string", example="Включена двухфакторная авторизация"),
-     *                     @OA\Property(
-     *                         property="data",
-     *                         type="object",
-     *                         @OA\Property(property="two_factor_email_enabled", type="boolean", example=true),
-     *                         @OA\Property(property="two_factor_google_authenticator_enabled", type="boolean", example=false),
-     *                         @OA\Property(property="two_factor_token", type="string", example="abc123def456")
-     *                     )
-     *                 )
-     *             }
+     *                @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *                @OA\Property(property="message", type="string", example="Авторизация прошла успешно."),
+     *                @OA\Property(
+     *                    property="data",
+     *                    type="object",
+     *                    @OA\Property(property="access_token", type="string", example="eyJhbGciOiJIUzI1..."),
+     *                    @OA\Property(property="email_is_verified", type="boolean", example="true"),
+     *               )
      *         ),
      *         @OA\Header(
      *             header="Set-Cookie",
-     *             description="Refresh токен устанавливается в cookie (если 2FA отключена)",
+     *             description="Refresh токен устанавливается в cookie",
      *             @OA\Schema(type="string", example="refresh_token=abc123; HttpOnly; Secure")
      *         )
      *     ),
+     *     @OA\Response(
+     *          response=202,
+     *          description="Требуется двухфакторная авторизация",
+     *          @OA\JsonContent(
+     *                 @OA\Property(property="status", enum={"success", "error"}, example="success"),
+     *                 @OA\Property(property="message", type="string", example="Включена двухфакторная авторизация"),
+     *                 @OA\Property(
+     *                     property="data",
+     *                     type="object",
+     *                     @OA\Property(property="two_factor_email_enabled", type="boolean", example="true"),
+     *                     @OA\Property(property="two_factor_google_authenticator_enabled", type="boolean", example="true"),
+     *                     @OA\Property(property="two_factor_token", type="string", example="eyJhbGciOiJIUzI1..."),
+     *                )
+     *          ),
+     *      ),
      *     @OA\Response(
      *         response=404,
      *         description="Провайдер не поддерживается",
      *         @OA\JsonContent(
      *             type="object",
-     *              required={"status", "message", "data"},
+     *             required={"status", "message", "data"},
      *             @OA\Property(property="status", enum={"success", "error"}, example="success"),
      *             @OA\Property(property="message", type="string", example="Провайдер 'facebook' не поддерживается."),
      *             @OA\Property(property="data", type="object", nullable=true, example=null)
@@ -315,75 +316,75 @@ class AuthController extends Controller
             if ($provider === 'microsoft') {
                 $microsoftUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $microsoftUser->id;
-                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                $userProviderData = $this->userProviderRepository->getDataProviderWithUser($providerId, $provider);
                 if ($userProviderData === null) {
-                    if ($microsoftUser->nickname !== null) {
-                        $nickname = $microsoftUser->nickname;
-                    } else {
-                        $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($microsoftUser->email);
-                    }
-                    $pathToAvatar = null;
-                    if ($microsoftUser->avatar !== null) {
-                        $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
-                        $pathToAvatar = $this->saveFileService->saveFile($avatar);
-                    }
+
                     $idToken = $microsoftUser->accessTokenResponseBody['id_token']; // берём id_token из ответа
                     $parts = explode('.', $idToken);
                     $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
                     $email = $payload['email'] ?? $payload['preferred_username'] ?? null;
                     $user = $this->loginRepository->getUserByEmail($email);
                     if ($user === null) {
+                        if ($microsoftUser->nickname !== null) {
+                            $nickname = $microsoftUser->nickname;
+                        } else {
+                            $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($microsoftUser->email);
+                        }
+                        $pathToAvatar = null;
+                        if ($microsoftUser->avatar !== null) {
+                            $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
+                            $pathToAvatar = $this->saveFileService->saveFile($avatar);
+                        }
                         $user = $this->registrationRepository->registerUser(name: $nickname, email: $email, password: null, avatar_url: $pathToAvatar);
+                        $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
-                    $isNewUser = true;
                 } else {
                     $user = $userProviderData->user;
                 }
             } else if ($provider == 'yandex') {
                 $yandexUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $yandexUser->id;
-                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                $userProviderData = $this->userProviderRepository->getDataProviderWithUser($providerId, $provider);
                 if ($userProviderData === null) {
-                    $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($yandexUser->email);
-                    $pathToAvatar = null;
-                    if ($yandexUser->avatar !== null) {
-                        $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
-                        $pathToAvatar = $this->saveFileService->saveFile($avatar);
-                    }
                     $user = $this->loginRepository->getUserByEmail($yandexUser->email);
                     if ($user === null) {
+                        $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($yandexUser->email);
+                        $pathToAvatar = null;
+                        if ($yandexUser->avatar !== null) {
+                            $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
+                            $pathToAvatar = $this->saveFileService->saveFile($avatar);
+                        }
                         $user = $this->registrationRepository->registerUser(name: $nickname, email: $yandexUser->email, password: null, avatar_url: $pathToAvatar);
+                        $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
                     $this->userRepository->updateCurrencyId($user, $currencyIdFromDatabase);*/
-                    $isNewUser = true;
                 } else {
                     $user = $userProviderData->user;
                 }
-
             } else // авторизация через гугл
             {
                 $googleUser = Socialite::driver($provider)->stateless()->user();
                 $providerId = $googleUser->getId();
-                $userProviderData = $this->userProviderRepository->getUserByDataOfProvider($providerId, $provider);
+                $userProviderData = $this->userProviderRepository->getDataProviderWithUser($providerId, $provider);
                 if ($userProviderData === null) {
-                    $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($googleUser->getEmail());
-                    $avatarURL = $googleUser->getAvatar();
-                    $pathToAvatar = null;
-                    if ($avatarURL !== null) {
-                        $avatar = $this->downloadFileService->downloadFile($avatarURL);
-                        $pathToAvatar = $this->saveFileService->saveFile($avatar);
-                    }
                     $user = $this->loginRepository->getUserByEmail($googleUser->getEmail());
                     if ($user === null) {
+                        $nickname = $this->nicknameExtractorFromEmailService->extractNicknameFromEmail($googleUser->getEmail());
+                        $avatarURL = $googleUser->getAvatar();
+                        $pathToAvatar = null;
+                        if ($avatarURL !== null) {
+                            $avatar = $this->downloadFileService->downloadFile($avatarURL);
+                            $pathToAvatar = $this->saveFileService->saveFile($avatar);
+                        }
                         $user = $this->registrationRepository->registerUser(name: $nickname, email: $googleUser->getEmail(), password: null, avatar_url: $pathToAvatar);
+                        $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
-                    $isNewUser = true;
                     /*$timezoneId = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::timezoneRequest);
                     $currencyIdFromDatabase = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::currencyRequest);
                     $this->userRepository->updateTimezoneId($user, $timezoneId);
@@ -394,31 +395,27 @@ class AuthController extends Controller
             }
             if ($isNewUser) {
                 $this->achievementService->startAchievementsForNewUser($user->id);
-                if ($user->email_verified_at === null) {
-                    $this->emailVerificationCodeRepository->verificateEmailAddress($user->id);
-                }
-                if (!$this->userRepository->hasUserInviteCode($user->id)) {
-                    $code = $this->generationInviteCodeService->generateInviteCode();
-                    $this->inviteCodeRepository->saveInviteCode($user->id, $code);
-                }
+                $user = $this->emailVerificationCodeRepository->verificateEmailAddressForUser($user);
+                $code = $this->generationInviteCodeService->generateInviteCode();
+                $this->inviteCodeRepository->saveInviteCode($user->id, $code);
             }
             if ($user->two_factor_email_enabled || $user->google2fa_enable) {
                 $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
                 $this->twoFactorAuthorizationRepository->updateOrSaveTwoFactorAuthorizationCode($tokenData['hashedToken'], $user->id);
                 return ApiResponse::success('Включена двухфакторная авторизация', (object)['two_factor_email_enabled' => $user->two_factor_email_enabled,
-                    'two_factor_google_authenticator_enabled' => $user->google2fa_enable, 'two_factor_token' => $tokenData['token']]);
+                    'two_factor_google_authenticator_enabled' => $user->google2fa_enable, 'two_factor_token' => $tokenData['token']],202);
             }
             $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
             $arrayTokens = $this->generationAuthTokenService->generateTokens($user, $countMinutesExpirationRefreshToken);
             $cookieForRefreshToken = $this->cookieService->getCookieForRefreshToken($arrayTokens['refresh_token'], $countMinutesExpirationRefreshToken);
-            return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)['access_token' => $arrayTokens['access_token']])->withCookie($cookieForRefreshToken);
+            return ApiResponse::success(__('api.success_authorization_with_oauth'), (object)['access_token' => $arrayTokens['access_token'],
+                "email_is_verified"=>$user->email_verified_at !== null])->withCookie($cookieForRefreshToken);
         }
         catch (Exception $exception)
         {
             logger($exception);
             return ApiResponse::error(__("api.common_mistake_authorization_with_oauth", ["provider"=>$provider]), null,500);
         }
-
     }
 
     /**

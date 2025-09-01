@@ -41,8 +41,8 @@ class TwoFactorAuthorizationController extends Controller
     protected GenerationRecoveryCodeService $generationRecoveryCodeService;
 
     public function __construct(TwoFactorAuthorizationRepositoryInterface $twoFactorAuthorizationRepository,
-                                LoginRepositoryInterface $loginRepository,
-                                RecoveryCodeRepositoryInterface $recoveryCodeRepository)
+                                LoginRepositoryInterface                  $loginRepository,
+                                RecoveryCodeRepositoryInterface           $recoveryCodeRepository)
     {
         $this->twoFactorAuthorizationRepository = $twoFactorAuthorizationRepository;
         $this->loginRepository = $loginRepository;
@@ -134,55 +134,45 @@ class TwoFactorAuthorizationController extends Controller
         $authUser = auth()->user();
         switch ($request->type) {
             case TypeTwoFactorAuthorization::email->value:
-                if($authUser->email === null)
-                {
+                if ($authUser->email === null) {
                     return ApiResponse::error('Вы не можете включить двухфакторную авторизацию через электронную почту, так как аккаунт не имеет электронной почты', null, 409);
                 }
                 $authUser = $this->twoFactorAuthorizationRepository->switchTwoFactorAuthenticationEmail($authUser->id);
-                if(!$authUser->two_factor_email_enabled) {
-                    if(!$authUser->google2fa_enable) {
-                        $this->recoveryCodeRepository->deleteRecoveryCodesForUser($authUser->id);
-                    }
-                    return ApiResponse::success('Двухфакторная авторизация через электронную почту отключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled, 'google2fa_enable'=>$authUser->google2fa_enable]);
+                if (!$authUser->two_factor_email_enabled && !$authUser->google2fa_enable) {
+                    $this->recoveryCodeRepository->deleteRecoveryCodesForUser($authUser->id);
+                    return ApiResponse::success('Двухфакторная авторизация через электронную почту отключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled, 'google2fa_enable' => $authUser->google2fa_enable]);
                 }
                 $recoveryCodes = $this->createRecoveryCodesForUser($authUser->id);
-                return ApiResponse::success('Двухфакторная авторизация через электронную почту подключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled,'google2fa_enable'=>$authUser->google2fa_enable, 'recovery_codes'=>$recoveryCodes]);
+                return ApiResponse::success('Двухфакторная авторизация через электронную почту подключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled, 'google2fa_enable' => $authUser->google2fa_enable, 'recovery_codes' => $recoveryCodes]);
             case TypeTwoFactorAuthorization::googleAuthenticator->value:
                 $authUser = $this->twoFactorAuthorizationRepository->switchTwoFactorGoogleAuthenticator($authUser->id);
-                if($authUser->google2fa_enable === false) {
-                    if(!$authUser->two_factor_email_enabled) {
-                        $this->recoveryCodeRepository->deleteRecoveryCodesForUser($authUser->id);
-                    }
-                    return ApiResponse::success('Двухфакторная авторизация через Google Authenticator была отключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled, 'google2fa_enable'=>$authUser->google2fa_enable]);
+                if (!$authUser->google2fa_enable && !$authUser->two_factor_email_enabled) {
+                    $this->recoveryCodeRepository->deleteRecoveryCodesForUser($authUser->id);
+                    return ApiResponse::success('Двухфакторная авторизация через Google Authenticator была отключена', (object)['email2fa_enable' => $authUser->two_factor_email_enabled, 'google2fa_enable' => $authUser->google2fa_enable]);
                 }
-                else
-                {
-                    $google2fa = app('pragmarx.google2fa');
-                    try {
-                        $secret = $google2fa->generateSecretKey();
-                    }
-                    catch (Exception $exception)
-                    {
-                        logger("Ошибка при подключении двухфакторной авторизации через Google Authenticator: ".$exception->getMessage());
-                        return ApiResponse::success("Произошла ошибка при подключении двухфакторной авторизации через Google Authenticator", null,500);
-                    }
-                    $encryptedSecret = Crypt::encrypt($secret);
-                    $authUser = $this->twoFactorAuthorizationRepository->setSecretKeyForTwoFactorAuthenticationGoogle($authUser->id, $encryptedSecret);
-                    $qrUrl = $google2fa->getQRCodeUrl(
-                        config('app.name'),
-                        $authUser->name,
-                        $secret
-                    );
-                    $qr = QrCode::format('svg')->size(200)->generate($qrUrl);
-                    $recoveryCodes = $this->createRecoveryCodesForUser($authUser->id);
-                    return ApiResponse::success('Двухфакторная авторизация через Google Authenticator подключена. Отсканируйте код в мобильном приложении аутентификатора',
-                        (object)[
-                            'email2fa_enable' => $authUser->two_factor_email_enabled,
-                            'google2fa_enable'=>$authUser->google2fa_enable,
-                            'secret'=>$secret,
-                            'qr'=>base64_encode($qr),
-                            'recovery_codes'=>$recoveryCodes]);
+                $google2fa = app('pragmarx.google2fa');
+                try {
+                    $secret = $google2fa->generateSecretKey();
+                } catch (Exception $exception) {
+                    logger("Ошибка при подключении двухфакторной авторизации через Google Authenticator: " . $exception->getMessage());
+                    return ApiResponse::success("Произошла ошибка при подключении двухфакторной авторизации через Google Authenticator", null, 500);
                 }
+                $encryptedSecret = Crypt::encrypt($secret);
+                $authUser = $this->twoFactorAuthorizationRepository->setSecretKeyForTwoFactorAuthenticationGoogle($authUser->id, $encryptedSecret);
+                $qrUrl = $google2fa->getQRCodeUrl(
+                    config('app.name'),
+                    $authUser->name,
+                    $secret
+                );
+                $qr = QrCode::format('svg')->size(200)->generate($qrUrl);
+                $recoveryCodes = $this->createRecoveryCodesForUser($authUser->id);
+                return ApiResponse::success('Двухфакторная авторизация через Google Authenticator подключена. Отсканируйте код в мобильном приложении аутентификатора',
+                    (object)[
+                        'email2fa_enable' => $authUser->two_factor_email_enabled,
+                        'google2fa_enable' => $authUser->google2fa_enable,
+                        'secret' => $secret,
+                        'qr' => base64_encode($qr),
+                        'recovery_codes' => $recoveryCodes]);
             default:
                 return ApiResponse::error('Неподдерживаемый тип двухфакторной авторизации');
         }
@@ -254,16 +244,14 @@ class TwoFactorAuthorizationController extends Controller
     {
         $hashedToken = $this->generationTwoFactorAuthorizationToken->hashToken($request->token);
         $tokenInfo = $this->twoFactorAuthorizationRepository->getTokenWithUser($hashedToken);
-        if($tokenInfo === null)
-        {
+        if ($tokenInfo === null) {
             return ApiResponse::error('Отсутствует запись о токене двухфакторной авторизации', null, 404);
         }
-        if($tokenInfo->user->two_factor_email_enabled === false)
-        {
-            return ApiResponse::success('Для пользователя с email - адресом выключена двухфакторная авторизация',null, 409 );
+        if ($tokenInfo->user->two_factor_email_enabled === false) {
+            return ApiResponse::success('Для пользователя с email - адресом выключена двухфакторная авторизация', null, 409);
         }
         $countMinutes = (int)config('app.expiration_verification_email_code');
-        $code = implode('', array_map(fn () => rand(0, 9), range(1, 6)));
+        $code = implode('', array_map(fn() => rand(0, 9), range(1, 6)));
         $expirationTime = Carbon::now()->addMinutes($countMinutes);
         $this->twoFactorAuthorizationRepository->updateDataTwoFactorAuthenticationEmail($tokenInfo->user->id, $code, $expirationTime);
         Mail::to($tokenInfo->user->email)->queue(new EmailTwoFactorAuthorizationMail($code, $countMinutes));
@@ -341,25 +329,20 @@ class TwoFactorAuthorizationController extends Controller
     {
         $hashedToken = $this->generationTwoFactorAuthorizationToken->hashToken($request->token);
         $tokenInfo = $this->twoFactorAuthorizationRepository->getTokenWithUser($hashedToken);
-        if($tokenInfo === null)
-        {
+        if ($tokenInfo === null) {
             return ApiResponse::error('Отсутствует запись о токене двухфакторной авторизации', null, 404);
         }
-        if($tokenInfo->user->two_factor_email_enabled === false)
-        {
-            return ApiResponse::error('Для текущего пользователя отключена двухфакторная авторизация',null, 409);
+        if ($tokenInfo->user->two_factor_email_enabled === false) {
+            return ApiResponse::error('Для текущего пользователя отключена двухфакторная авторизация', null, 409);
         }
-        if($tokenInfo->user->two_factor_code_email === null || $tokenInfo->user->two_factor_code_email_expiration_date === null)
-        {
-            return ApiResponse::error('Текущий пользователь не запрашивал код для двухфакторной авторизации по электронной почте',null, 409);
+        if ($tokenInfo->user->two_factor_code_email === null || $tokenInfo->user->two_factor_code_email_expiration_date === null) {
+            return ApiResponse::error('Текущий пользователь не запрашивал код для двухфакторной авторизации по электронной почте', null, 409);
         }
         $expirationDate = Carbon::parse($tokenInfo->user->two_factor_code_email_expiration_date);
-        if($expirationDate->isPast())
-        {
-            return ApiResponse::error('Срок действия кода истёк. Запросите новый код',null, 410);
+        if ($expirationDate->isPast()) {
+            return ApiResponse::error('Срок действия кода истёк. Запросите новый код', null, 410);
         }
-        if($request->code !== $tokenInfo->user->two_factor_code_email)
-        {
+        if ($request->code !== $tokenInfo->user->two_factor_code_email) {
             return ApiResponse::error('Введенный код некорректен! Повторите попытку ввода!');
         }
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
@@ -462,14 +445,12 @@ class TwoFactorAuthorizationController extends Controller
     {
         $hashedToken = $this->generationTwoFactorAuthorizationToken->hashToken($request->token);
         $tokenInfo = $this->twoFactorAuthorizationRepository->getTokenWithUser($hashedToken);
-        if($tokenInfo === null)
-        {
+        if ($tokenInfo === null) {
             return ApiResponse::error('Отсутствует запись о токене двухфакторной авторизации', null, 404);
         }
         $user = $tokenInfo->user;
-        if($user->google2fa_enable === false)
-        {
-            return ApiResponse::success('Двухфакторная авторизация через Google Authenticator отключена',null, 409 );
+        if ($user->google2fa_enable === false) {
+            return ApiResponse::success('Двухфакторная авторизация через Google Authenticator отключена', null, 409);
         }
         $google2fa = app('pragmarx.google2fa');
         try {
@@ -580,25 +561,21 @@ class TwoFactorAuthorizationController extends Controller
     {
         $hashedToken = $this->generationTwoFactorAuthorizationToken->hashToken($request->token);
         $tokenInfo = $this->twoFactorAuthorizationRepository->getTokenWithUser($hashedToken);
-        if($tokenInfo === null)
-        {
+        if ($tokenInfo === null) {
             return ApiResponse::error('Отсутствует запись о токене двухфакторной авторизации', null, 404);
         }
         $user = $tokenInfo->user;
-        if($user->google2fa_enable === false && $user->two_factor_email_enabled === false)
-        {
+        if ($user->google2fa_enable === false && $user->two_factor_email_enabled === false) {
             return ApiResponse::error('Для данного пользователя отключена двухфакторная авторизация', null, 409);
         }
         $countRecoveryCode = $this->recoveryCodeRepository->getCountActiveRecoveryCodeForUser($user->id);
-        if($countRecoveryCode === 0)
-        {
-            return ApiResponse::error('Для текущего пользователя не осталось активных кодов восстановления',null, 403);
+        if ($countRecoveryCode === 0) {
+            return ApiResponse::error('Для текущего пользователя не осталось активных кодов восстановления', null, 403);
         }
         $hashedRecoveryCode = $this->generationRecoveryCodeService->hashRecoveryCode($request->recovery_code);
         $recoveryCode = $this->recoveryCodeRepository->getRecoveryCodeForUser($user->id, $hashedRecoveryCode);
-        if($recoveryCode === null)
-        {
-            return ApiResponse::error('Не найден данный резервный код для пользователя',null, 404);
+        if ($recoveryCode === null) {
+            return ApiResponse::error('Не найден данный резервный код для пользователя', null, 404);
         }
         $this->recoveryCodeRepository->deleteRecoveryCode($user->id, $hashedRecoveryCode);
         $countMinutesExpirationRefreshToken = config('sanctum.expiration_refresh_token');
@@ -660,17 +637,15 @@ class TwoFactorAuthorizationController extends Controller
     public function refreshRecoveryCodes()
     {
         $authUser = auth()->user();
-        if($authUser->google2fa_enable === false && $authUser->two_factor_email_enabled === false)
-        {
+        if ($authUser->google2fa_enable === false && $authUser->two_factor_email_enabled === false) {
             return ApiResponse::error('Для данного пользователя отключена двухфакторная авторизация, поэтому обновление резервных кодов невозможно', null, 404);
         }
         $countRecoveryCode = $this->recoveryCodeRepository->getCountActiveRecoveryCodeForUser(auth()->id());
-        if($countRecoveryCode !== 0)
-        {
-            return ApiResponse::error('Текущий авторизованный пользователь не использовал все ранее предоставленные резервные коды',null, 409);
+        if ($countRecoveryCode !== 0) {
+            return ApiResponse::error('Текущий авторизованный пользователь не использовал все ранее предоставленные резервные коды', null, 409);
         }
         $recoveryCodes = $this->createRecoveryCodesForUser($authUser->id);
-        return ApiResponse::success('Новые резервные коды', (object)['recovery_codes'=>$recoveryCodes]);
+        return ApiResponse::success('Новые резервные коды', (object)['recovery_codes' => $recoveryCodes]);
     }
 
     // TODO перенести в какой-то другой файл
@@ -680,11 +655,9 @@ class TwoFactorAuthorizationController extends Controller
         $countRecoveryCodes = config('app.count_recovery_codes');
         $this->generationRecoveryCodeService->setUserId($userId);
         $recoveryCodes = [];
-        for($indexCurrentRecoveryCode = 0; $indexCurrentRecoveryCode < $countRecoveryCodes; $indexCurrentRecoveryCode++)
-        {
+        for ($indexCurrentRecoveryCode = 0; $indexCurrentRecoveryCode < $countRecoveryCodes; $indexCurrentRecoveryCode++) {
             $recoveryCodeData = $this->generationRecoveryCodeService->generateRecoveryCode();
-            if($recoveryCodeData === null)
-            {
+            if ($recoveryCodeData === null) {
                 continue;
             }
             $recoveryCode = $recoveryCodeData['recoveryCode'];

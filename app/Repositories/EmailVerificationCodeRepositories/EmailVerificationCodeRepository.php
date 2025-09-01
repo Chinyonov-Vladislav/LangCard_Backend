@@ -34,8 +34,16 @@ class EmailVerificationCodeRepository implements EmailVerificationCodeRepository
 
     public function verificateEmailAddress(int $userId): void
     {
-        $currentTime = Carbon::now();
         $this->model->where('id','=', $userId)->update(['email_verification_code'=>null,
-            'email_verification_code_expiration_date'=>null, 'email_verified_at'=>$currentTime ]);
+            'email_verification_code_expiration_date'=>null, 'email_verified_at'=>Carbon::now() ]);
+    }
+
+    public function verificateEmailAddressForUser(User $user): User
+    {
+        $user->email_verification_code=null;
+        $user->email_verification_code_expiration_date = null;
+        $user->email_verified_at = Carbon::now();
+        $user->save();
+        return $user;
     }
 }

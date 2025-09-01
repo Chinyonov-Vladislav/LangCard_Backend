@@ -14,7 +14,7 @@ class UserProviderRepository implements UserProviderRepositoryInterface
     }
 
 
-    public function getUserByDataOfProvider(string $providerId, string $provider): ?UserProvider
+    public function getDataProviderWithUser(string $providerId, string $provider): ?UserProvider
     {
         return $this->model->with(['user'])->where('provider_id', $providerId)->where('provider', $provider)->first();
     }
