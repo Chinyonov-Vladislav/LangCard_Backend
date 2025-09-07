@@ -15,7 +15,7 @@ return [
             ],
             'routes' => [
                 'api' => 'api/documentation/v1',
-                'docs' => '/api/v1/',
+                'docs' => '/api/v1',
                 'oauth2_callback' => '/api/v1/callback',
             ],
             'paths' => [
@@ -29,6 +29,7 @@ return [
                     base_path('app/Http/Controllers/Api/V1'),
                     base_path('app/Http/Resources/V1'),
                 ],
+                'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
                 'excludes' => [],
             ],
         ],
@@ -44,7 +45,7 @@ return [
             ],
             'routes' => [
                 'api' => 'api/documentation/v2',
-                'docs' => '/api/v2/',
+                'docs' => '/api/v2',
                 'oauth2_callback' => '/api/v2/callback',
             ],
             'paths' => [
@@ -58,10 +59,10 @@ return [
                     base_path('app/Http/Controllers/Api/V2'),
                     base_path('app/Http/Resources/V2'),
                 ],
+                'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
                 'excludes' => [],
             ],
         ],
-
     ],
     'v1' => [
         'routes' => [
