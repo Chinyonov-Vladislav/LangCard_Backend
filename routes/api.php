@@ -1,6 +1,4 @@
 <?php
-
-
 use App\Http\Controllers\Api\V1\AchievementController;
 use App\Http\Controllers\Api\V1\AnswerController;
 use App\Http\Controllers\Api\V1\AuthControllers\AuthController;
@@ -52,7 +50,7 @@ Route::prefix('v1')->group(callback: function () {
         });
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::prefix('twoFactorVerification')->group(function () {
-            Route::post('', [TwoFactorAuthorizationController::class, 'enableDisableTwoFactorAuthorization'])->name('enableDisableTwoFactorAuthorization')->middleware('auth:sanctum');
+            Route::post('/', [TwoFactorAuthorizationController::class, 'enableDisableTwoFactorAuthorization'])->name('enableDisableTwoFactorAuthorization')->middleware('auth:sanctum');
             Route::post('sendEmailWithCode', [TwoFactorAuthorizationController::class, 'sendEmailWithCode'])->name('sendEmailWithCode');
             Route::post('confirmEmailCode', [TwoFactorAuthorizationController::class, 'confirmCode'])->name('confirmCode');
             Route::post('verifyCodeGoogle2fa', [TwoFactorAuthorizationController::class, 'verifyCodeGoogle2fa'])->name('verifyCodeGoogle2fa');

@@ -47,7 +47,8 @@ class UpdatePasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password' => ['required', 'string', 'confirmed', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/']
+            'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'password_confirmation'=>['required', 'string', "same:password"],
         ];
     }
     public function messages(): array
@@ -57,6 +58,9 @@ class UpdatePasswordRequest extends FormRequest
             'password.confirmed' => __('validation.password_confirmed'),
             'password.min'=>__('validation.password_min'),
             'password.regex' => __('validation.password_regex'),
+            'password_confirmation.required' => "The field \"password_confirmation\" is required.",
+            'password_confirmation.string' => "The field \"password_confirmation\" must be a string.",
+            'password_confirmation.same' => "The field \"password_confirmation\" must be a same as field \"password\".",
         ];
     }
 }

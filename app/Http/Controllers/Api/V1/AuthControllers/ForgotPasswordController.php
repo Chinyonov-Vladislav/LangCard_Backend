@@ -145,6 +145,11 @@ class ForgotPasswordController extends Controller
      *                      type="array",
      *                      @OA\Items(type="string", example="'Поле \'password\' обязательно для заполнения.'")
      *                  ),
+     *                @OA\Property(
+     *                       property="password_confirmation",
+     *                       type="array",
+     *                       @OA\Items(type="string", example="'Поле \'password_confirmation\' обязательно для заполнения.'")
+     *                   ),
      *                 @OA\Property(
      *                       property="token",
      *                       type="array",
@@ -283,7 +288,7 @@ class ForgotPasswordController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=403,
+     *         response=409,
      *         description="Пользователь не зарегистрирован с email и паролем, смена пароля невозможна",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
@@ -299,7 +304,7 @@ class ForgotPasswordController extends Controller
         $authUser = auth()->user();
         if($authUser->email === null)
         {
-            return ApiResponse::error('Текущий авторизованный пользователь не зарегистрирован с использованием email - адреса и пароля, поэтому не обладает возможностью сменить пароль!',null, 403);
+            return ApiResponse::error('Текущий авторизованный пользователь не обладает электронным адресом, поэтому не имеет возможность сменить пароль!',null, 409);
         }
         $this->forgotPasswordRepository->updatePassword($authUser->email, $request->password);
         return ApiResponse::success(__('api.user_password_changed_successfully'));

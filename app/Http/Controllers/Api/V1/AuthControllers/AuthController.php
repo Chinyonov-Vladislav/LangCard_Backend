@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\AuthControllers;
 
+use App\Enums\TypeRequestApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AuthRequests\AuthRequest;
 use App\Http\Responses\ApiResponse;
+use App\Mail\InviteCodeMail;
+use App\Mail\PasswordForAccountCreatedByOauthMail;
 use App\Models\User;
 use App\Repositories\AuthTokenRepositories\AuthTokenRepositoryInterface;
 use App\Repositories\EmailVerificationCodeRepositories\EmailVerificationCodeRepository;
@@ -19,6 +22,7 @@ use App\Services\ApiServices\ApiService;
 use App\Services\CookieService;
 use App\Services\FileServices\DownloadFileService;
 use App\Services\FileServices\SaveFileService;
+use App\Services\GeneratingPasswordService;
 use App\Services\GenerationCodeServices\GenerationAuthTokenService;
 use App\Services\GenerationCodeServices\GenerationInviteCodeService;
 use App\Services\GenerationCodeServices\GenerationTwoFactorAuthorizationToken;
@@ -28,6 +32,7 @@ use Exception;
 use FontLib\Table\Type\name;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -63,6 +68,8 @@ class AuthController extends Controller
 
     private array $acceptedCallbackProviders = ['google', 'yandex', 'microsoft'];
 
+    protected GeneratingPasswordService $generatingPasswordService;
+
 
     public function __construct(LoginRepositoryInterface                  $loginRepository,
                                 RegistrationRepositoryInterface           $registrationRepository,
@@ -90,6 +97,7 @@ class AuthController extends Controller
         $this->cookieService = new CookieService();
         $this->generationTwoFactorAuthorizationToken = new GenerationTwoFactorAuthorizationToken();
         $this->achievementService = new AchievementService();
+        $this->generatingPasswordService = new GeneratingPasswordService();
     }
 
     /**
@@ -158,7 +166,7 @@ class AuthController extends Controller
     {
         $user = $this->loginRepository->getUserByEmail($request->email);
         if ($user->email === null || $user->password === null || !Hash::check($request->password, $user->password)) {
-            return ApiResponse::error(__('api.user_not_found_by_email'), null, 404);
+            return ApiResponse::error(__('api.wrong_login_or_password'), null, 404);
         }
         if ($user->two_factor_email_enabled || $user->google2fa_enable) {
             $tokenData = $this->generationTwoFactorAuthorizationToken->generateTwoFactorAuthorizationToken();
@@ -305,7 +313,7 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function handleCallback($provider)
+    public function handleCallback($provider, Request $request)
     {
         try {
             if (!in_array($provider, $this->acceptedCallbackProviders)) {
@@ -335,7 +343,9 @@ class AuthController extends Controller
                             $avatar = $this->downloadFileService->downloadFile($microsoftUser->avatar);
                             $pathToAvatar = $this->saveFileService->saveFile($avatar);
                         }
-                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $email, password: null, avatar_url: $pathToAvatar);
+                        $password = $this->generatingPasswordService->generatePassword();
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $email, password: $password, avatar_url: $pathToAvatar);
+                        Mail::to($user->email)->queue(new PasswordForAccountCreatedByOauthMail($provider, $user->email, $password));
                         $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
@@ -355,7 +365,9 @@ class AuthController extends Controller
                             $avatar = $this->downloadFileService->downloadFile($yandexUser->avatar);
                             $pathToAvatar = $this->saveFileService->saveFile($avatar);
                         }
-                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $yandexUser->email, password: null, avatar_url: $pathToAvatar);
+                        $password = $this->generatingPasswordService->generatePassword();
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $yandexUser->email, password: $password, avatar_url: $pathToAvatar);
+                        Mail::to($user->email)->queue(new PasswordForAccountCreatedByOauthMail($provider, $user->email, $password));
                         $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
@@ -381,7 +393,9 @@ class AuthController extends Controller
                             $avatar = $this->downloadFileService->downloadFile($avatarURL);
                             $pathToAvatar = $this->saveFileService->saveFile($avatar);
                         }
-                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $googleUser->getEmail(), password: null, avatar_url: $pathToAvatar);
+                        $password = $this->generatingPasswordService->generatePassword();
+                        $user = $this->registrationRepository->registerUser(name: $nickname, email: $googleUser->getEmail(), password: $password, avatar_url: $pathToAvatar);
+                        Mail::to($user->email)->queue(new PasswordForAccountCreatedByOauthMail($provider, $user->email, $password));
                         $isNewUser = true;
                     }
                     $newUserProvider = $this->userProviderRepository->saveUserProvider($user->id, $providerId, $provider);
@@ -394,6 +408,7 @@ class AuthController extends Controller
                 }
             }
             if ($isNewUser) {
+                $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
                 $this->achievementService->startAchievementsForNewUser($user->id);
                 $user = $this->emailVerificationCodeRepository->verificateEmailAddressForUser($user);
                 $code = $this->generationInviteCodeService->generateInviteCode();

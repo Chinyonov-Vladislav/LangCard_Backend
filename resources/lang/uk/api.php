@@ -3,7 +3,7 @@ return [
     'hunspell_not_installed' => 'Пакунок Hunspell не встановлений у системі',
     'error_working_hunspell' => 'Під час роботи з утилітою Hunspell сталася помилка',
     'dictionary_lang_for_hunspell_not_found' => 'Словник для мови з кодом :language не знайдено',
-    'user_not_found_by_email' => 'Користувача із зазначеною електронною адресою та паролем не знайдено',
+    'wrong_login_or_password' => 'Невірний логін або пароль',
     'success_authorization_email' => 'Користувача успішно авторизовано за допомогою електронної пошти та пароля',
     'auth_provider_not_supported' => 'Провайдер авторизації :provider не підтримується',
     'getting_oauth_url' => 'Отримано OAuth URL авторизації для провайдера :provider',

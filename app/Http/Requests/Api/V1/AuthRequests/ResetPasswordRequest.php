@@ -11,15 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
  *     schema="ResetPasswordRequest",
  *     title="Reset Password Request (Данные для сброса пароля неавторизованного пользователя)",
  *     description="Данные, необходимые для сброса пароля пользователя",
- *     required={"email", "password", "password_confirmation", "token"},
+ *     required={"password", "password_confirmation", "token"},
  *
- *     @OA\Property(
- *         property="email",
- *         type="string",
- *         format="email",
- *         maxLength=255,
- *         example="user@example.com"
- *     ),
  *     @OA\Property(
  *         property="password",
  *         type="string",
@@ -59,8 +52,9 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password' => ['required','string','confirmed','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
-            'token' => ['required','string']
+            'password' => ['required','string','min:8','regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'password_confirmation'=>['required', 'string', 'same:password'],
+            'token' => ['required','string'],
         ];
     }
     public function messages(): array
@@ -68,9 +62,11 @@ class ResetPasswordRequest extends FormRequest
         return [
             'password.required' => __('validation.password_required'),
             'password.string' => __('validation.password_string'),
-            'password.confirmed' => __('validation.password_confirmed'),
             'password.min'=>__('validation.password_min'),
             'password.regex' => __('validation.password_regex'),
+            'password_confirmation.required' => "The field \"password_confirmation\" is required.",
+            'password_confirmation.string' => "The field \"password_confirmation\" must be a string.",
+            'password_confirmation.same' => "The field \"password_confirmation\" must be a same as field \"password\".",
             'token.required' => __('validation.token_required'),
             'token.string' => __('validation.token_string')
         ];

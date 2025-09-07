@@ -3,7 +3,7 @@ return [
     'hunspell_not_installed' => 'حزمة Hunspell غير مثبتة على النظام',
     'error_working_hunspell' => 'حدث خطأ أثناء العمل بأداة Hunspell',
     'dictionary_lang_for_hunspell_not_found' => 'لم يتم العثور على قاموس للغة ذات الرمز :language',
-    'user_not_found_by_email' => 'لم يتم العثور على مستخدم بعنوان البريد الإلكتروني وكلمة المرور المحددين',
+    'wrong_login_or_password' => 'اسم المستخدم أو كلمة المرور غير صحيحة',
     'success_authorization_email' => 'تمت مصادقة المستخدم بنجاح عبر البريد الإلكتروني وكلمة المرور',
     'auth_provider_not_supported' => 'موفر المصادقة :provider غير مدعوم',
     'getting_oauth_url' => 'تم استلام رابط تفويض OAuth للموفر :provider',

@@ -3,7 +3,7 @@ return [
     'hunspell_not_installed' => 'The Hunspell package is not installed on the system',
     'error_working_hunspell' => 'An error occurred while working with the Hunspell utility',
     'dictionary_lang_for_hunspell_not_found' => 'No dictionary found for the language with code :language',
-    'user_not_found_by_email' => 'No user found with the specified email address and password',
+    'wrong_login_or_password' => 'Wrong login or password',
     'success_authorization_email' => 'User successfully authorized via email and password',
     'auth_provider_not_supported' => 'Authorization provider :provider is not supported',
     'getting_oauth_url' => 'OAuth authorization URL received for provider :provider',

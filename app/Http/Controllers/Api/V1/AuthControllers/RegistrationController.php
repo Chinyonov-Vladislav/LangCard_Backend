@@ -94,6 +94,11 @@ class RegistrationController extends Controller
      *                       type="array",
      *                       @OA\Items(type="string", example="Поле password обязательно для заполнения.")
      *                   ),
+     *              @OA\Property(
+     *                        property="password_confirmation",
+     *                        type="array",
+     *                        @OA\Items(type="string", example="Поле password_confirmation обязательно для заполнения.")
+     *                    ),
      *                @OA\Property(
      *                        property="mailing_enabled",
      *                        type="array",

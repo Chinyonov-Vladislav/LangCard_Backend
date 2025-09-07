@@ -1095,6 +1095,13 @@
                                                         "example": "'Поле \\'password\\' обязательно для заполнения.'"
                                                     }
                                                 },
+                                                "password_confirmation": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "'Поле \\'password_confirmation\\' обязательно для заполнения.'"
+                                                    }
+                                                },
                                                 "token": {
                                                     "type": "array",
                                                     "items": {
@@ -1313,7 +1320,7 @@
                             }
                         }
                     },
-                    "403": {
+                    "409": {
                         "description": "Пользователь не зарегистрирован с email и паролем, смена пароля невозможна",
                         "content": {
                             "application/json": {
@@ -1459,6 +1466,13 @@
                                                     "items": {
                                                         "type": "string",
                                                         "example": "Поле password обязательно для заполнения."
+                                                    }
+                                                },
+                                                "password_confirmation": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Поле password_confirmation обязательно для заполнения."
                                                     }
                                                 },
                                                 "mailing_enabled": {
@@ -7617,18 +7631,11 @@
                 "title": "Reset Password Request (Данные для сброса пароля неавторизованного пользователя)",
                 "description": "Данные, необходимые для сброса пароля пользователя",
                 "required": [
-                    "email",
                     "password",
                     "password_confirmation",
                     "token"
                 ],
                 "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 255,
-                        "example": "user@example.com"
-                    },
                     "password": {
                         "type": "string",
                         "format": "password",

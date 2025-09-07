@@ -3,7 +3,7 @@ return [
     'hunspell_not_installed' => '系统中未安装 Hunspell 软件包',
     'error_working_hunspell' => '使用 Hunspell 工具时发生错误',
     'dictionary_lang_for_hunspell_not_found' => '未找到代码为 :language 的语言词典',
-    'user_not_found_by_email' => '未找到指定邮箱和密码的用户',
+    'wrong_login_or_password' => '登录名或密码错误',
     'success_authorization_email' => '用户通过邮箱和密码成功授权',
     'auth_provider_not_supported' => '不支持的授权提供商 :provider',
     'getting_oauth_url' => '已获取 :provider 提供商的 OAuth 授权链接',

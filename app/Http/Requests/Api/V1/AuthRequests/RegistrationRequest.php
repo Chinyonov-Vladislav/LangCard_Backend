@@ -69,7 +69,8 @@ class RegistrationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'confirmed', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'password_confirmation'=>['required', 'string', 'same:password'],
             'mailing_enabled'=>['required','boolean'],
             'terms_accepted'=>["required","boolean"],
         ];
@@ -86,9 +87,11 @@ class RegistrationRequest extends FormRequest
             'email.required' => __('validation.email_required'),
             'email.unique' => __('validation.email_unique'),
             'password.required' => __('validation.password_required'),
-            'password.confirmed' => __('validation.password_confirmed'),
             'password.min'=>__('validation.password_min'),
             'password.regex' => __('validation.password_regex'),
+            'password_confirmation.required' => "The field \"password_confirmation\" is required.",
+            'password_confirmation.string' => "The field \"password_confirmation\" must be a string.",
+            'password_confirmation.same' => "The field \"password_confirmation\" must be a same as field \"password\".",
             'mailing_enabled.required' => "The field \"mailing_enabled\" is required.",
             'mailing_enabled.boolean' => "The field \"mailing_enabled\" must be boolean.",
             "terms_accepted.required" => "The field \"terms_accepted\" is required.",
