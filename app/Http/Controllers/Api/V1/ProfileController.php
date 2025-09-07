@@ -11,7 +11,7 @@ use App\Http\Requests\Api\V1\ProfileRequests\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\ProfileRequests\UpdateTimezoneRequest;
 use App\Http\Resources\V1\CurrencyResources\CurrencyResource;
 use App\Http\Resources\V1\LanguageResources\LanguageResource;
-use App\Http\Resources\v1\ProfileUserResources\ProfileUserResource;
+use App\Http\Resources\V1\ProfileUserResources\ProfileUserResource;
 use App\Http\Resources\V1\TimezoneResources\TimezoneResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\JobStatusRepositories\JobStatusRepositoryInterface;

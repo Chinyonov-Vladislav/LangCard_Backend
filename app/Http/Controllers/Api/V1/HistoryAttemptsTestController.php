@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\HistoryAttemptRequests\GetHistoryAttemptsRequest;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
-use App\Http\Resources\v1\UserTestResultResources\UserTestResultResource;
+use App\Http\Resources\V1\UserTestResultResources\UserTestResultResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
 use App\Services\PaginatorService;

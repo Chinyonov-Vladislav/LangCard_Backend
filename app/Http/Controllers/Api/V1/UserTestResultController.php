@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\TestRequests\EndTestRequest;
 use App\Http\Requests\Api\V1\TestRequests\StartTestRequest;
-use App\Http\Resources\v1\QuestionResources\QuestionResource;
+use App\Http\Resources\V1\QuestionResources\QuestionResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\QuestionAnswerRepository\QuestionAnswerRepositoryInterface;
 use App\Repositories\QuestionRepositories\QuestionRepositoryInterface;

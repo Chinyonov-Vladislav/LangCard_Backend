@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\v1\DailyRewardResources\DailyRewardResource;
+use App\Http\Resources\V1\DailyRewardResources\DailyRewardResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\DailyRewardRepositories\DailyRewardRepositoryInterface;
 use Carbon\Carbon;

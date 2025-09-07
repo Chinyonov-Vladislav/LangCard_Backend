@@ -9,7 +9,7 @@ use App\Http\Filters\FiltersForModels\DeckFilter;
 use App\Http\Requests\Api\V1\DeckRequests\AddingTopicsToDeckRequest;
 use App\Http\Requests\Api\V1\DeckRequests\CreateDeckRequest;
 use App\Http\Requests\Api\V1\DeckRequests\DeckFilterRequest;
-use App\Http\Resources\v1\DeckResources\DeckResource;
+use App\Http\Resources\V1\DeckResources\DeckResource;
 use App\Http\Resources\V1\PaginationResources\PaginationResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\DeckRepositories\DeckRepositoryInterface;

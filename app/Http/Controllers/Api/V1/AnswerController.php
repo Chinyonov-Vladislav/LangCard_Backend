@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\v1\UserTestAnswerResources\UserTestAnswerResource;
-use App\Http\Resources\v1\UserTestResultResources\UserTestResultResource;
+use App\Http\Resources\V1\UserTestAnswerResources\UserTestAnswerResource;
+use App\Http\Resources\V1\UserTestResultResources\UserTestResultResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\UserTestAnswerRepositories\UserTestAnswerRepositoryInterface;
 use App\Repositories\UserTestResultRepositories\UserTestResultRepositoryInterface;
