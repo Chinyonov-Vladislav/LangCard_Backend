@@ -13,8 +13,8 @@ use App\Http\Controllers\Controller;
  * )
  *
  * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1",
- *     description="Local development server"
+ *     url="http://13.60.232.139/api/v1",
+ *     description="Server"
  * )
  *
  * @OA\SecurityScheme(
