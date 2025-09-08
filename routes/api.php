@@ -211,6 +211,7 @@ Route::prefix('v1')->group(callback: function () {
                 Route::prefix("emotions")->group(function () {
                     Route::get("/", [EmotionController::class, "getEmotions"])->name('getEmotions');
                 });
+                Route::get("/new_route", [])->name('newRoute');
             });
         });
     });
