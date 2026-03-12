@@ -34,4 +34,4 @@ jobs:
             php artisan migrate --force
 
             echo "Clear cache"
-            php artisan optimize:clear
+            php artisan optimize
