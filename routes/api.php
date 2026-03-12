@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(callback: function () {
     Route::middleware(['setApiLocale'])->group(callback: function () {
+        Route::get('test', [TestController::class, 'test'])->name('test');
         Route::post('registration', [RegistrationController::class, 'registration'])->name('registration');
         Route::post('login', [AuthController::class, 'login'])->name('login');
         Route::prefix('auth')->group(function () {
@@ -58,7 +59,6 @@ Route::prefix('v1')->group(callback: function () {
             Route::post('refreshRecoveryCodes', [TwoFactorAuthorizationController::class, 'refreshRecoveryCodes'])->name('refreshRecoveryCodes')->middleware('auth:sanctum');
         });
         Route::middleware('auth:sanctum')->group(callback: function () {
-            Route::get('test', [TestController::class, 'test'])->name('test');
             Route::post('updatePassword', [ForgotPasswordController::class, 'updatePassword'])->name('updatePassword');
             Route::post('sendVerificationCodeEmail', [EmailVerificationController::class, 'sendVerificationCodeEmail'])->name('sendVerificationCodeEmail');
             Route::post('verificationEmailAddress', [EmailVerificationController::class, 'verificationEmailAddress'])->name('verificationEmailAddress');
