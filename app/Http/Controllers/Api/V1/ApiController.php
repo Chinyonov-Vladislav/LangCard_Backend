@@ -1,9 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
-
 use App\Http\Controllers\Controller;
-
 /**
  * @OA\Info(
  *     title="Lang Cards API v1",

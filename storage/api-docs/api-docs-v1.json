@@ -10,7 +10,7 @@
     },
     "servers": [
         {
-            "url": "https://app.13-62-109-94.nip.io/api/v1",
+            "url": "http://127.0.0.1:8000/api/v1",
             "description": "Server"
         }
     ],

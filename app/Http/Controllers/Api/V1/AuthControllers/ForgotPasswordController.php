@@ -256,7 +256,7 @@ class ForgotPasswordController extends Controller
             return ApiResponse::error(__('api.invalid_password_reset_token'), null, 404);
         }
         $timeEndOfToken = Carbon::parse($dataResetPasswordToken->created_at)->addMinutes(60);
-        $secondsLeft = Carbon::now()->diffInSeconds($timeEndOfToken);
+        $secondsLeft = Carbon::now()->diffInSeconds($timeEndOfToken, false);
         if($secondsLeft <= 0)
         {
             return ApiResponse::error("Срок действия токена истёк", null, 410);
