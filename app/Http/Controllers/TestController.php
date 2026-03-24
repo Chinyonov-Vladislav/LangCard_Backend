@@ -15,6 +15,6 @@ class TestController extends Controller
     }
     public function test()
     {
-        return ApiResponse::success('Успешное тестирование автоматического деплоя на сервер');
+        return ApiResponse::success('Проверка изменения в коде на сервере - автодеплой');
     }
 }
