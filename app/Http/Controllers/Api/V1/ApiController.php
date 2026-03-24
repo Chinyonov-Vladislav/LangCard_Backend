@@ -15,6 +15,10 @@ use App\Http\Controllers\Controller;
  *     description="Deployment Server"
  * )
  *
+ * @OA\Server(
+ *      url="http://127.0.0.1:8000/api/v1",
+ *      description="Local Server"
+ *  )
  *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
