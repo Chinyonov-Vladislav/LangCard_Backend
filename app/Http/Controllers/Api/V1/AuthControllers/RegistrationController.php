@@ -123,9 +123,10 @@ class RegistrationController extends Controller
         $user = $this->registrationRepository->registerUser($request->name, $request->email, $request->password, mailing_enabled: $request->mailing_enabled);
         $resultDataFromApi = $this->apiService->makeRequest($request->ip(), $user->id, TypeRequestApi::allRequests);
         $this->achievementService->startAchievementsForNewUser($user->id);
+        $dataForReturn = null;
         if($resultDataFromApi['status'] === TypeStatusRequestApi::delayed->name) {
-            return ApiResponse::success(__('api.user_registered_successfully'), (object)["job_id" => $resultDataFromApi["job_id"]], 201);
+            $dataForReturn = (object)["job_id" => $resultDataFromApi["job_id"]];
         }
-        return ApiResponse::success(__('api.user_registered_successfully'), null, 201);
+        return ApiResponse::success(__('api.user_registered_successfully'), $dataForReturn, 201);
     }
 }
