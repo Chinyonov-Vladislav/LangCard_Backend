@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
  * )
  *
  * @OA\Server(
- *     url="https://app.13-62-109-94.nip.io/api/v1",
+ *     url="https://app.155.212.216.106.nip.io/api/v1",
  *     description="Server"
  * )
  *

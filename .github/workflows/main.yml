@@ -35,3 +35,6 @@ jobs:
 
             echo "Clear cache"
             php artisan optimize
+
+            echo "Generating API documentation"
+            php artisan l5-swagger:generate
