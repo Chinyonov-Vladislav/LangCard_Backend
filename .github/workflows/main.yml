@@ -22,19 +22,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
 
           script: |
+            set -e
             cd /var/www/${{ secrets.PROJECT_FOLDER }}
 
-            echo "Pull latest code"
-            git pull origin main
+            echo "Enable maintenance mode"
+            php artisan down || true
+
+            echo "Reset code to latest"
+            git fetch origin
+            git reset --hard origin/main
 
             echo "Install dependencies"
-            composer install --no-dev --optimize-autoloader
+            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
             echo "Run migrations"
             php artisan migrate --force
 
-            echo "Clear cache"
-            php artisan optimize
+            echo "Cache config"
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
 
-            echo "Generating API documentation"
+            echo "Generate API docs"
             php artisan l5-swagger:generate
+
+            echo "Disable maintenance mode"
+            php artisan up
