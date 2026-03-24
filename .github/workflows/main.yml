@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -21,31 +22,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
 
           script: |
-            set -e
+            cd /var/www/${{ secrets.PROJECT_FOLDER }}
 
-            PROJECT_DIR="${{ secrets.PROJECT_FOLDER }}"
-            cd $PROJECT_DIR
-
-            echo "Enable maintenance mode"
-            php artisan down || true
-
-            echo "Reset to latest version"
-            git fetch origin
-            git reset --hard origin/main
+            echo "Pull latest code"
+            git pull origin main
 
             echo "Install dependencies"
-            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+            composer install --no-dev --optimize-autoloader
 
             echo "Run migrations"
             php artisan migrate --force
 
-            echo "Clear and cache config"
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            echo "Clear cache"
+            php artisan optimize
 
-            echo "Generate API docs"
+            echo "Generating API documentation"
             php artisan l5-swagger:generate
-
-            echo "Disable maintenance mode"
-            php artisan up
