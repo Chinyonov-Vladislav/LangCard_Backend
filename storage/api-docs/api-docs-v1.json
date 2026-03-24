@@ -10,8 +10,12 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8000/api/v1",
-            "description": "Server"
+            "url": "https://app.155.212.216.106.nip.io/api/v1",
+            "description": "Deployment Server"
+        },
+        {
+            "url": "http://127.0.0.1/api/v1",
+            "description": "Local Server"
         }
     ],
     "paths": {

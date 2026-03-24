@@ -12,8 +12,13 @@ use App\Http\Controllers\Controller;
  *
  * @OA\Server(
  *     url="https://app.155.212.216.106.nip.io/api/v1",
- *     description="Server"
+ *     description="Deployment Server"
  * )
+ *
+ * @OA\Server(
+ *      url="http://127.0.0.1:8000/api/v1",
+ *      description="Local Server"
+ *  )
  *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
