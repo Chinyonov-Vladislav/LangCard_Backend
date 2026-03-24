@@ -170,6 +170,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (!defined('L5_SWAGGER_CONST_HOST_V1')) {
+            define('L5_SWAGGER_CONST_HOST_V1', config('l5-swagger.v1.constants.L5_SWAGGER_CONST_HOST').'/api/v1');
+        }
+
+        if (!defined('L5_SWAGGER_CONST_HOST_V2')) {
+            define('L5_SWAGGER_CONST_HOST_V2', config('l5-swagger.v2.constants.L5_SWAGGER_CONST_HOST').'/api/v2');
+        }
+
         Event::listen(function (SocialiteWasCalled $event) {
             $event->extendSocialite('yandex', Provider::class);
             $event->extendSocialite('microsoft', \SocialiteProviders\Microsoft\Provider::class);

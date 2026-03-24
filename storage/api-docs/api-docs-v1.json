@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Lang Cards API v1",
-        "description": "Lang Cards API ",
+        "description": "Lang Cards API",
         "contact": {
             "email": "vlad2000100600@gmail.com"
         },
@@ -10,12 +10,8 @@
     },
     "servers": [
         {
-            "url": "https://app.155.212.216.106.nip.io/api/v1",
-            "description": "Deployment Server"
-        },
-        {
             "url": "http://127.0.0.1:8000/api/v1",
-            "description": "Local Server"
+            "description": "Server API"
         }
     ],
     "paths": {

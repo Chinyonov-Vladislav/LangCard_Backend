@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
+
 /**
  * @OA\Info(
  *     title="Lang Cards API v1",
  *     version="1.0.0",
- *     description="Lang Cards API ",
- *     @OA\Contact(email="vlad2000100600@gmail.com"),
+ *     description="Lang Cards API",
+ *     @OA\Contact(email="vlad2000100600@gmail.com")
  * )
  *
  * @OA\Server(
- *     url="https://app.155.212.216.106.nip.io/api/v1",
- *     description="Deployment Server"
+ *     url=L5_SWAGGER_CONST_HOST_V1,
+ *     description="Server API"
  * )
- *
- * @OA\Server(
- *      url="http://127.0.0.1:8000/api/v1",
- *      description="Local Server"
- *  )
  *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
